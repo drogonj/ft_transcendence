@@ -1,0 +1,8 @@
+
+services:
+  nginx:
+    container_name: nginx
+    build: ./containers/nginx
+    ports:
+      - "8080:443"
+    restart: always
