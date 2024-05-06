@@ -1,9 +1,12 @@
-<mxfile host="app.diagrams.net" modified="2024-05-06T11:37:20.316Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" etag="7B34vBOHavlkZlZ4X1OU" version="24.3.1" type="github">
+<mxfile host="app.diagrams.net" modified="2024-05-06T11:37:48.094Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" etag="SjMHkFFPRahj22ZDJh6U" version="24.3.1" type="github">
   <diagram name="Page-1" id="jSVp6zSiohkGSGdewAzT">
-    <mxGraphModel dx="906" dy="597" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2074" dy="1104" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="mFA2R8oB9QpHDyjEHy2W-1" value="&lt;div&gt;Modules :&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="10" y="8" width="80" height="30" as="geometry" />
+        </mxCell>
         <mxCell id="uLIJBmSE5B_ZEWXQ3Y_o-1" value="&lt;div&gt;FT_TRANSCENDANCE&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="325" y="223" width="150" height="40" as="geometry" />
         </mxCell>
