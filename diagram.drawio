@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2024-05-06T11:37:48.094Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" etag="SjMHkFFPRahj22ZDJh6U" version="24.3.1" type="github">
+<mxfile host="app.diagrams.net" modified="2024-05-06T11:41:53.904Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" etag="XP7Z5CAzrBG22sLlZ4PQ" version="24.3.1" type="github">
   <diagram name="Page-1" id="jSVp6zSiohkGSGdewAzT">
-    <mxGraphModel dx="2074" dy="1104" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="794" dy="1104" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -9,6 +9,9 @@
         </mxCell>
         <mxCell id="uLIJBmSE5B_ZEWXQ3Y_o-1" value="&lt;div&gt;FT_TRANSCENDANCE&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="325" y="223" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mFA2R8oB9QpHDyjEHy2W-2" value="&lt;div align=&quot;left&quot;&gt;CHARLO / NOUTNOUT : Module secu&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;Module majeur : par feu d&#39;application web (WAF).&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;Module mineur : conformite au RGPD avec anonymisation des&lt;br&gt;&lt;div&gt;utilisateurs, gestion des données locales et suppression de comptes.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Module majeur : authentification à 2 facteurs (2FA) et JWT&lt;br&gt;(JSON Web Tokens).&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;ca fat 2.5 pountos&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry y="30" width="390" height="170" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
