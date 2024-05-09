@@ -1,8 +1,7 @@
-
 services:
   nginx:
     container_name: nginx
-    build: ./containers/nginx
+    build: containers/nginx
     ports:
       - "8080:443"
     restart: always
@@ -10,17 +9,25 @@ services:
       - backend
   db:
     container_name: postgres
-    image: postgres:latest
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./containers/backend/conf/.env
-    environment:
-      - POSTGRES_USER=tasoeurenslip
-      - POSTGRES_PASSWORD=tasoeurenslip
-      - POSTGRES_DB=tasoeurenslip_db
+      - ./.env
+    ports:
+      - '5432:5432'
   backend:
     container_name: backend
-    build: ./containers/backend
+    build: ./containers/backend/
+    volumes:
+      - ./containers/backend/app/:/usr/src/app/
     ports:
       - "8000:8000"
     env_file:
-      - ./containers/backend/conf/.env
+      - ./.env
+volumes:
+  postgres_data:
+
+networks:
+  django-network:
+    driver: bridge

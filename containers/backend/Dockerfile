@@ -1,9 +1,14 @@
-FROM python:3.12.1-slim-bullseye
+FROM python:3.11.4-slim-buster
+
+WORKDIR /usr/src/app
+
+ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-RUN mkdir /code
-ADD ./project /code
-WORKDIR /code
-COPY project/requirements.txt /code/
+
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
 RUN pip install -r requirements.txt
-COPY . /code/
-CMD ["gunicorn", "project.wsgi:application", "--bind", "0.0.0.0:8000"]
+
+COPY . .
+
+CMD ["gunicorn", "hello_django.wsgi:application", "--bind", "0.0.0.0:8000"]
