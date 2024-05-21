@@ -1,4 +1,28 @@
 services:
+  postgres:
+    container_name: postgres
+    image: postgres:16.3
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+    ports:
+      - '5432:5432'
+    networks:
+      - network
+  django:
+    container_name: django
+    build: ./containers/django/
+    volumes:
+      - ./containers/django/app/:/usr/src/app/
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+    networks:
+      - network
   nginx:
     container_name: nginx
     build: containers/nginx
@@ -6,28 +30,12 @@ services:
       - "8080:443"
     restart: always
     depends_on:
-      - backend
-  db:
-    container_name: postgres
-    image: postgres:15
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - ./.env
-    ports:
-      - '5432:5432'
-  backend:
-    container_name: backend
-    build: ./containers/backend/
-    volumes:
-      - ./containers/backend/app/:/usr/src/app/
-    ports:
-      - "8000:8000"
-    env_file:
-      - ./.env
+      - django
+    networks:
+      - network
 volumes:
   postgres_data:
 
 networks:
-  django-network:
+  network:
     driver: bridge
