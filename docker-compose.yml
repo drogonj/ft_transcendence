@@ -2,30 +2,36 @@ services:
   postgres:
     container_name: postgres
     image: postgres:16.3
-    volumes:
-      - ./containers/volumes/postgres:/var/lib/postgresql/data/
-    env_file:
-      - ./containers/.env
+    #volumes:
+    #  - ./containers/volumes/postgres:/var/lib/postgresql/data/
+    env_file: containers/.env
     ports:
-      - '5433:5432'
+      - '5343:5432'
     networks:
       - network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ali -d django_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 3
   django:
     container_name: django
     build: ./containers/django/
-    volumes:
-      - ./containers/volumes/django:/backend/
+    #volumes:
+    #  - ./containers/volumes/django:/backend/
     ports:
       - "8000:8000"
-    env_file:
-      - ./containers/.env
+    env_file: containers/.env
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - network
   nginx:
     container_name: nginx
     build: containers/nginx
+    volumes:
+      - ./experiences/exp_ali/front:/var/www/html
     ports:
       - "8080:443"
     restart: always
