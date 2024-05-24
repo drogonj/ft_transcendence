@@ -6,11 +6,11 @@ services:
     #  - ./containers/volumes/postgres:/var/lib/postgresql/data/
     env_file: containers/.env
     ports:
-      - '5343:5432'
+      - '{PORT}:{PORT_CONTAINER}'
     networks:
       - network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ali -d django_db"]
+      test: ["CMD-SHELL", "pg_isready -U {POSTGRES_USER} -d {POSTGRES_DB}"]
       interval: 3s
       timeout: 3s
       retries: 3
@@ -31,9 +31,10 @@ services:
     container_name: nginx
     build: containers/nginx
     volumes:
-      - ./experiences/exp_ali/front:/var/www/html
+      - {WEB_SITE_PATH}:/var/www/html
     ports:
       - "8080:443"
+      - "8765:8765"
     restart: always
     depends_on:
       - django
