@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPA Application</title>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const app = document.getElementById('app');
+
+            // Lorsque l'utilisateur navigue vers une nouvelle vue ou page
+            function navigateTo(route) {
+                history.pushState({ route: route }, 'Titre de la page', route);
+                // Mettre à jour le contenu de la page en fonction de la route
+                updateContent(route);
+            }
+
+            // Écouter les événements de l'API History
+            window.addEventListener('popstate', function(event) {
+                // Récupérer la route depuis l'état de l'historique
+                var route = event.state.route;
+                // Mettre à jour le contenu de la page en fonction de la route
+                updateContent(route);
+            });
+
+            // Fonction pour mettre à jour le contenu de la page en fonction de la route
+            function updateContent(route) {
+                if (route === '/') {
+                    renderHome()
+                } else if (route === '/login') {
+                    renderLogin()
+                }
+            }
+
+            function renderLogin() {
+                app.innerHTML = `
+                    <h1>Login</h1>
+                    <form id="login-form">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password">
+                        <button type="submit">Login</button>
+                    </form>
+                `;
+                document.getElementById('login-form').addEventListener('submit', handleLogin);
+            }
+
+            function handleLogin(event) {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                fetch('/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({username: username, password: password})
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            navigateTo('/')
+                        } else {
+                            alert('Login failed: ' + data.message);
+                        }
+                    });
+            }
+
+            function renderHome() {
+                fetch('/api/is_authenticated/')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.is_authenticated) {
+                            app.innerHTML = `
+                            <h1>Home Page</h1>
+                            <p>Log as ${data.current_user}</p>
+                            <button id="logout-button">Logout</button>
+                        `;
+                            document.getElementById('logout-button').addEventListener('click', handleLogout);
+                        } else {
+                            navigateTo('/login');
+                        }
+                    });
+            }
+
+            function handleLogout() {
+                history.pushState({ page: 'logout' }, 'SPA Application', '/logout');
+                fetch('/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            navigateTo('/login')
+                        } else {
+                            alert('Logout failed: ' + data.message);
+                        }
+                    });
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            navigateTo('/')
+        });
+
+    </script>
+</head>
+<body>
+<div id="app"></div>
+</body>
+</html>
