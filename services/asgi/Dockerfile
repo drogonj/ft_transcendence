@@ -13,5 +13,5 @@ RUN pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 COPY ./asgi ./asgi/
-EXPOSE 8000
+# -b 0.0.0.0 = --bind sur toutes les IPs
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "asgi.asgi:application"]
