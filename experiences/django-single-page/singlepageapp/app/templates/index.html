@@ -86,22 +86,24 @@
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
 
-                fetch('/login/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({username: username, password: password})
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            navigateTo('/')
-                        } else {
-                            alert('Login failed: ' + data.message);
-                        }
-                    });
+                getCsrfToken().then(() => {
+                    fetch('/login/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({username: username, password: password})
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                navigateTo('/')
+                            } else {
+                                alert('Login failed: ' + data.message);
+                            }
+                        });
+                });
             }
 
             function handleSignup(event) {
@@ -113,25 +115,27 @@
                     password: formData.get('password')
                 };
 
-                fetch('/signup/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify(signupData)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.message) {
-                            navigateTo('/login');
-                        } else {
-                            alert(data.error);
-                        }
+                getCsrfToken().then(() => {
+                    fetch('/signup/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify(signupData)
                     })
-                    .catch(error => {
-                        console.error('Signup error:', error);
-                    });
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message) {
+                                navigateTo('/login');
+                            } else {
+                                alert(data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Signup error:', error);
+                        });
+                });
             }
 
             function renderHome() {
@@ -153,20 +157,22 @@
 
             function handleLogout() {
                 history.pushState({ page: 'logout' }, 'SPA Application', '/logout');
-                fetch('/logout/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            navigateTo('/login')
-                        } else {
-                            alert('Logout failed: ' + data.message);
+                getCsrfToken().then(() => {
+                    fetch('/logout/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
                         }
-                    });
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                navigateTo('/login')
+                            } else {
+                                alert('Logout failed: ' + data.message);
+                            }
+                        });
+                });
             }
 
             function getCookie(name) {
@@ -186,7 +192,7 @@
 
             document.getElementById('js-error').remove()
             console.log(window.location.pathname)
-            getCsrfToken().then(navigateTo(window.location.pathname))
+            navigateTo(window.location.pathname)
         });
 
     </script>

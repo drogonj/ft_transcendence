@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views import View
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
 import json
 
@@ -26,6 +26,7 @@ class LoginView(View):
     def get(self, request):
         return render(request, 'index.html')
 
+@method_decorator(csrf_protect, name='dispatch')
 class SignupView(View):
     def post(self, request):
         try:
