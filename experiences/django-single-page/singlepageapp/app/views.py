@@ -1,12 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views import View
-from django.middleware.csrf import get_token
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 import json
 
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE', '')})
 class LoginView(View):
     def post(self, request):
         data = json.loads(request.body)
@@ -20,14 +24,39 @@ class LoginView(View):
             return JsonResponse({'success': False, 'message': 'Invalid credentials'}, status=400)
 
     def get(self, request):
-        csrf_token = get_token(request)
-        return JsonResponse({'csrfToken': csrf_token})
+        return render(request, 'index.html')
+
+class SignupView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+
+            if not username or not password:
+                return JsonResponse({'error': 'Username and password are required.'}, status=400)
+
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({'error': 'Username already exists.'}, status=400)
+
+            user = User.objects.create_user(username=username, password=password)
+            user.save()
+
+            return JsonResponse({'message': 'Signup successful.'})
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data.'}, status=400)
+
+    def get(self, request):
+        return render(request, 'index.html')
 
 @method_decorator(login_required, name='dispatch')
 class LogoutView(View):
     def post(self, request):
         logout(request)
         return JsonResponse({'success': True, 'message': 'Logout successful'})
+
+    def get(self, request):
+        return redirect('/')
 
 class IsAuthenticatedView(View):
     def get(self, request):

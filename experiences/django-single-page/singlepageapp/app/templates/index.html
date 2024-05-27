@@ -8,9 +8,18 @@
         document.addEventListener('DOMContentLoaded', function() {
             const app = document.getElementById('app');
 
+            let csrfToken = '';
+
+            function getCsrfToken() {
+                return fetch('/api/get_csrf_token/')
+                    .then(response => response.json())
+                    .then(data => {
+                        csrfToken = data.csrfToken;
+                    });
+            }
             // Lorsque l'utilisateur navigue vers une nouvelle vue ou page
             function navigateTo(route) {
-                history.pushState({ route: route }, 'Titre de la page', route);
+                history.pushState({ route: route }, 'SPA Application', route);
                 // Mettre à jour le contenu de la page en fonction de la route
                 updateContent(route);
             }
@@ -25,10 +34,12 @@
 
             // Fonction pour mettre à jour le contenu de la page en fonction de la route
             function updateContent(route) {
-                if (route === '/') {
-                    renderHome()
-                } else if (route === '/login') {
+                if (route === '/login' || route === '/login/') {
                     renderLogin()
+                } else if (route === '/signup' || route === '/signup/') {
+                    renderSignup()
+                } else {
+                    renderHome()
                 }
             }
 
@@ -42,8 +53,32 @@
                         <input type="password" id="password" name="password">
                         <button type="submit">Login</button>
                     </form>
+                    <p>Don't have an account? <a href="/signup" id="signup-link">Signup</a></p>
                 `;
                 document.getElementById('login-form').addEventListener('submit', handleLogin);
+                document.getElementById('signup-link').addEventListener('click', function(event) {
+                    event.preventDefault();
+                    navigateTo('/signup');
+                });
+            }
+
+            function renderSignup() {
+                app.innerHTML = `
+                    <h1>Signup</h1>
+                    <form id="signup-form">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password">
+                        <button type="submit">Signup</button>
+                    </form>
+                    <p>Already have an account? <a href="/login" id="login-link">Login</a></p>
+            `;
+                document.getElementById('signup-form').addEventListener('submit', handleSignup);
+                document.getElementById('login-link').addEventListener('click', function(event) {
+                    event.preventDefault();
+                    navigateTo('/login');
+                });
             }
 
             function handleLogin(event) {
@@ -66,6 +101,36 @@
                         } else {
                             alert('Login failed: ' + data.message);
                         }
+                    });
+            }
+
+            function handleSignup(event) {
+                event.preventDefault();
+
+                const formData = new FormData(event.target);
+                const signupData = {
+                    username: formData.get('username'),
+                    password: formData.get('password')
+                };
+
+                fetch('/signup/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify(signupData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            navigateTo('/login');
+                        } else {
+                            alert(data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Signup error:', error);
                     });
             }
 
@@ -119,12 +184,15 @@
                 return cookieValue;
             }
 
-            navigateTo('/')
+            document.getElementById('js-error').remove()
+            console.log(window.location.pathname)
+            getCsrfToken().then(navigateTo(window.location.pathname))
         });
 
     </script>
 </head>
 <body>
+<p id="js-error">Error: Javascript seems not working</p>
 <div id="app"></div>
 </body>
 </html>
