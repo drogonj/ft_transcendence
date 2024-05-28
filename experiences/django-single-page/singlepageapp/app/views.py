@@ -11,6 +11,8 @@ import json
 @ensure_csrf_cookie
 def get_csrf_token(request):
     return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE', '')})
+
+@method_decorator(csrf_protect, name='dispatch')
 class LoginView(View):
     def post(self, request):
         data = json.loads(request.body)
@@ -70,4 +72,3 @@ class IsAuthenticatedView(View):
 class IndexView(View):
     def get(self, request):
         return render(request, 'index.html')
-

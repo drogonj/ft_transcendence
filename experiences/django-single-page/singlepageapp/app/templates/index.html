@@ -1,8 +1,11 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>SPA Application</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <script>
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -10,12 +13,10 @@
 
             let csrfToken = '';
 
-            function getCsrfToken() {
-                return fetch('/api/get_csrf_token/')
-                    .then(response => response.json())
-                    .then(data => {
-                        csrfToken = data.csrfToken;
-                    });
+            async function getCsrfToken() {
+                const response = await fetch('/api/get_csrf_token/');
+                const data = await response.json();
+                csrfToken = data.csrfToken;
             }
             // Lorsque l'utilisateur navigue vers une nouvelle vue ou page
             function navigateTo(route) {
@@ -45,17 +46,31 @@
 
             function renderLogin() {
                 app.innerHTML = `
-                    <h1>Login</h1>
-                    <form id="login-form">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" name="username">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password">
-                        <button type="submit">Login</button>
-                    </form>
-                    <p>Don't have an account? <a href="/signup" id="signup-link">Signup</a></p>
+                    <section>
+                       <div class="auth-box">
+                        <div class="content">
+                         <h2>Login</h2>
+                         <form id="auth-form" class="form">
+                          <div class="inputBox">
+                           <input type="text" id="username" name="username" required>
+                           <i>Username</i>
+                          </div>
+                          <div class="inputBox">
+                           <input type="password" id="password" name="password" required>
+                           <i>Password</i>
+                          </div>
+                          <div class="links">
+                            <a href="#" id="signup-link">Sign up</a>
+                          </div>
+                          <div class="inputBox">
+                           <input type="submit" value="Login">
+                          </div>
+                         </form>
+                        </div>
+                       </div>
+                      </section>
                 `;
-                document.getElementById('login-form').addEventListener('submit', handleLogin);
+                document.getElementById('auth-form').addEventListener('submit', handleLogin);
                 document.getElementById('signup-link').addEventListener('click', function(event) {
                     event.preventDefault();
                     navigateTo('/signup');
@@ -64,49 +79,61 @@
 
             function renderSignup() {
                 app.innerHTML = `
-                    <h1>Signup</h1>
-                    <form id="signup-form">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" name="username">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password">
-                        <button type="submit">Signup</button>
-                    </form>
-                    <p>Already have an account? <a href="/login" id="login-link">Login</a></p>
+                     <section>
+                       <div class="auth-box">
+                        <div class="content">
+                         <h2>Sign up</h2>
+                         <form id="auth-form" class="form">
+                          <div class="inputBox">
+                           <input type="text" id="username" name="username" required>
+                           <i>Username</i>
+                          </div>
+                          <div class="inputBox">
+                           <input type="password" id="password" name="password" required>
+                           <i>Password</i>
+                          </div>
+                          <div class="links">
+                            <a href="#" id="login-link">Login</a>
+                          </div>
+                          <div class="inputBox">
+                           <input type="submit" value="Login">
+                          </div>
+                         </form>
+                        </div>
+                       </div>
+                      </section>
             `;
-                document.getElementById('signup-form').addEventListener('submit', handleSignup);
+                document.getElementById('auth-form').addEventListener('submit', handleSignup);
                 document.getElementById('login-link').addEventListener('click', function(event) {
                     event.preventDefault();
                     navigateTo('/login');
                 });
             }
 
-            function handleLogin(event) {
+            async function handleLogin(event) {
                 event.preventDefault();
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
 
-                getCsrfToken().then(() => {
-                    fetch('/login/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: JSON.stringify({username: username, password: password})
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                navigateTo('/')
-                            } else {
-                                alert('Login failed: ' + data.message);
-                            }
-                        });
+                await getCsrfToken();
+
+                const response = await fetch('/api/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ username: username, password: password })
                 });
+                const data = await response.json();
+                if (data.success) {
+                    navigateTo('/');
+                } else {
+                    alert('Login failed: ' + data.message);
+                }
             }
 
-            function handleSignup(event) {
+            async function handleSignup(event) {
                 event.preventDefault();
 
                 const formData = new FormData(event.target);
@@ -115,86 +142,59 @@
                     password: formData.get('password')
                 };
 
-                getCsrfToken().then(() => {
-                    fetch('/signup/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: JSON.stringify(signupData)
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.message) {
-                                navigateTo('/login');
-                            } else {
-                                alert(data.error);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Signup error:', error);
-                        });
+                await getCsrfToken();
+
+                const response = await fetch('/api/signup/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify(signupData)
                 });
-            }
-
-            function renderHome() {
-                fetch('/api/is_authenticated/')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.is_authenticated) {
-                            app.innerHTML = `
-                            <h1>Home Page</h1>
-                            <p>Log as ${data.current_user}</p>
-                            <button id="logout-button">Logout</button>
-                        `;
-                            document.getElementById('logout-button').addEventListener('click', handleLogout);
-                        } else {
-                            navigateTo('/login');
-                        }
-                    });
-            }
-
-            function handleLogout() {
-                history.pushState({ page: 'logout' }, 'SPA Application', '/logout');
-                getCsrfToken().then(() => {
-                    fetch('/logout/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken')
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                navigateTo('/login')
-                            } else {
-                                alert('Logout failed: ' + data.message);
-                            }
-                        });
-                });
-            }
-
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
+                const data = await response.json();
+                if (data.message) {
+                    navigateTo('/login');
+                } else {
+                    alert(data.error);
                 }
-                return cookieValue;
+            }
+
+            async function renderHome() {
+                const response = await fetch('/api/is_authenticated/');
+                const data = await response.json();
+                if (data.is_authenticated) {
+                    app.innerHTML = `
+                        <h1>Home Page</h1>
+                        <p>Logged in as ${data.current_user}</p>
+                        <button id="logout-button">Logout</button>
+                    `;
+                    document.getElementById('logout-button').addEventListener('click', handleLogout);
+                } else {
+                    navigateTo('/login');
+                }
+            }
+
+            async function handleLogout() {
+                await getCsrfToken();
+
+                const response = await fetch('/api/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    navigateTo('/login');
+                } else {
+                    alert('Logout failed: ' + data.message);
+                }
             }
 
             document.getElementById('js-error').remove()
-            console.log(window.location.pathname)
             navigateTo(window.location.pathname)
         });
-
     </script>
 </head>
 <body>
