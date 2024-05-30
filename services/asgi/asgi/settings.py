@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'daphne',
-    'asgi',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = 'asgi.wsgi.application'
+ASGI_APPLICATION = 'asgi.asgi.application'
 
 
 # Database

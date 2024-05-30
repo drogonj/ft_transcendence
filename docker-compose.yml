@@ -17,30 +17,30 @@ services:
   asgi:
     container_name: asgi
     build: ./services/asgi/
-    #volumes:
-    #  - ./services/volumes/:asgi/backend/
+    volumes:
+     - ./services/asgi:/tmp/asgi/
     ports:
-      - "8000:8000"
+      - "8081:8081"
     env_file: services/.env
     #depends_on:
       #postgres:
         #condition: service_healthy
     networks:
-      - network
+      - transcendence
   nginx:
     container_name: nginx
-    build: services/nginx
-    #volumes:
-    #  - {WEB_SITE_PATH}:/var/www/html
+    build: ./services/nginx
+    volumes:
+      - ./services/nginx/html:/tmp/html
     ports:
-      - "8080:443"
-      - "8765:8765"
+     - "80:80"
+     - "443:443"
     restart: always
     depends_on:
-      - asgi
+     - asgi
     networks:
-      - network
+     - transcendence
 
 networks:
-  network:
+  transcendence:
     driver: bridge
