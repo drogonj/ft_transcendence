@@ -5,8 +5,9 @@ LABEL description="This is the base image for our Reverse proxy Nginx"
 RUN apk update && apk upgrade && \
     apk add --no-cache nginx openssl python3 py3-pip py3-websockets && \
 	mkdir -p /etc/nginx/ssl /var/www/transcendence && \
-	openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt \
-    -keyout /etc/nginx/ssl/inception.key -subj \
+	openssl req -x509 -nodes -out /etc/nginx/ssl/transcendence.crt \
+    -keyout /etc/nginx/ssl/transcendence.key -subj \
 	"/C=FR/ST=GE/L=Mulhouse/O=42/OU=42/CN=localhost/UID=laTeam"
-COPY ./conf/transcendance.conf /etc/nginx/conf.d/transcendance.conf
+COPY ./conf/transcendence.conf /etc/nginx/conf.d/default.conf
+COPY ./html/index.html /var/www/html/index.html
 CMD ["nginx", "-g", "daemon off;"]
