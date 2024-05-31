@@ -63,3 +63,7 @@ class IsAuthenticatedView(View):
 class IndexView(View):
     def get(self, request):
         return render(request, 'index.html')
+
+class fileNotFoundView(View):
+    def get(self, request):
+        return render(request, '404.html', status=404)
