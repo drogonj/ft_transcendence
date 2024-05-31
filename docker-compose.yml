@@ -31,7 +31,7 @@ services:
       - tmp:/singlepageapp/static
   nginx:
     container_name: nginx
-    build: services/nginx
+    build: ./services/nginx
     #volumes:
     #  - {WEB_SITE_PATH}:/var/www/html
     ports:
