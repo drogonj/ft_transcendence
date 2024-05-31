@@ -9,4 +9,5 @@ RUN apk update && apk upgrade && \
     -keyout /etc/nginx/ssl/inception.key -subj \
 	"/C=FR/ST=GE/L=Mulhouse/O=42/OU=42/CN=localhost/UID=laTeam"
 COPY ./conf/transcendance.conf /etc/nginx/conf.d/transcendance.conf
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 CMD ["nginx", "-g", "daemon off;"]
