@@ -1,46 +1,52 @@
 services:
-  postgres:
-    container_name: postgres
-    image: postgres:16.3
+  #postgres:
+    #container_name: postgres
+    #image: postgres:16.3
     #volumes:
-    #  - ./containers/volumes/postgres:/var/lib/postgresql/data/
-    env_file: containers/.env
-    ports:
-      - '{PORT}:{PORT_CONTAINER}'
-    networks:
-      - network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U {POSTGRES_USER} -d {POSTGRES_DB}"]
-      interval: 3s
-      timeout: 3s
-      retries: 3
-  django:
-    container_name: django
-    build: ./containers/django/
+    #  - ./services/volumes/postgres:/var/lib/postgresql/data/
+    #env_file: services/.env
+    #ports:
+    #  - '{PORT}:{PORT_CONTAINER}'
+    #networks:
+    #  - network
+    #healthcheck:
+    #  test: ["CMD-SHELL", "pg_isready -U {POSTGRES_USER} -d {POSTGRES_DB}"]
+    #  interval: 3s
+    #  timeout: 3s
+    #  retries: 3
+  singlepageapp:
+    container_name: singlepageapp
+    build: ./services/singlepageapp/
     #volumes:
-    #  - ./containers/volumes/django:/backend/
-    ports:
+    #  - ./services/volumes/:singlepageapp/backend/
+    expose:
       - "8000:8000"
-    env_file: containers/.env
-    depends_on:
-      postgres:
-        condition: service_healthy
+    env_file: services/.env
+    #depends_on:
+      #postgres:
+        #condition: service_healthy
     networks:
       - network
+    volumes:
+      - tmp:/singlepageapp/static
   nginx:
     container_name: nginx
-    build: containers/nginx
-    volumes:
-      - {WEB_SITE_PATH}:/var/www/html
+    build: services/nginx
+    #volumes:
+    #  - {WEB_SITE_PATH}:/var/www/html
     ports:
       - "8080:443"
-      - "8765:8765"
     restart: always
     depends_on:
-      - django
+      - singlepageapp
     networks:
       - network
+    volumes:
+      - tmp:/singlepageapp/static
 
 networks:
   network:
     driver: bridge
+
+volumes:
+  tmp:

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPA Application</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+</head>
+<body>
+    <p id="js-error">Error: Javascript seems not working</p>
+
+    <div id="app"></div>
+
+    <script type="module" src="{% static 'js/contentLoader.js' %}"></script>
+    <script type="module" src="{% static 'js/render.js' %}"></script>
+    <script type="module" src="{% static 'js/auth.js' %}"></script>
+</body>
+</html>
