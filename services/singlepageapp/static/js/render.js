@@ -49,6 +49,10 @@ export function renderSignup() {
                            <input type="password" id="password" name="password" required>
                            <i>Password</i>
                           </div>
+                           <div class="inputBox" id="confirm-passw-box">
+                               <input type="password" id="confirm_password" name="confirm_password" required>
+                               <i>Confirm password</i>
+                          </div>
                           <div class="links">
                             <a href="#" id="login-link">Login</a>
                           </div>

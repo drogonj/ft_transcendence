@@ -37,7 +37,8 @@ export async function handleSignup(event) {
     const formData = new FormData(event.target);
     const signupData = {
         username: formData.get('username'),
-        password: formData.get('password')
+        password: formData.get('password'),
+        confirm_password: formData.get('confirm_password')
     };
 
     await getCsrfToken();

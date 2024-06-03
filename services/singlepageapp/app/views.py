@@ -32,6 +32,10 @@ class SignupView(View):
             data = json.loads(request.body)
             username = data.get('username')
             password = data.get('password')
+            confirm_password = data.get('confirm_password')
+
+            if password != confirm_password:
+                return JsonResponse({'error': 'Passwords does not match.'})
 
             if not username or not password:
                 return JsonResponse({'error': 'Username and password are required.'}, status=400)
