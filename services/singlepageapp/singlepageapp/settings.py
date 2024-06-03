@@ -144,7 +144,6 @@ CSRF_COOKIE_HTTPONLY = True
 CORS_ALLOW_CREDENTIALS = True
 LOGIN_RATELIMIT_USER = True
 
-
 CSRF_TRUSTED_ORIGINS = [
     'https://127.0.0.1:8080',
     'https://localhost:8080',
