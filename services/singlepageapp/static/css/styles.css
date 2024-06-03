@@ -42,8 +42,9 @@ section .auth-box
     justify-content: center;
     align-items: center;
     padding: 50px;
+    border-color: red;
     border-radius: 4px;
-    box-shadow: 0 0 15px #898989;
+    box-shadow: 0 0 15px #8803fc;
 }
 section .auth-box .content
 {
@@ -60,6 +61,7 @@ section .auth-box .content h2
     font-size: 2em;
     color: #FAFAFA;
 }
+
 section .auth-box .content .form
 {
     width: 100%;
@@ -136,7 +138,8 @@ section .auth-box .content .form .inputBox i
 }
 
 .auth-box .content .form .inputBox input[type="submit"]:hover {
-    background: #ffcc00;
+    background: #8803fc;
+    color: whitesmoke;
 }
 
 
