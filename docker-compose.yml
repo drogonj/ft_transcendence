@@ -1,52 +1,24 @@
 services:
-  #postgres:
-    #container_name: postgres
-    #image: postgres:16.3
-    #volumes:
-    #  - ./services/volumes/postgres:/var/lib/postgresql/data/
-    #env_file: services/.env
-    #ports:
-    #  - '{PORT}:{PORT_CONTAINER}'
-    #networks:
-    #  - network
-    #healthcheck:
-    #  test: ["CMD-SHELL", "pg_isready -U {POSTGRES_USER} -d {POSTGRES_DB}"]
-    #  interval: 3s
-    #  timeout: 3s
-    #  retries: 3
-  singlepageapp:
-    container_name: singlepageapp
-    build: ./services/singlepageapp/
-    #volumes:
-    #  - ./services/volumes/:singlepageapp/backend/
-    expose:
-      - "8000:8000"
-    env_file: services/.env
-    #depends_on:
-      #postgres:
-        #condition: service_healthy
-    networks:
-      - network
-    volumes:
-      - tmp:/singlepageapp/static
-  nginx:
-    container_name: nginx
-    build: services/nginx
-    #volumes:
-    #  - {WEB_SITE_PATH}:/var/www/html
+  front-end:
+    container_name: front-end
+    build: services/front-end
     ports:
       - "8080:443"
     restart: always
     depends_on:
-      - singlepageapp
+      - user-management
     networks:
       - network
-    volumes:
-      - tmp:/singlepageapp/static
+
+  user-management:
+    container_name: user-management
+    build: ./services/user-management/
+    expose:
+      - "8000:8000"
+    env_file: services/.env
+    networks:
+      - network
 
 networks:
   network:
     driver: bridge
-
-volumes:
-  tmp:

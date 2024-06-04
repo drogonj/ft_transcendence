@@ -1,8 +1,11 @@
 FROM python:3.10-slim-bullseye
 LABEL maintainer="ngalzand <ngalzand@student.42mulhouse.fr>"
-LABEL version="0.1"
-LABEL description="Testing Django SPA deployment"
-WORKDIR /singlepageapp
+LABEL version="0.2"
+LABEL description="User-management microservice"
+
+WORKDIR /user-management
+COPY . .
+
 RUN apt-get update && apt-get upgrade -y \
 	&& apt-get install -y --no-install-recommends \
 		build-essential \
@@ -10,10 +13,7 @@ RUN apt-get update && apt-get upgrade -y \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 RUN pip install --upgrade pip
-COPY . .
 RUN pip install -r requirements.txt && \
-    python manage.py collectstatic --noinput && \
     python manage.py migrate
 
-# -b 0.0.0.0 = --bind sur toutes les IPs
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "singlepageapp.asgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "user-management.asgi:application"]

@@ -1,4 +1,3 @@
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -63,11 +62,3 @@ class IsAuthenticatedView(View):
         if is_authenticated:
             current_user = request.user.username
         return JsonResponse({'is_authenticated': is_authenticated, 'current_user': current_user})
-
-class IndexView(View):
-    def get(self, request):
-        return render(request, 'index.html')
-
-class fileNotFoundView(View):
-    def get(self, request):
-        return render(request, '404.html', status=404)
