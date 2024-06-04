@@ -3,7 +3,7 @@ import { navigateTo } from "./contentLoader.js";
 export let csrfToken = '';
 
 async function getCsrfToken() {
-    const response = await fetch('/api/get_csrf_token/');
+    const response = await fetch('/api/user/get_csrf_token/');
     const data = await response.json();
     csrfToken = data.csrfToken;
 }
@@ -15,7 +15,7 @@ export async function handleLogin(event) {
 
     await getCsrfToken();
 
-    const response = await fetch('/api/login/', {
+    const response = await fetch('/api/user/login/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export async function handleSignup(event) {
 
     await getCsrfToken();
 
-    const response = await fetch('/api/signup/', {
+    const response = await fetch('/api/user/signup/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export async function handleSignup(event) {
 export async function handleLogout() {
     await getCsrfToken();
 
-    const response = await fetch('/api/logout/', {
+    const response = await fetch('/api/user/logout/', {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrfToken

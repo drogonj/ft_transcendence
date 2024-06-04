@@ -72,7 +72,7 @@ export function renderSignup() {
 }
 
 export async function renderHome() {
-    const response = await fetch('/api/is_authenticated/');
+    const response = await fetch('/api/user/is_authenticated/');
     const data = await response.json();
     if (data.is_authenticated) {
         app.innerHTML = `
