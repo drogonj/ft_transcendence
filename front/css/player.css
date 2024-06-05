@@ -1,0 +1,9 @@
+.playerBar {
+    height: 1%;
+    width: 1%;
+    position: absolute;
+    top: 50px;
+    padding-bottom:10%;
+    margin-left: 1%;
+    background-color: #f44336;
+}
