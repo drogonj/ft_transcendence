@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -z $1 ]
 then
@@ -12,12 +12,12 @@ else
       if [ $char == '=' ]
       then
         key=${line:0:i}
-        line=${line:i+1:-1}
+        line=${line:i+1}
         txt=$(printf "$txt" | sed "s~{$key}~$line~")
         break
       fi
     done
-  done < containers/.env
+  done < services/.env
   echo "$txt" > "docker-compose_tmp.yml"
   if [ $1 == "up" ]
   then
