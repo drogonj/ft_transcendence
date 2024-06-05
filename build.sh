@@ -13,7 +13,7 @@ else
       then
         key=${line:0:i}
         line=${line:i+1}
-        txt=$(printf "$txt" | sed "s~{$key}~$line~")
+        txt=$(printf "$txt" | sed "s~{$key}~$line~g")
         break
       fi
     done
