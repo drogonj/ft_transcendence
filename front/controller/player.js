@@ -1,5 +1,5 @@
 import {keyDown} from "./listeners.js"
-import {tickRate, mapHeigth, playerHeight, moveSpeed} from "./settings.js";
+import {mapHeigth, playerHeight, moveStep, moveSpeed} from "./settings.js";
 import {movePlayerBarUp, movePlayerBarDown} from "../view/player_view.js";
 
 const leftPlayerBar = document.getElementsByClassName("playerBar")[0];
@@ -16,13 +16,13 @@ function tick() {
 		if (playerCanMoveDown(leftPlayerBar))
 			movePlayerBarDown(leftPlayerBar);
 	}
-	setTimeout(tick, tickRate);
+	setTimeout(tick, moveSpeed);
 }
 
 function playerCanMoveUp(playerBar) {
-	return playerBar.offsetTop - moveSpeed > 0;
+	return playerBar.offsetTop - moveStep > 0;
 }
 
 function playerCanMoveDown(playerBar) {
-	return (playerBar.offsetTop + playerHeight) + moveSpeed <= mapHeigth;
+	return (playerBar.offsetTop + playerHeight) + moveStep < mapHeigth;
 }
