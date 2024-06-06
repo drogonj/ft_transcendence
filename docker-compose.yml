@@ -8,6 +8,8 @@ services:
       - django:/singlepageapp
     networks:
       - network
+    env_file:
+      - .env
 
   front-end:
     container_name: front-end
@@ -23,6 +25,20 @@ services:
     networks:
       - network
     entrypoint:  sh -c "sh /entrypoint.sh"
+
+  postgres:
+    env_file: .env
+    environment:
+      - POSTGRES_USER=${SQL_USER}
+      - POSTGRES_DB=${SQL_DATABASE}
+      - POSTGRES_PASSWORD=${SQL_PASSWORD}
+    #   - "POSTGRES_HOST_AUTH_METHOD=trust"
+    container_name: postgres
+    image: postgres:16.3
+    volumes:
+     - ./services/volumes/postgres:/var/lib/postgresql/data/
+    networks:
+     - network
 
 networks:
   network:
