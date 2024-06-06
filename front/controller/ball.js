@@ -7,6 +7,9 @@ const leftPlayerBar = document.getElementsByClassName("playerBar")[0];
 export default function loadBall() {
     balls.push(document.getElementsByClassName("ball")[0]);
     tick();
+    document.addEventListener("click", e => {
+        console.log(e.x)
+    });
 }
 
 function tick() {
@@ -16,10 +19,13 @@ function tick() {
 }
 
 function isBallInsidePlayer() {
-    console.log("bt: ", balls[0].getBoundingClientRect().top, balls[0].getBoundingClientRect().bottom)
-    console.log("bar: ", leftPlayerBar.getBoundingClientRect().top, leftPlayerBar.getBoundingClientRect().bottom)
+    if (balls[0].getBoundingClientRect().left < 0)
+        return true;
 
-    if (balls[0].getBoundingClientRect().top < leftPlayerBar.getBoundingClientRect().top
-        && balls[0].getBoundingClientRect().bottom > leftPlayerBar.getBoundingClientRect().bottom)
+    if (balls[0].getBoundingClientRect().left > leftPlayerBar.getBoundingClientRect().right)
+        return false;
+
+    if (balls[0].getBoundingClientRect().top < leftPlayerBar.getBoundingClientRect().bottom &&
+        balls[0].getBoundingClientRect().bottom > leftPlayerBar.getBoundingClientRect().top)
         return true;
 }
