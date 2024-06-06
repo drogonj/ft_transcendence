@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
+from django.contrib.auth import get_user_model
 import json
+
+User = get_user_model()
 
 @ensure_csrf_cookie
 def get_csrf_token(request):

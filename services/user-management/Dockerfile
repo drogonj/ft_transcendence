@@ -13,7 +13,7 @@ RUN apt-get update && apt-get upgrade -y \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt && \
-    python manage.py migrate
+RUN pip install -r requirements.txt
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "user-management.asgi:application"]
+RUN chmod +x start.sh
+ENTRYPOINT ["./start.sh"]
