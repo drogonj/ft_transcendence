@@ -10,7 +10,8 @@ RUN apk update && apk upgrade && \
     -keyout /etc/nginx/ssl/inception.key -subj \
 	"/C=FR/ST=GE/L=Mulhouse/O=42/OU=42/CN=localhost/UID=laTeam"
 
+COPY ./entrypoint.sh /
+RUN chmod +x ./entrypoint.sh
+
 COPY ./conf/transcendence.conf /etc/nginx/conf.d/transcendence.conf
 COPY ./static /singlepageapp
-
-CMD ["nginx", "-g", "daemon off;"]

@@ -1,4 +1,14 @@
 services:
+  user-management:
+    container_name: user-management
+    build: ./services/user-management/
+    expose:
+      - "8000:8000"
+    volumes:
+      - django:/singlepageapp
+    networks:
+      - network
+
   front-end:
     container_name: front-end
     build: services/front-end
@@ -8,24 +18,16 @@ services:
     depends_on:
       - user-management
     volumes:
-      - tmp:/singlepageapp
+      - nginx:/singlepageapp
+      - django:/tmp_static/
     networks:
       - network
-
-  user-management:
-    container_name: user-management
-    build: ./services/user-management/
-    expose:
-      - "8000:8000"
-    env_file: services/.env
-    volumes:
-      - tmp:/singlepageapp
-    networks:
-      - network
+    entrypoint:  sh -c "sh /entrypoint.sh"
 
 networks:
   network:
     driver: bridge
 
 volumes:
-  tmp:
+  nginx:
+  django:
