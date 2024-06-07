@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
-while [ ! -d "/tmp_static" ]
+while [ ! -d "/tmp_static/admin" ]
 do
+  echo waiting for django-statics...
   sleep 1
 done
 
 cp -r /tmp_static/* /singlepageapp
-rm -rf /tmp_static
 
 nginx -g 'daemon off;'

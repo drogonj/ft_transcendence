@@ -33,21 +33,17 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
 
   postgres:
+    container_name: postgres
+    build: ./services/postgres/
+    # volumes:  
+    #   - ./services/volumes/postgres:/var/lib/postgresql/data/
     env_file: .env
     environment:
       - POSTGRES_USER=${SQL_USER}
       - POSTGRES_DB=${SQL_DATABASE}
       - POSTGRES_PASSWORD=${SQL_PASSWORD}
-    #   - "POSTGRES_HOST_AUTH_METHOD=trust"
-    container_name: postgres
-    image: postgres:16.3
     networks:
      - network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "postgres" ]
-      interval: 5s
-      timeout: 3s
-      retries: 10
 
 networks:
   network:
