@@ -1,5 +1,6 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout } from './auth.js';
+import initGame from "../main.js"
 
 export function renderLogin() {
     app.innerHTML = `
@@ -79,9 +80,24 @@ export async function renderHome() {
                         <h1>Home Page</h1>
                         <p>Logged in as ${data.current_user}</p>
                         <button id="logout-button">Logout</button>
+                        <button id="launch-game">Launch game</button>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);
+        document.getElementById('launch-game').addEventListener('click', renderGame);
     } else {
         navigateTo('/login');
     }
+}
+
+function renderGame() {
+    app.innerHTML = `
+                     <div id="main">
+                        <div id="header"> </div>
+                        <div id="map">
+                            <div class="playerPaddle"></div>
+                            <div class="ball"></div>
+                        </div>
+                     </div>
+                `;
+    initGame();
 }

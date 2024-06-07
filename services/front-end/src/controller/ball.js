@@ -1,15 +1,27 @@
 import {moveBall} from "../view/ball_view.js";
 import {ballSpeed} from "./settings.js";
+import {getLeftPlayer} from "./player.js";
 
 const balls = [];
-const leftPlayerBar = document.getElementsByClassName("playerBar")[0];
+
+function Ball() {
+    this.msg = "slt";
+
+    this.greet = function() {
+        console.log(`sa ${this.msg}`)
+    }
+}
+
+Ball.prototype.greet = function () {
+    console.log(`sa ${this.msg}`)
+}
 
 export default function loadBall() {
+    const ba = new Ball();
+    ba.greet();
     balls.push(document.getElementsByClassName("ball")[0]);
+
     tick();
-    document.addEventListener("click", e => {
-        console.log(e.x)
-    });
 }
 
 function tick() {
@@ -21,6 +33,8 @@ function tick() {
 function isBallInsidePlayer() {
     if (balls[0].getBoundingClientRect().left < 0)
         return true;
+
+    let leftPlayerBar = getLeftPlayer();
 
     if (balls[0].getBoundingClientRect().left > leftPlayerBar.getBoundingClientRect().right)
         return false;

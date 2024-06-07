@@ -1,0 +1,145 @@
+
+html {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	font-family: 'Cyber', sans-serif;
+	background: whitesmoke;
+}
+
+@keyframes section-appear {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+section
+{
+	position: absolute;
+	width: 100vw;
+	height: 75vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 2px;
+	flex-wrap: wrap;
+	overflow: hidden;
+	animation: 0.5s ease-out 0s 1 section-appear;
+}
+
+section .auth-box
+{
+	position: absolute;
+	width: 80%;
+	max-width: 400px;
+	background: rgb(40, 40, 40);
+	z-index: 1000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 50px;
+	border-color: red;
+	border-radius: 4px;
+	box-shadow: 0 0 15px #8803fc;
+}
+section .auth-box .content
+{
+	position: relative;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	gap: 40px;
+}
+section .auth-box .content h2
+{
+	font-size: 2em;
+	color: #FAFAFA;
+}
+
+section .auth-box .content .form
+{
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 25px;
+}
+section .auth-box .content .form .inputBox
+{
+	position: relative;
+	width: 100%;
+}
+section .auth-box .content .form .inputBox input
+{
+	position: relative;
+	width: 95%;
+	background: #333;
+	border: none;
+	outline: none;
+	padding: 15px 10px 10px;
+	border-radius: 4px;
+	color: #FAFAFA;
+	font-weight: 500;
+	font-size: 1em;
+	transition: 0.3s;
+}
+.auth-box .content .form .inputBox input:focus,
+.auth-box .content .form .inputBox input:hover,
+.auth-box .content .form .inputBox input:valid {
+	background: #464646;
+}
+
+section .auth-box .content .form .inputBox i
+{
+	position: absolute;
+	left: 0;
+	padding: 15px;
+	font-style: normal;
+	color: #aaa;
+	transition: 0.5s;
+	pointer-events: none;
+	font-size: 1em;
+}
+.auth-box .content .form .inputBox input:focus ~ i,
+.auth-box .content .form .inputBox input:valid ~ i
+{
+	display: none;
+}
+
+.auth-box .content .form .links
+{
+	position: relative;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+}
+.auth-box .content .form .links a
+{
+	padding: 10px 0;
+	color: #fff;
+	text-decoration: none;
+}
+
+.auth-box .content .form .inputBox input[type="submit"]
+{
+	padding: 10px;
+	background: #ececec;
+	color: #343434;
+	font-weight: 600;
+	font-size: 1.35em;
+	letter-spacing: 0.05em;
+	cursor: pointer;
+	transition-duration: 0.5s;
+}
+
+.auth-box .content .form .inputBox input[type="submit"]:hover {
+	background: #8803fc;
+	color: whitesmoke;
+}
+
+

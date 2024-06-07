@@ -7,8 +7,8 @@ services:
     restart: always
     depends_on:
       - user-management
-    volumes:
-      - tmp:/singlepageapp
+    #volumes:
+    #  - tmp:/singlepageapp
     networks:
       - network
 
