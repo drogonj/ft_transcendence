@@ -1,9 +1,17 @@
-let mapHeight;
+let map;
 
 export default function loadMap() {
-	mapHeight = document.getElementById("map").offsetHeight;
+	map = new Map();
+}
+
+function Map() {
+	this.mapHtml = document.getElementById("map");
 }
 
 export function getMapHeight() {
-	return mapHeight;
+	return map.mapHtml.offsetHeight;
+}
+
+export function getMapWidth() {
+	return map.mapHtml.offsetWidth;
 }

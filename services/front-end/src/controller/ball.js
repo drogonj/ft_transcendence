@@ -1,45 +1,76 @@
 import {moveBall} from "../view/ball_view.js";
-import {ballSpeed} from "./settings.js";
+import {ballSpeed, ballStep, maxBallAngle} from "./settings.js";
 import {getLeftPlayer} from "./player.js";
+import {getMapHeight} from "./map.js";
 
 const balls = [];
 
-function Ball() {
-    this.msg = "slt";
-
-    this.greet = function() {
-        console.log(`sa ${this.msg}`)
-    }
-}
-
-Ball.prototype.greet = function () {
-    console.log(`sa ${this.msg}`)
-}
-
 export default function loadBall() {
-    const ba = new Ball();
-    ba.greet();
-    balls.push(document.getElementsByClassName("ball")[0]);
+    balls.push(new Ball(document.getElementsByClassName("ball")[0]));
 
     tick();
 }
 
-function tick() {
-    if (!isBallInsidePlayer())
-        moveBall(balls[0]);
-	setTimeout(tick, ballSpeed);
+function Ball(ballHtml) {
+    this.ballHtml = ballHtml;
+    this.ballVx = 3;
 }
 
-function isBallInsidePlayer() {
-    if (balls[0].getBoundingClientRect().left < 0)
-        return true;
+Ball.prototype.isBallInsidePlayer = function () {
+    let leftPlayerPaddle = getLeftPlayer();
 
-    let leftPlayerBar = getLeftPlayer();
-
-    if (balls[0].getBoundingClientRect().left > leftPlayerBar.getBoundingClientRect().right)
+    if (this.ballHtml.getBoundingClientRect().left > leftPlayerPaddle.paddleHtml.getBoundingClientRect().right)
         return false;
 
-    if (balls[0].getBoundingClientRect().top < leftPlayerBar.getBoundingClientRect().bottom &&
-        balls[0].getBoundingClientRect().bottom > leftPlayerBar.getBoundingClientRect().top)
+    if (this.ballHtml.getBoundingClientRect().top < leftPlayerPaddle.paddleHtml.getBoundingClientRect().bottom &&
+        this.ballHtml.getBoundingClientRect().bottom > leftPlayerPaddle.paddleHtml.getBoundingClientRect().top)
         return true;
+}
+
+Ball.prototype.isBallInsideBorder = function () {
+    const mapHeight = getMapHeight()
+
+    if (this.ballHtml.getBoundingClientRect().bottom >= mapHeight * 90 / 100)
+        return true;
+}
+
+Ball.prototype.calculBallTraj = function(paddle) {
+    const paddleRec = paddle.paddleHtml.getBoundingClientRect();
+    const intersectY = this.ballHtml.getBoundingClientRect().top + (this.ballHtml.getBoundingClientRect().height / 2);
+    const paddleHeight = paddleRec.height;
+    const relativeIntersectY = (intersectY - paddleRec.top) - (paddleHeight / 2);
+
+    const normalizedRelativeIntersectionY = (relativeIntersectY / (paddleHeight / 2));
+    const bounceAngle = normalizedRelativeIntersectionY * maxBallAngle;
+    this.ballVx = ballSpeed * -Math.cos(bounceAngle);
+
+    this.ballVy = ballSpeed * -Math.sin(bounceAngle);
+    console.log(this.ballVx, this.ballVy)
+}
+
+Ball.prototype.calculBallBorderTraj = function(paddle) {
+    const paddleRec = paddle.paddleHtml.getBoundingClientRect();
+    const intersectY = this.ballHtml.getBoundingClientRect().top + (this.ballHtml.getBoundingClientRect().height / 2);
+    const paddleHeight = paddleRec.height;
+    const relativeIntersectY = (intersectY - paddleRec.top) - (paddleHeight / 2);
+
+    const normalizedRelativeIntersectionY = (relativeIntersectY / (paddleHeight / 2));
+    const bounceAngle = normalizedRelativeIntersectionY * maxBallAngle;
+    this.ballVx = ballSpeed * -Math.cos(bounceAngle);
+
+    this.ballVy = ballSpeed * -Math.sin(bounceAngle);
+    console.log(this.ballVx, this.ballVy)
+}
+
+function tick() {
+    balls.forEach((ball) => {
+        if (ball.isBallInsidePlayer())
+            ball.calculBallTraj(getLeftPlayer());
+        else if (ball.isBallInsideBorder()) {
+            console.log("ALERT")
+            ball.calculBallBorderTraj(getLeftPlayer());
+        }
+        moveBall(ball);
+    });
+	setTimeout(tick, ballSpeed);
 }
