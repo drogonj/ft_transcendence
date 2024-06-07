@@ -6,5 +6,6 @@ do
 done
 
 cp -r /tmp_static/* /singlepageapp
+rm -rf /tmp_static
 
 nginx -g 'daemon off;'

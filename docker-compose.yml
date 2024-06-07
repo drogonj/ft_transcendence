@@ -1,16 +1,4 @@
 services:
-  user-management:
-    container_name: user-management
-    build: ./services/user-management/
-    expose:
-      - "8000:8000"
-    volumes:
-      - django:/singlepageapp
-    networks:
-      - network
-    env_file:
-      - .env
-
   front-end:
     container_name: front-end
     build: services/front-end
@@ -24,7 +12,25 @@ services:
       - django:/tmp_static/
     networks:
       - network
-    entrypoint:  sh -c "sh /entrypoint.sh"
+    entrypoint: sh -c "sh /entrypoint.sh"
+
+  user-management:
+    container_name: user-management
+    build: ./services/user-management/
+    expose:
+      - "8000:8000"
+    volumes:
+      - django:/singlepageapp
+    networks:
+      - network
+    depends_on:
+        postgres:
+          condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
 
   postgres:
     env_file: .env
@@ -35,10 +41,13 @@ services:
     #   - "POSTGRES_HOST_AUTH_METHOD=trust"
     container_name: postgres
     image: postgres:16.3
-    volumes:
-     - ./services/volumes/postgres:/var/lib/postgresql/data/
     networks:
      - network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 networks:
   network:

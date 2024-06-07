@@ -78,6 +78,7 @@ export async function renderHome() {
         app.innerHTML = `
                         <h1>Home Page</h1>
                         <p>Logged in as ${data.current_user}</p>
+                        <img src="/api/user/get_avatar/" alt="avatar"/>
                         <button id="logout-button">Logout</button>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);

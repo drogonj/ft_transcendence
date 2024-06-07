@@ -5,6 +5,7 @@ from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
+import mimetypes
 import json
 
 User = get_user_model()
@@ -64,3 +65,16 @@ class IsAuthenticatedView(View):
         if is_authenticated:
             current_user = request.user.username
         return JsonResponse({'is_authenticated': is_authenticated, 'current_user': current_user})
+
+@method_decorator(login_required, name='dispatch')
+class LogoutView(View):
+    def post(self, request):
+        logout(request)
+        return JsonResponse({'success': True, 'message': 'Logout successful'})
+
+@login_required
+def get_profile_picture(request):
+    image = request.user.profil_image
+    content_type = mimetypes.guess_type(request.user.profil_image.name)[0]
+
+    return HttpResponse(image.read(), content_type=content_type)

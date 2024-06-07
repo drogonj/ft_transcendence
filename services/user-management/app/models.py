@@ -1,10 +1,10 @@
 from django.db import models
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.templatetags.static import static
 # Create your models here.
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, username, password=None):
+    def create_user(self, username, password):
         if not username:
             raise ValueError("Users must have an username")
         user = self.model(
@@ -15,7 +15,6 @@ class MyAccountManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, password):
-        print("COUCOU FDP")
         if not username:
             raise ValueError("Users must have an username")
         user = self.model(
@@ -25,14 +24,17 @@ class MyAccountManager(BaseUserManager):
         user.is_admin = True
         user.is_staff = True
         user.is_superuser = True
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
+#TODO: CHANGE UPLOAD LOCATION
 def get_profil_image_filepath(self):
     return f'profile_images/{self.pk}/{"profile_image.jpg"}'
 
 def get_default_profile_image():
-    return "user-management/profile_image.jpg"
+    return static("images/profile_image.jpg")
+
     
 class Account(AbstractBaseUser):
 
@@ -40,14 +42,15 @@ class Account(AbstractBaseUser):
     date_joined     = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
     last_login      = models.DateTimeField(verbose_name="last login", auto_now=True)
     is_admin        = models.BooleanField(default=False)
-    is_active       = models.BooleanField(default=False)
+    is_staff        = models.BooleanField(default=False)
+    is_active       = models.BooleanField(default=True)
     is_superuser    = models.BooleanField(default=False)
-    profil_image    = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, null=True, blank=True, default=get_default_profile_image)
+    profil_image    = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
 
     objects = MyAccountManager()
 
     USERNAME_FIELD   = 'username'
-    REQUIERED_FIELDS = ['username']
+    REQUIRED_FIELDS = []
 
     def __str__(self):
         return self.username

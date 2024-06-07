@@ -21,7 +21,7 @@ section
 {
     position: absolute;
     width: 100vw;
-    height: 75vh;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -35,7 +35,6 @@ section .auth-box
 {
     position: absolute;
     width: 80%;
-    height: 100%;
     max-width: 400px;
     background: rgb(40, 40, 40);
     z-index: 1000;
