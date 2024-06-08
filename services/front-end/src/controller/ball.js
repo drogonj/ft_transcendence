@@ -1,36 +1,42 @@
 import {moveBall} from "../view/ball_view.js";
-import {ballSpeed, ballStep, maxBallAngle} from "./settings.js";
-import {getLeftPlayer} from "./player.js";
-import {getMapHeight} from "./map.js";
+import {ballSpeed, maxBallAngle, tickRate} from "./settings.js";
+import {getAllPaddles} from "./player.js";
+import {getMapHeight, getMapLeft, getMapRight} from "./map.js";
 
 const balls = [];
 
 export default function loadBall() {
     balls.push(new Ball(document.getElementsByClassName("ball")[0]));
-
     tick();
 }
 
 function Ball(ballHtml) {
     this.ballHtml = ballHtml;
-    this.ballVx = 3;
+    this.ballVx = -(ballSpeed / 3);
+    this.ballVy = 0;
 }
 
 Ball.prototype.isBallInsidePlayer = function () {
-    let leftPlayerPaddle = getLeftPlayer();
+    const ballRect = this.ballHtml.getBoundingClientRect();
 
-    if (this.ballHtml.getBoundingClientRect().left > leftPlayerPaddle.paddleHtml.getBoundingClientRect().right)
-        return false;
+    for (const paddle of getAllPaddles()) {
+        const paddleRect = paddle.paddleHtml.getBoundingClientRect();
 
-    if (this.ballHtml.getBoundingClientRect().top < leftPlayerPaddle.paddleHtml.getBoundingClientRect().bottom &&
-        this.ballHtml.getBoundingClientRect().bottom > leftPlayerPaddle.paddleHtml.getBoundingClientRect().top)
-        return true;
+        if (ballRect.right > paddleRect.left && ballRect.left < paddleRect.right
+            && ballRect.top < paddleRect.bottom && ballRect.bottom > paddleRect.top)
+                return paddle;
+    }
 }
 
 Ball.prototype.isBallInsideBorder = function () {
-    const mapHeight = getMapHeight()
+    if (this.ballHtml.getBoundingClientRect().bottom >= getMapHeight() + document.getElementById("header").offsetHeight
+        || this.ballHtml.getBoundingClientRect().top <= document.getElementById("header").offsetHeight)
+        return true;
+}
 
-    if (this.ballHtml.getBoundingClientRect().bottom >= mapHeight * 90 / 100)
+Ball.prototype.isBallInGoal = function () {
+    const ballRect = this.ballHtml.getBoundingClientRect();
+    if (ballRect.right >= getMapRight() || ballRect.left <= getMapLeft())
         return true;
 }
 
@@ -42,35 +48,25 @@ Ball.prototype.calculBallTraj = function(paddle) {
 
     const normalizedRelativeIntersectionY = (relativeIntersectY / (paddleHeight / 2));
     const bounceAngle = normalizedRelativeIntersectionY * maxBallAngle;
-    this.ballVx = ballSpeed * -Math.cos(bounceAngle);
 
+    this.ballVx = ballSpeed * (paddle.paddleDirection * Math.cos(bounceAngle));
     this.ballVy = ballSpeed * -Math.sin(bounceAngle);
-    console.log(this.ballVx, this.ballVy)
 }
 
-Ball.prototype.calculBallBorderTraj = function(paddle) {
-    const paddleRec = paddle.paddleHtml.getBoundingClientRect();
-    const intersectY = this.ballHtml.getBoundingClientRect().top + (this.ballHtml.getBoundingClientRect().height / 2);
-    const paddleHeight = paddleRec.height;
-    const relativeIntersectY = (intersectY - paddleRec.top) - (paddleHeight / 2);
-
-    const normalizedRelativeIntersectionY = (relativeIntersectY / (paddleHeight / 2));
-    const bounceAngle = normalizedRelativeIntersectionY * maxBallAngle;
-    this.ballVx = ballSpeed * -Math.cos(bounceAngle);
-
-    this.ballVy = ballSpeed * -Math.sin(bounceAngle);
-    console.log(this.ballVx, this.ballVy)
+Ball.prototype.calculBallBorderTraj = function() {
+    this.ballVy = -this.ballVy
 }
 
 function tick() {
     balls.forEach((ball) => {
-        if (ball.isBallInsidePlayer())
-            ball.calculBallTraj(getLeftPlayer());
-        else if (ball.isBallInsideBorder()) {
-            console.log("ALERT")
-            ball.calculBallBorderTraj(getLeftPlayer());
-        }
+        const targetPaddle = ball.isBallInsidePlayer()
+        if (targetPaddle)
+            ball.calculBallTraj(targetPaddle);
+        else if (ball.isBallInsideBorder())
+            ball.calculBallBorderTraj();
+        else if (ball.isBallInGoal())
+            return;
         moveBall(ball);
     });
-	setTimeout(tick, ballSpeed);
+	setTimeout(tick, tickRate);
 }

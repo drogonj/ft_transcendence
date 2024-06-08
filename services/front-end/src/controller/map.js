@@ -9,9 +9,17 @@ function Map() {
 }
 
 export function getMapHeight() {
-	return map.mapHtml.offsetHeight;
+	return map.mapHtml.getBoundingClientRect().height;
 }
 
 export function getMapWidth() {
-	return map.mapHtml.offsetWidth;
+	return map.mapHtml.getBoundingClientRect().width;
+}
+
+export function getMapLeft() {
+	return map.mapHtml.getBoundingClientRect().left;
+}
+
+export function getMapRight() {
+	return map.mapHtml.getBoundingClientRect().right;
 }

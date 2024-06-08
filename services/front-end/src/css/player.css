@@ -7,3 +7,11 @@
     margin-left: 1%;
     background-color: #f44336;
 }
+
+#paddleLeft {
+    margin-left: 1%;
+}
+
+#paddleRight {
+    margin-left: 98%;
+}

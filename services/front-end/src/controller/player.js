@@ -6,34 +6,52 @@ import {getMapHeight} from "./map.js";
 const players = [];
 
 export default function loadPlayers() {
-	players.push(new Player(document.getElementsByClassName("playerPaddle")[0]));
-	players.push(new Player (document.getElementsByClassName("playerPaddle")[1]));
+	players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1));
+	players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1));
+
 	tick();
 }
 
-function Player(paddleHtml) {
+function Player(paddleHtml, paddleDirection) {
 	this.paddleHtml = paddleHtml;
+	this.paddleDirection = paddleDirection;
 }
 
-Player.prototype.playerCanMoveUp = function() {
+Player.prototype.paddleCanMoveUp = function() {
 	return this.paddleHtml.offsetTop - moveStep > 0;
 }
 
-Player.prototype.playerCanMoveDown = function() {
+Player.prototype.paddleCanMoveDown = function() {
 		return (this.paddleHtml.offsetTop + this.paddleHtml.offsetHeight) + moveStep < getMapHeight();
 }
 
 function tick() {
+	if (keyDown['w']) {
+		if (getLeftPaddle().paddleCanMoveUp())
+			movePlayerPaddleUp(getLeftPaddle())
+	} else if (keyDown['s']) {
+		if (getLeftPaddle().paddleCanMoveDown())
+			movePlayerPaddleDown(getLeftPaddle());
+	}
+
 	if (keyDown['ArrowUp']) {
-		if (getLeftPlayer().playerCanMoveUp())
-			movePlayerPaddleUp(getLeftPlayer())
+		if (getRightPaddle().paddleCanMoveUp())
+			movePlayerPaddleUp(getRightPaddle())
 	} else if (keyDown['ArrowDown']) {
-		if (getLeftPlayer().playerCanMoveDown())
-			movePlayerPaddleDown(getLeftPlayer());
+		if (getRightPaddle().paddleCanMoveDown())
+			movePlayerPaddleDown(getRightPaddle());
 	}
 	setTimeout(tick, moveSpeed);
 }
 
-export function getLeftPlayer() {
+export function getLeftPaddle() {
 	return players[0];
+}
+
+export function getRightPaddle() {
+	return players[1];
+}
+
+export function getAllPaddles() {
+	return players;
 }
