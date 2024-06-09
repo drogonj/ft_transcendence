@@ -7,3 +7,7 @@ export function movePlayerPaddleUp(playerPaddle) {
 export function movePlayerPaddleDown(playerPaddle) {
 	playerPaddle.paddleHtml.style.top = (playerPaddle.paddleHtml.offsetTop + moveStep) + "px";
 }
+
+export function displayPlayerPoint(scoreHtml, text) {
+	scoreHtml.textContent = text;
+}

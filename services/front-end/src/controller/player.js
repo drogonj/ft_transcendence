@@ -1,19 +1,20 @@
 import {keyDown} from "./listeners.js"
 import {moveStep, moveSpeed} from "./settings.js";
-import {movePlayerPaddleUp, movePlayerPaddleDown} from "../view/player_view.js";
+import {movePlayerPaddleUp, movePlayerPaddleDown, displayPlayerPoint} from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
 
 const players = [];
 
 export default function loadPlayers() {
-	players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1));
-	players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1));
+	players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1, document.getElementById("headerLeft")));
+	players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1, document.getElementById("headerRight")));
 
 	tick();
 }
 
-function Player(paddleHtml, paddleDirection) {
+function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.paddleHtml = paddleHtml;
+	this.paddleHeader = paddleHeader;
 	this.paddleDirection = paddleDirection;
 }
 
@@ -56,6 +57,10 @@ export function getAllPaddles() {
 	return players;
 }
 
-export function playerAddScore(score = 0) {
+export function getLeftPlayerHeader() {
+	return players[0].paddleHeader;
+}
 
+export function getRightPlayerHeader() {
+	return players[1].paddleHeader;
 }

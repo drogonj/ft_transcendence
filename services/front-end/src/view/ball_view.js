@@ -3,3 +3,6 @@ export function moveBall(ball) {
 	ball.ballHtml.style.left = (ball.ballHtml.offsetLeft - ball.ballVx) + "px";
 }
 
+export function removeBall(ball) {
+	ball.ballHtml.remove();
+}

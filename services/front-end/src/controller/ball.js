@@ -1,15 +1,33 @@
-import {moveBall} from "../view/ball_view.js";
-import {ballSpeed, maxBallAngle, tickRate} from "./settings.js";
-import {getAllPaddles} from "./player.js";
-import {addBallToMap, getMapHeight, getMapLeft, getMapRight, isBottomPartOfMap, isTopPartOfMap} from "./map.js";
+import {moveBall, removeBall} from "../view/ball_view.js";
+import {ballSpeed, maxBall, maxBallAngle, tickRate} from "./settings.js";
+import {getAllPaddles, getLeftPaddle, getLeftPlayerHeader, getRightPaddle, getRightPlayerHeader} from "./player.js";
+import {
+    addBallToMap,
+    getMapHeight,
+    getMapLeft,
+    getMapRight,
+    isBottomPartOfMap, isMapContainMaxBall,
+    isTopPartOfMap,
+    markPoint
+} from "./map.js";
+import {getRandomNumberBetweenOne, getRandomNumberWithDecimal} from "./math_utils.js";
 
 const balls = [];
 
 export default function loadBall() {
-    balls.push(new Ball());
-    balls.push(new Ball(-1));
-    balls.push(new Ball(-1, 8));
+    for (let i = 0; i < maxBall; i++) {
+        createNewBall();
+    }
     tick();
+}
+
+function createNewBall() {
+    balls.push(new Ball(getRandomNumberBetweenOne(), getRandomNumberWithDecimal(-8, 8)));
+}
+
+Ball.prototype.deleteBall = function () {
+    balls.splice(balls.indexOf(this), 1);
+    removeBall(this)
 }
 
 function Ball(ballVx = 1, ballVy = 0) {
@@ -20,7 +38,7 @@ function Ball(ballVx = 1, ballVy = 0) {
     addBallToMap(this.ballHtml)
 }
 
-Ball.prototype.isBallInsidePlayer = function () {
+Ball.prototype.triggerBallInsidePlayer = function () {
     const ballRect = this.ballHtml.getBoundingClientRect();
 
     for (const paddle of getAllPaddles()) {
@@ -28,22 +46,24 @@ Ball.prototype.isBallInsidePlayer = function () {
 
         if (ballRect.right > paddleRect.left && ballRect.left < paddleRect.right
             && ballRect.top < paddleRect.bottom && ballRect.bottom > paddleRect.top)
-                return paddle;
+                this.calculBallTraj(paddle);
     }
 }
 
-Ball.prototype.isBallInsideBorder = function () {
+Ball.prototype.triggerBallInsideBorder = function () {
     const ballRect = this.ballHtml.getBoundingClientRect();
 
     if (ballRect.bottom >= getMapHeight() + document.getElementById("header").offsetHeight
         || ballRect.top <= document.getElementById("header").offsetHeight)
-        return true;
+        this.calculBallBorderTraj()
 }
 
-Ball.prototype.isBallInGoal = function () {
+Ball.prototype.triggerBallInGoal = function () {
     const ballRect = this.ballHtml.getBoundingClientRect();
-    if (ballRect.right >= getMapRight() || ballRect.left <= getMapLeft())
-        return true;
+    if (ballRect.right >= getMapRight())
+        markPoint(this, getRightPlayerHeader());
+    else if (ballRect.left <= getMapLeft())
+        markPoint(this, getLeftPlayerHeader());
 }
 
 Ball.prototype.calculBallTraj = function(paddle) {
@@ -71,15 +91,17 @@ Ball.prototype.calculBallBorderTraj = function() {
 
 function tick() {
     balls.forEach((ball) => {
-        const targetPaddle = ball.isBallInsidePlayer()
-        if (targetPaddle)
-            ball.calculBallTraj(targetPaddle);
-        else if (ball.isBallInsideBorder()) {
-            ball.calculBallBorderTraj();
-        }
-        else if (ball.isBallInGoal())
-            return;
+        //todo dont do all trigger
+        ball.triggerBallInsidePlayer();
+        ball.triggerBallInsideBorder();
+        ball.triggerBallInGoal()
         moveBall(ball);
     });
+    if (!isMapContainMaxBall())
+        createNewBall();
 	setTimeout(tick, tickRate);
+}
+
+export function getBallNumber() {
+    return balls.length;
 }
