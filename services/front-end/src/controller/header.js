@@ -1,14 +1,11 @@
-import {moveBall} from "../view/ball_view.js";
-import {tickRate} from "./settings.js";
+import {maxTime} from "./settings.js";
 import {timerDisplay} from "../view/header_view.js";
 
 let seconds = 0;
 let minutes;
 
-const timeHtml = document.getElementById("headerTimer")
-
 export function loadHeader() {
-	minutes = 10;
+	minutes = maxTime;
 	timerRun();
 }
 

@@ -1,7 +1,7 @@
 .ball {
     height: 25px;
     width: 25px;
-    background-color: var(--secondary);
+    background-color: var(--bg-secondary);
     border-radius: 50%;
     position: absolute;
     left: 50%;

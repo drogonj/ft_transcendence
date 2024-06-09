@@ -1,13 +1,20 @@
 :root {
-    --primary: #1A2130;
-    --secondary: #DAE1E7;
-    --bg-primary: #DAE1E7;
-    --bg-secondary: #1A2130;
+    --primary: #DAE1E7;
+    --secondary: #83B4FF;
+    --bg-primary: #1A2130;
+    --bg-secondary: #DAE1E7;
+    --bg-three: #5A72A0;
 }
 
 body {
     margin:0;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
+    -webkit-user-select: none;
+    user-select: none; /* Disable text selection */
+    -webkit-user-drag: none; /* Disable dragging in WebKit browsers */
+    -moz-user-select: none; /* Disable text selection in Firefox */
+    -ms-user-select: none; /* Disable text selection in Internet Explorer/Edge */
+    -webkit-touch-callout: none; /* Disable the callout that appears when long-pressing a link */
 }
 
 #main {

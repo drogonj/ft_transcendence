@@ -9,9 +9,38 @@
     <link rel="stylesheet" href="src/css/map.css" type="text/css" />
     <link rel="stylesheet" href="src/css/player.css" type="text/css" />
     <link rel="stylesheet" href="src/css/ball.css" type="text/css" />
+    <link rel="stylesheet" href="src/css/menu.css" type="text/css" />
 </head>
-<body>
-<div id="main">
+<body draggable="false">
+<div id="menuStart" class="menu">
+    <h1>Game settings</h1>
+
+    <output class="menuItem">Paddle Move Speed</output>
+    <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="10">
+
+    <output class="menuItem">Ball Move Speed</output>
+    <input id="inputBallSpeed" class="menuItem slider" type="range" min="3" max="25" value="20">
+
+    <output class="menuItem">Number of ball</output>
+    <input id="inputNumberBall" class="menuItem slider" type="range" min="1" max="20" value="1">
+
+    <output class="menuItem">Bounce max Angle</output>
+    <input id="inputBounceMaxAngle" class="menuItem slider" type="range" min="20" max="75" value="40">
+
+    <output class="menuItem">Max game time</output>
+    <input id="inputMaxGameTime" class="menuItem slider" type="range" min="1" max="15" value="5">
+
+    <output class="menuItem">Enable sounds</output>
+
+    <label class="container menuItem">
+        <input id="inputEnableSounds" type="checkbox" />
+        <span class="checkmark"></span>
+    </label>
+
+    <button id="buttonPlay" class="menuItem button">Play</button>
+</div>
+
+<div id="main" style="display: none">
     <div id="header">
         <div id="headerLeft">
             <p class="scorePlayer">0</p>

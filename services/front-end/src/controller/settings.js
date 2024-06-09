@@ -1,7 +1,18 @@
 export const tickRate = 10;
-export const moveSpeed = 10;
+export let moveSpeed;
 export const moveStep = 10;
-export const ballSpeed = 20;
-export const maxBallAngle = 40 * Math.PI / 180;
-export const maxTime = 10
-export const maxBall = 2;
+export let ballSpeed;
+export let maxBallAngle;
+export let maxTime;
+export let maxBall;
+
+export default function loadSettings(inputsHtml) {
+	moveSpeed = inputsHtml[0].value;
+	ballSpeed = inputsHtml[1].value;
+	maxBall = inputsHtml[2].value;
+	maxBallAngle = inputsHtml[3].value * Math.PI / 180
+	maxTime = inputsHtml[4].value;
+	document.getElementById("menuStart").remove();
+	document.getElementById("main").style.display = "block"
+	document.body.style.cursor = "none";
+}

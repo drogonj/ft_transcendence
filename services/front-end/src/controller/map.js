@@ -48,5 +48,5 @@ export function markPoint(ball, header) {
 }
 
 export function isMapContainMaxBall() {
-	return maxBall === getBallNumber();
+	return maxBall <= getBallNumber();
 }
