@@ -55,3 +55,7 @@ export function getRightPaddle() {
 export function getAllPaddles() {
 	return players;
 }
+
+export function playerAddScore(score = 0) {
+
+}

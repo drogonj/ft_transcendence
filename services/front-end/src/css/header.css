@@ -1,5 +1,79 @@
 #header {
-    background-color: #ffcc00;
-    width: 100%;
-    height: 10%;
+    background-color: var(--primary);
+    width: 98%;
+    height: 8%;
+    border: 2vh solid var(--secondary);
+    border-bottom-width: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#header {
+    color: var(--bg-primary); /* Replace with your desired color code */
+}
+
+#headerMiddle {
+    font-size: 45px;
+}
+
+#headerLeft, #headerRight {
+    font-size: 20px;
+    margin: 5px;
+    flex: 0 0 500px; /* Fixed width for left and right blocks */
+    display: flex;
+}
+
+#headerRight {
+    justify-content: right;
+}
+
+#header p {
+    margin: 5px;
+}
+
+#headerLeft {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%; /* Ensure it takes the full height of the parent */
+}
+
+.scorePlayerAndName {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; /* Space between player info and spell container */
+}
+
+.scorePlayer {
+    font-size: 30px;
+    margin-right: 10px; /* Space between score and player name */
+}
+
+.playerElo {
+    font-size: 15px;
+}
+
+#spellContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.spell {
+    background-color: #ddd; /* Example background color */
+    padding: 5px;
+    margin: 1px; /* Space between each spell square */
+    text-align: center;
+    width: 32px; /* Fixed width for each spell */
+    height: 32px; /* Fixed height for each spell */
+}
+
+.spell:last-child {
+    margin-right: 0; /* Remove the margin on the last item */
+}
+
+/* Optional: Add styles for playerName to adjust spacing and alignment */
+.playerName {
+    margin: 0; /* Remove default margin */
 }

@@ -1,19 +1,23 @@
 import {moveBall} from "../view/ball_view.js";
 import {ballSpeed, maxBallAngle, tickRate} from "./settings.js";
 import {getAllPaddles} from "./player.js";
-import {getMapHeight, getMapLeft, getMapRight} from "./map.js";
+import {addBallToMap, getMapHeight, getMapLeft, getMapRight, isBottomPartOfMap, isTopPartOfMap} from "./map.js";
 
 const balls = [];
 
 export default function loadBall() {
-    balls.push(new Ball(document.getElementsByClassName("ball")[0]));
+    balls.push(new Ball());
+    balls.push(new Ball(-1));
+    balls.push(new Ball(-1, 8));
     tick();
 }
 
-function Ball(ballHtml) {
-    this.ballHtml = ballHtml;
-    this.ballVx = -(ballSpeed / 3);
-    this.ballVy = 0;
+function Ball(ballVx = 1, ballVy = 0) {
+    this.ballHtml = document.createElement('div');
+    this.ballHtml.classList.add("ball");
+    this.ballVx = ballVx * (ballSpeed / 3);
+    this.ballVy = ballVy;
+    addBallToMap(this.ballHtml)
 }
 
 Ball.prototype.isBallInsidePlayer = function () {
@@ -29,8 +33,10 @@ Ball.prototype.isBallInsidePlayer = function () {
 }
 
 Ball.prototype.isBallInsideBorder = function () {
-    if (this.ballHtml.getBoundingClientRect().bottom >= getMapHeight() + document.getElementById("header").offsetHeight
-        || this.ballHtml.getBoundingClientRect().top <= document.getElementById("header").offsetHeight)
+    const ballRect = this.ballHtml.getBoundingClientRect();
+
+    if (ballRect.bottom >= getMapHeight() + document.getElementById("header").offsetHeight
+        || ballRect.top <= document.getElementById("header").offsetHeight)
         return true;
 }
 
@@ -54,6 +60,12 @@ Ball.prototype.calculBallTraj = function(paddle) {
 }
 
 Ball.prototype.calculBallBorderTraj = function() {
+    if (isBottomPartOfMap(this.ballHtml.getBoundingClientRect().y) && this.ballVy > 0)
+        return;
+
+    if (isTopPartOfMap(this.ballHtml.getBoundingClientRect().y) && this.ballVy < 0)
+        return;
+
     this.ballVy = -this.ballVy
 }
 
@@ -62,8 +74,9 @@ function tick() {
         const targetPaddle = ball.isBallInsidePlayer()
         if (targetPaddle)
             ball.calculBallTraj(targetPaddle);
-        else if (ball.isBallInsideBorder())
+        else if (ball.isBallInsideBorder()) {
             ball.calculBallBorderTraj();
+        }
         else if (ball.isBallInGoal())
             return;
         moveBall(ball);

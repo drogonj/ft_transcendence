@@ -1,9 +1,16 @@
+:root {
+    --primary: #1A2130;
+    --secondary: #DAE1E7;
+    --bg-primary: #DAE1E7;
+    --bg-secondary: #1A2130;
+}
+
 body {
     margin:0;
+    background-color: var(--bg-secondary);
 }
 
 #main {
-    background-color: crimson;
     height: 98vh;
     width: 95vw;
     display: block;

@@ -12,11 +12,34 @@
 </head>
 <body>
 <div id="main">
-    <div id="header"></div>
-    <div id="map">
+    <div id="header">
+        <div id="headerLeft">
+            <div class="scorePlayerAndName">
+                <p class="scorePlayer">0</p>
+                <p class="playerName">Player Left</p>
+                <p class="playerElo">(4987)</p>
+            </div>
+            <div id="spellContainer">
+                <div class="spell">a</div>
+                <div class="spell">b</div>
+                <div class="spell">c</div>
+                <div class="spell">d</div>
+            </div>
+        </div>
+        <div id="headerMiddle">
+            <h1 id="headerTimer">10</h1>
+        </div>
+        <div id="headerRight">
+            <p>Player Right</p>
+            <p class="scorePlayer">0</p>
+            <div>
+
+            </div>
+        </div>
+    </div>
+    <div id="map" class="centerLine">
         <div id="paddleLeft" class="playerPaddle"></div>
         <div id="paddleRight" class="playerPaddle"></div>
-        <div class="ball"></div>
     </div>
 </div>
 <script type="module" src="src/main.js"></script>

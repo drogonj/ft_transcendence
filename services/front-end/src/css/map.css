@@ -1,6 +1,19 @@
 #map {
-    background-color: blueviolet;
-    height: 90%;
-    width: 100%;
+    background-color: var(--primary);
+    height: 87%;
+    width: 98%;
     position: relative;
+    border: solid 2vh var(--secondary);
+    border-top: solid 5px var(--secondary);
+}
+
+.centerLine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    border-left: 2px dotted var(--secondary);
+    transform: translateX(-50%);
 }
