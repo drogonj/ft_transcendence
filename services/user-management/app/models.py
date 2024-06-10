@@ -30,6 +30,7 @@ def get_default_profile_image():
 class Account(AbstractBaseUser):
 
     email           = models.EmailField(max_length=60, unique=True)
+    intra_id        = models.IntegerField(default=0)
     username        = models.CharField(max_length=30, unique=True)
     date_joined     = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
     last_login      = models.DateTimeField(verbose_name="last login", auto_now=True)
@@ -47,7 +48,7 @@ class Account(AbstractBaseUser):
 
     def __str__(self):
         return self.username
-    
+
     def get_profile_image_filename(self):
         return str(self.profil_image)[str(self.profil_image).index(f'profile_images/{self.pk}/'):]
 
