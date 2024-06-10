@@ -1,5 +1,5 @@
 import { navigateTo, app } from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleResetPassword, handleResetPasswordLink, handleUserUpdate } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate } from './auth.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -76,27 +76,27 @@ export function renderSignup() {
     });
 }
 
-export function renderResetPassword() {
-    app.innerHTML = `
-        <section>
-            <div class="auth-box">
-                <div class="content">
-                    <h2>Reset Password</h2>
-                    <form id="reset-password-form" class="form">
-                        <div class="inputBox">
-                            <input type="email" id="email" name="email" required>
-                            <i>Email</i>
-                        </div>
-                        <div class="inputBox">
-                            <input type="submit" value="Reset Password">
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </section>
-    `;
-    document.getElementById('reset-password-form').addEventListener('submit', handleResetPassword);
-}
+// export function renderResetPassword() {
+//     app.innerHTML = `
+//         <section>
+//             <div class="auth-box">
+//                 <div class="content">
+//                     <h2>Reset Password</h2>
+//                     <form id="reset-password-form" class="form">
+//                         <div class="inputBox">
+//                             <input type="email" id="email" name="email" required>
+//                             <i>Email</i>
+//                         </div>
+//                         <div class="inputBox">
+//                             <input type="submit" value="Reset Password">
+//                         </div>
+//                     </form>
+//                 </div>
+//             </div>
+//         </section>
+//     `;
+//     document.getElementById('reset-password-form').addEventListener('submit', handleResetPassword);
+// }
 
 
 export async function renderHome() {
@@ -108,10 +108,13 @@ export async function renderHome() {
                         <p>Logged in as ${data.current_user}</p>
                         <img src="/api/user/get_avatar/" alt="avatar"/>
                         <button id="logout-button">Logout</button>
-                        <a href="#" id="reset-password-link">Reset Password</a>
+                        <a href="#" id="update-user-info">User update info</a>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);
-        document.getElementById('reset-password-link').addEventListener('click', handleResetPasswordLink);
+        document.getElementById('update-user-info').addEventListener('click', (event) => {
+            event.preventDefault();
+            navigateTo('/update/');
+        });
     } else {
         navigateTo('/login');
     }

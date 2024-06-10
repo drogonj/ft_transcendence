@@ -77,38 +77,40 @@ export async function handleLogout() {
     }
 }
 
-export async function handleResetPasswordLink(event) {
-    event.preventDefault();
-    navigateTo('/reset-password');
-}
+// export async function handleResetPasswordLink(event) {
+//     event.preventDefault();
+//     navigateTo('/reset-password');
+// }
 
-export async function handleResetPassword(event) {
-    event.preventDefault();
-    const email = document.getElementById('email').value;
+// export async function handleResetPassword(event) {
+//     event.preventDefault();
+//     const email = document.getElementById('email').value;
 
-    await getCsrfToken();
+//     await getCsrfToken();
 
-    const response = await fetch('/api/reset-password/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        },
-        body: JSON.stringify({ email: email })
-    });
-    const data = await response.json();
-    if (data.success) {
-        alert('Un email de réinitialisation de mot de passe a été envoyé à votre adresse email.');
-    } else {
-        alert('Échec de la réinitialisation de mot de passe : ' + data.message);
-    }
-}
+//     const response = await fetch('/api/reset-password/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': csrfToken
+//         },
+//         body: JSON.stringify({ email: email })
+//     });
+//     const data = await response.json();
+//     if (data.success) {
+//         alert('Un email de réinitialisation de mot de passe a été envoyé à votre adresse email.');
+//     } else {
+//         alert('Échec de la réinitialisation de mot de passe : ' + data.message);
+//     }
+// }
 
 export async function handleUserUpdate(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
+
     await getCsrfToken();
+
     const response = await fetch('/api/user/update/', {
         method: 'POST',
         headers: {
@@ -117,6 +119,7 @@ export async function handleUserUpdate(event) {
         body: formData
     });
     const data = await response.json();
+
     if (data.success) {
         renderUserProfile();
     } else {

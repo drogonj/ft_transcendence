@@ -1,6 +1,6 @@
 
 from django.urls import path, re_path
-from .views import LoginView, SignupView, LogoutView, IsAuthenticatedView, get_csrf_token, get_profile_picture, ResetPasswordView, UserUpdateView
+from .views import LoginView, SignupView, LogoutView, IsAuthenticatedView, get_csrf_token, get_profile_picture, UserUpdateView
 from django.conf.urls.static import static
 from django.conf import settings
 from . import views
@@ -8,7 +8,7 @@ from .views import LoginView, SignupView, LogoutView, IsAuthenticatedView, get_c
 
 urlpatterns = [
     path('api/user/login/', LoginView.as_view(), name='login'), 
-    path('api/user/reset-password/', ResetPasswordView.as_view(), name='reset_password'),
+    # path('api/user/reset-password/', ResetPasswordView.as_view(), name='reset_password'),
     path('api/user/update/', UserUpdateView.as_view(), name='update_user_info'),
     path('api/user/logout/', LogoutView.as_view(), name='logout'),
     path('api/user/signup/', SignupView.as_view(), name='signup'),

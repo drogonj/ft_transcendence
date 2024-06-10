@@ -1,4 +1,4 @@
-import { renderLogin, renderHome, renderSignup, renderResetPassword, renderUserUpdateForm } from './render.js';
+import { renderLogin, renderHome, renderSignup, renderUserUpdateForm } from './render.js';
 
 export const app = document.getElementById('app');
 
@@ -23,8 +23,6 @@ function updateContent(route) {
         renderHome()
     } else if (route === '/update/' || route === '/update') {
         renderUserUpdateForm();
-    } else if (route === '/reset_password' || route === '/reset_password/') {
-        renderResetPassword();
     } else {
         navigateTo('/')
     }

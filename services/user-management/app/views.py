@@ -54,7 +54,7 @@ class SignupView(View):
             if User.objects.filter(username=username).exists():
                 return JsonResponse({'error': 'Username already exists.'}, status=400)
 
-            user = User.objects.create_user(intra_id=0, username=username, password=password)
+            user = User.objects.create_user(intra_id=0, username=username, email=email, password=password)
             user.save()
 
             return JsonResponse({'message': 'Signup successful.'})
@@ -146,20 +146,19 @@ def oauth_callback(request):
 #TODO
 # Erreur si le user dit non a l'autorisation de l'intra
 
-    return HttpResponse(image.read(), content_type=content_type)
+# class ResetPasswordView(FormView):
+#     form_class = PasswordResetForm
+#     success_url = reverse_lazy('password_reset_done')
 
-class ResetPasswordView(FormView):
-    form_class = PasswordResetForm
-    success_url = reverse_lazy('password_reset_done')
+#     def form_valid(self, form):
+#         form.save(request=self.request)
+#         return JsonResponse({'success': True})
 
-    def form_valid(self, form):
-        form.save(request=self.request)
-        return JsonResponse({'success': True})
+#     def form_invalid(self, form):
+#         errors = form.errors.get_json_data()
+#         return JsonResponse({'success': False, 'errors': errors})
 
-    def form_invalid(self, form):
-        errors = form.errors.get_json_data()
-        return JsonResponse({'success': False, 'errors': errors})
-    
+@login_required
 def get_user_info(request):
     user = request.user
     profil_image_url = request.build_absolute_uri(user.profil_image.url)
@@ -168,13 +167,8 @@ def get_user_info(request):
         'username': user.username,
         'email': user.email,
         'profil_image': profil_image_url,
-        # Ajoutez d'autres champs d'utilisateur si nécessaire
     }
     return JsonResponse(data)
-
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import FormView
-from django.http import JsonResponse
 
 @method_decorator(login_required, name='dispatch')
 class UserUpdateView(LoginRequiredMixin, FormView):
