@@ -130,11 +130,12 @@ def oauth_callback(request):
             )
             user.save()
             login(request, user)
-            return redirect(f'{os.getenv('WEBSITE_URL')}/change_password/?oauth_registration')
-
+            return redirect(os.getenv('WEBSITE_URL'))
+            #return redirect(f'{os.getenv('WEBSITE_URL')}/change_password/?oauth_registration')
 
     except requests.exceptions.RequestException as e:
         return HttpResponseBadRequest(f'Request failed: {e}')
 
 #TODO
-# Et si on creer un user depuis l'intra et qu'il a deja un mec qui s'appel ngalzand dans la DB ?
+# Erreur si le user dit non a l'autorisation de l'intra
+
