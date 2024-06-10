@@ -1,6 +1,5 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout } from './auth.js';
-import initGame from "../main.js"
 
 export function renderLogin() {
     app.innerHTML = `
@@ -99,5 +98,15 @@ function renderGame() {
                         </div>
                      </div>
                 `;
-    initGame();
+}
+
+function loadPage(page) {
+    fetch(page)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('app').innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading page:', error);
+        });
 }

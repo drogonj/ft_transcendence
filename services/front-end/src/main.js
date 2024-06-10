@@ -6,6 +6,15 @@ import {loadHeader} from "./controller/header.js";
 import loadSettings from "./controller/settings.js";
 
 
+
+//Delete all the coming balls (don't give point)
+//Slow all the comings balls for X seconds
+//Increase the speed of the next hit ball
+//The next hit ball will be clone. The cloned ball disappears when enemy hit him
+//If the player is winning, remove 15% of the max game time, otherwise increase by 15%
+//Steal 10% of the enemy points (minimum 1)
+//Slow the enemy paddle by 50% for X seconds
+
 document.getElementById("buttonPlay").addEventListener("click", function (evemt) {
 	launch()
 });
