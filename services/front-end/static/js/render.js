@@ -17,7 +17,8 @@ export function renderLogin() {
                            <i>Password</i>
                           </div>
                           <div class="links">
-                            <a href="#" id="signup-link">Sign up</a>
+                            <a href="" id="signup-link">Sign up</a>
+                            <a href="/api/user/oauth/redirect/" id="oauth-42-link>">Login with 42</a>
                           </div>
                           <div class="inputBox">
                            <input type="submit" value="Login">

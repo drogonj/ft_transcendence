@@ -3,10 +3,11 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, username, password):
+    def create_user(self, intra_id, username, password):
         if not username:
             raise ValueError("Users must have an username")
         user = self.model(
+            intra_id=intra_id,
             username=username,
         )
         user.set_password(password)
@@ -18,7 +19,6 @@ class MyAccountManager(BaseUserManager):
             raise ValueError("Users must have an username")
         user = self.model(
             username=username,
-            password=password
         )
         user.is_admin = True
         user.is_staff = True
@@ -29,13 +29,14 @@ class MyAccountManager(BaseUserManager):
 
 #TODO Avatar upload
 def get_profil_image_filepath(self):
-    return f'avatars/{self.pk}/{"profile_image.jpg"}'
+    return f'avatars/{self.id}'
 
 def get_default_profile_image():
     return "avatars/default.png"
     
 class Account(AbstractBaseUser):
 
+    intra_id        = models.IntegerField(default=0)
     username        = models.CharField(max_length=30, unique=True)
     date_joined     = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
     last_login      = models.DateTimeField(verbose_name="last login", auto_now=True)
@@ -52,7 +53,7 @@ class Account(AbstractBaseUser):
 
     def __str__(self):
         return self.username
-    
+
     def get_profile_image_filename(self):
         return str(self.profil_image)[str(self.profil_image).index(f'profile_images/{self.pk}/'):]
 
