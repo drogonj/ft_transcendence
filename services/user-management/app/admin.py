@@ -11,5 +11,14 @@ class AccountAdmin(admin.ModelAdmin):
         'is_admin',
         'is_active',
     )
+    search_fields = (
+        'username',
+    )
+
+    readonly_fields = (
+        'id',
+        'date_joined',
+        'last_login',
+    )
 
 admin.site.register(User, AccountAdmin)

@@ -1,41 +1,35 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-# Create your models here.
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, username, password):
+    def create_user(self, email, username, password, **extra_fields):
+        if not email:
+            raise ValueError('Users must have an email address')
         if not username:
-            raise ValueError("Users must have an username")
-        user = self.model(
-            username=username,
-        )
+            raise ValueError("Users must have a username")
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password):
-        if not username:
-            raise ValueError("Users must have an username")
-        user = self.model(
-            username=username,
-            password=password
-        )
-        user.is_admin = True
-        user.is_staff = True
-        user.is_superuser = True
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+    def create_superuser(self, email, username, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_admin', True)
+
+        return self.create_user(email, username, password, **extra_fields)
 
 #TODO Avatar upload
-def get_profil_image_filepath(self):
-    return f'avatars/{self.pk}/{"profile_image.jpg"}'
+def get_profil_image_filepath(self, filename):
+    return f'profil_images/{self.pk}/{"profile_image.jpg"}'
 
 def get_default_profile_image():
     return "avatars/default.png"
     
 class Account(AbstractBaseUser):
 
+    email           = models.EmailField(max_length=60, unique=True)
     username        = models.CharField(max_length=30, unique=True)
     date_joined     = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
     last_login      = models.DateTimeField(verbose_name="last login", auto_now=True)
@@ -47,8 +41,9 @@ class Account(AbstractBaseUser):
 
     objects = MyAccountManager()
 
-    USERNAME_FIELD   = 'username'
-    REQUIRED_FIELDS = []
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
         return self.username

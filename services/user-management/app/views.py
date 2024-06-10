@@ -1,10 +1,15 @@
 from django.shortcuts import render
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.views import PasswordResetView
+from django.urls import reverse_lazy
+from django.views.generic import FormView
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import JsonResponse, HttpResponse
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
 import mimetypes
 import json
 
@@ -33,19 +38,20 @@ class SignupView(View):
         try:
             data = json.loads(request.body)
             username = data.get('username')
+            email    = data.get('email')
             password = data.get('password')
             confirm_password = data.get('confirm_password')
 
             if password != confirm_password:
                 return JsonResponse({'error': 'Passwords does not match.'})
 
-            if not username or not password:
-                return JsonResponse({'error': 'Username and password are required.'}, status=400)
+            if not username or not password or not email:
+                return JsonResponse({'error': 'Username, password or email are required.'}, status=400)
 
             if User.objects.filter(username=username).exists():
                 return JsonResponse({'error': 'Username already exists.'}, status=400)
 
-            user = User.objects.create_user(username=username, password=password)
+            user = User.objects.create_user(username=username, password=password, email=email)
             user.save()
 
             return JsonResponse({'message': 'Signup successful.'})
@@ -78,3 +84,54 @@ def get_profile_picture(request):
     content_type = mimetypes.guess_type(request.user.profil_image.name)[0]
 
     return HttpResponse(image.read(), content_type=content_type)
+
+class ResetPasswordView(FormView):
+    form_class = PasswordResetForm
+    success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        form.save(request=self.request)
+        return JsonResponse({'success': True})
+
+    def form_invalid(self, form):
+        errors = form.errors.get_json_data()
+        return JsonResponse({'success': False, 'errors': errors})
+    
+def get_user_info(request):
+    user = request.user
+    profil_image_url = request.build_absolute_uri(user.profil_image.url)
+
+    data = {
+        'username': user.username,
+        'email': user.email,
+        'profil_image': profil_image_url,
+        # Ajoutez d'autres champs d'utilisateur si nécessaire
+    }
+    return JsonResponse(data)
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import FormView
+from django.http import JsonResponse
+
+@method_decorator(login_required, name='dispatch')
+class UserUpdateView(LoginRequiredMixin, FormView):
+    def post(self, request, *args, **kwargs):
+        try:
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            profile_picture = request.FILES.get('profil_image')
+
+            user = request.user
+            user.username = username
+            user.email = email
+            if profile_picture:
+                user.profil_image = profile_picture
+            user.save()
+
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+

@@ -1,5 +1,5 @@
 import { navigateTo, app } from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleResetPassword, handleResetPasswordLink, handleUserUpdate } from './auth.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -41,6 +41,10 @@ export function renderSignup() {
                         <div class="content">
                          <h2>Sign up</h2>
                          <form id="auth-form" class="form">
+                         <div class="inputBox">
+                           <input type="text" id="email" name="email" required>
+                           <i>Email</i>
+                          </div>
                           <div class="inputBox">
                            <input type="text" id="username" name="username" required>
                            <i>Username</i>
@@ -71,6 +75,29 @@ export function renderSignup() {
     });
 }
 
+export function renderResetPassword() {
+    app.innerHTML = `
+        <section>
+            <div class="auth-box">
+                <div class="content">
+                    <h2>Reset Password</h2>
+                    <form id="reset-password-form" class="form">
+                        <div class="inputBox">
+                            <input type="email" id="email" name="email" required>
+                            <i>Email</i>
+                        </div>
+                        <div class="inputBox">
+                            <input type="submit" value="Reset Password">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    `;
+    document.getElementById('reset-password-form').addEventListener('submit', handleResetPassword);
+}
+
+
 export async function renderHome() {
     const response = await fetch('/api/user/is_authenticated/');
     const data = await response.json();
@@ -80,9 +107,37 @@ export async function renderHome() {
                         <p>Logged in as ${data.current_user}</p>
                         <img src="/api/user/get_avatar/" alt="avatar"/>
                         <button id="logout-button">Logout</button>
+                        <a href="#" id="reset-password-link">Reset Password</a>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);
+        document.getElementById('reset-password-link').addEventListener('click', handleResetPasswordLink);
     } else {
         navigateTo('/login');
     }
+}
+
+export async function renderUserUpdateForm() {
+    const response = await fetch('/api/user/info/');
+    const userData = await response.json();
+
+    app.innerHTML = `
+        <h2>Update User Information</h2>
+        <form id="user-update-form">
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" value="${userData.username}" required>
+            </div>
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="${userData.email}" required>
+            </div>
+            <div>
+                <label for="profil_image">Profile Picture:</label>
+                <input type="file" id="profil_image" name="profil_image" accept="image/*">
+            </div>
+            <button type="submit">Update</button>
+        </form>
+    `;
+
+    document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
 }
