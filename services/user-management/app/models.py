@@ -1,24 +1,28 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.validators import validate_email, RegexValidator
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+import uuid
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, email, username, password, **extra_fields):
-        if not email:
-            raise ValueError('Users must have an email address')
-        if not username:
-            raise ValueError("Users must have a username")
-        email = self.normalize_email(email)
-        user = self.model(email=email, username=username, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+    def create_user(self, intra_id, email, username, password, **extra_fields):
+        try:
+            account = Account(intra_id=intra_id, email=email, username=username, **extra_fields)
+            account.set_password(password)
+            account.full_clean()
+            account.save()
+            return account
+        except ValidationError as e:
+            print(f'Validation error: {e}')
+            raise e
 
     def create_superuser(self, email, username, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_admin', True)
 
-        return self.create_user(email, username, password, **extra_fields)
+        return self.create_user(0, email, username, password, **extra_fields)
 
 #TODO Avatar upload
 def get_profil_image_filepath(self, filename):
@@ -26,22 +30,28 @@ def get_profil_image_filepath(self, filename):
 
 def get_default_profile_image():
     return "avatars/default.png"
-    
+
 class Account(AbstractBaseUser):
 
-    email           = models.EmailField(max_length=60, unique=True)
-    intra_id        = models.IntegerField(default=0)
-    username        = models.CharField(max_length=30, unique=True)
-    date_joined     = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
-    last_login      = models.DateTimeField(verbose_name="last login", auto_now=True)
-    is_admin        = models.BooleanField(default=False)
-    is_staff        = models.BooleanField(default=False)
-    is_active       = models.BooleanField(default=True)
-    is_superuser    = models.BooleanField(default=False)
-    profil_image    = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
+    #Username validator
+    alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$', 'Only alphanumeric characters are allowed.')
+
+    email               = models.EmailField(max_length=60, unique=True, validators=[validate_email])
+    username            = models.CharField(max_length=30, unique=True, validators=[alphanumeric])
+    date_joined         = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
+    last_login          = models.DateTimeField(verbose_name="last login", auto_now=True)
+    is_admin            = models.BooleanField(default=False)
+    is_staff            = models.BooleanField(default=False)
+    is_active           = models.BooleanField(default=True)
+    is_superuser        = models.BooleanField(default=False)
+    profil_image        = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
+
+    intra_id            = models.IntegerField(default=0)
+    register_complete   = models.BooleanField(default=False)
+    tmp_token           = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    token_creation_date = models.DateTimeField(verbose_name="token_creation_date", default=timezone.now())
 
     objects = MyAccountManager()
-
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
@@ -51,6 +61,11 @@ class Account(AbstractBaseUser):
 
     def get_profile_image_filename(self):
         return str(self.profil_image)[str(self.profil_image).index(f'profile_images/{self.pk}/'):]
+
+    def generate_tmp_token(self):
+        self.tmp_token = uuid.uuid4().hex
+        self.token_creation_date = timezone.now()
+        return self.tmp_token
 
     def has_perm(self, perm, obj=None):
         return self.is_admin

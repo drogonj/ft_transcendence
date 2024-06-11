@@ -127,3 +127,36 @@ export async function handleUserUpdate(event) {
     }
 }
 
+export async function handleConfirmRegistration(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const url = new URL(window.location.href)
+    const params = new URLSearchParams(url.search)
+    const token = params.get('token')
+    if (!token)
+        navigateTo('/')
+    const signupData = {
+        token: token,
+        username: formData.get('username'),
+        password: formData.get('password'),
+        confirm_password: formData.get('confirm_password')
+    };
+
+    await getCsrfToken();
+
+    const response = await fetch('/api/user/oauth/confirm_registration/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(signupData)
+    });
+    const data = await response.json();
+    if (data.message) {
+        navigateTo('/login');
+    } else {
+        alert(data.error);
+    }
+}

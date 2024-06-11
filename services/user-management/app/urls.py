@@ -4,7 +4,7 @@ from .views import LoginView, SignupView, LogoutView, IsAuthenticatedView, get_c
 from django.conf.urls.static import static
 from django.conf import settings
 from . import views
-from .views import LoginView, SignupView, LogoutView, IsAuthenticatedView, get_csrf_token, get_profile_picture, oauth_redirect, oauth_callback
+from .views import LoginView, SignupView, LogoutView, IsAuthenticatedView, get_csrf_token, get_profile_picture, oauth_redirect, oauth_callback, oauth_confirm_registration
 
 urlpatterns = [
     path('api/user/login/', LoginView.as_view(), name='login'), 
@@ -18,4 +18,5 @@ urlpatterns = [
     path('api/user/get_avatar/', get_profile_picture, name='get_profile_picture'),
     path('api/user/oauth/redirect/', oauth_redirect, name='oauth_redirect'),
     path('api/user/oauth/callback/', oauth_callback, name='oauth_callback'),
+    path('api/user/oauth/confirm_registration/', oauth_confirm_registration, name='oauth_confirm_registration'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

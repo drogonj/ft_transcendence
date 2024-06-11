@@ -7,6 +7,7 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = (
         'intra_id',
         'username',
+        'email',
         'date_joined',
         'last_login',
         'is_admin',

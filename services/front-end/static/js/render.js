@@ -1,5 +1,5 @@
 import { navigateTo, app } from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration} from './auth.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -10,7 +10,7 @@ export function renderLogin() {
                          <form id="auth-form" class="form">
                           <div class="inputBox">
                            <input type="text" id="username" name="username" required>
-                           <i>Username</i>
+                           <i>Username or Email</i>
                           </div>
                           <div class="inputBox">
                            <input type="password" id="password" name="password" required>
@@ -42,21 +42,21 @@ export function renderSignup() {
                         <div class="content">
                          <h2>Sign up</h2>
                          <form id="auth-form" class="form">
-                         <div class="inputBox">
-                           <input type="text" id="email" name="email" required>
-                           <i>Email</i>
-                          </div>
                           <div class="inputBox">
                            <input type="text" id="username" name="username" required>
                            <i>Username</i>
+                          </div>
+                           <div class="inputBox">
+                           <input type="text" id="email" name="email" required>
+                           <i>Email</i>
                           </div>
                           <div class="inputBox">
                            <input type="password" id="password" name="password" required>
                            <i>Password</i>
                           </div>
                            <div class="inputBox" id="confirm-passw-box">
-                               <input type="password" id="confirm_password" name="confirm_password" required>
-                               <i>Confirm password</i>
+                           <input type="password" id="confirm_password" name="confirm_password" required>
+                           <i>Confirm password</i>
                           </div>
                           <div class="links">
                             <a href="#" id="login-link">Login</a>
@@ -144,4 +144,41 @@ export async function renderUserUpdateForm() {
     `;
 
     document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
+}
+
+export async function renderConfirmRegistration() {
+    app.innerHTML = `
+                    <section>
+                       <div class="auth-box">
+                        <div class="content">
+                         <h2>Confirm Registration</h2>
+                         <form id="auth-form" class="form">
+                          <div class="inputBox">
+                           <input type="text" id="username" name="username" required>
+                           <i>Username</i>
+                          </div>
+                          <div class="inputBox">
+                           <input type="password" id="password" name="password" required>
+                           <i>Password</i>
+                          </div>
+                           <div class="inputBox" id="confirm-passw-box">
+                           <input type="password" id="confirm_password" name="confirm_password" required>
+                           <i>Confirm password</i>
+                          </div>
+                          <div class="links">
+                            <a href="" id="login-link">Login</a>
+                          </div>
+                          <div class="inputBox">
+                           <input type="submit" value="Confirm Registration">
+                          </div>
+                         </form>
+                        </div>
+                       </div>
+                      </section>
+                `;
+    document.getElementById('auth-form').addEventListener('submit', handleConfirmRegistration);
+    document.getElementById('login-link').addEventListener('click', function(event) {
+        event.preventDefault();
+        navigateTo('/login');
+    });
 }

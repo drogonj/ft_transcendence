@@ -11,10 +11,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
-import mimetypes
-import requests
-import json
-import os
+from django.utils import timezone
+from datetime import timedelta
+import json, os, secrets, mimetypes, requests
 
 User = get_user_model()
 
@@ -26,9 +25,13 @@ def get_csrf_token(request):
 class LoginView(View):
     def post(self, request):
         data = json.loads(request.body)
-        username = data.get('username')
+        user_auth = data.get('username')
         password = data.get('password')
-        user = authenticate(request, username=username, password=password)
+
+        user = authenticate(request, username=user_auth, password=password)
+
+        if not user.register_complete and user.intra_id != 0:
+            return JsonResponse({'success': False, 'message': 'Registration with 42 not completed'})
         if user is not None:
             login(request, user)
             return JsonResponse({'success': True, 'message': 'Login successful'})
@@ -55,11 +58,12 @@ class SignupView(View):
                 return JsonResponse({'error': 'Username already exists.'}, status=400)
 
             user = User.objects.create_user(intra_id=0, username=username, email=email, password=password)
+
             user.save()
 
             return JsonResponse({'message': 'Signup successful.'})
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON data.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'{e}'}, status=400)
 
 @method_decorator(login_required, name='dispatch')
 class LogoutView(View):
@@ -127,21 +131,43 @@ def oauth_callback(request):
 
         if User.objects.filter(intra_id=user_data.get('id')).exists():
             user = User.objects.get(intra_id=user_data.get('id'))
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(os.getenv('WEBSITE_URL'))
         else:
             user = User.objects.create_user(
                 intra_id=user_data.get('id'),
-                username=user_data.get('login'),
-                password='',
+                username=secrets.token_hex(30 // 2),
+                email=user_data.get('email'),
+                password='none',
             )
+            tmp_token = user.generate_tmp_token()
             user.save()
-            login(request, user)
-            return redirect(os.getenv('WEBSITE_URL'))
+            return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}")
             #return redirect(f'{os.getenv('WEBSITE_URL')}/change_password/?oauth_registration')
 
     except requests.exceptions.RequestException as e:
         return HttpResponseBadRequest(f'Request failed: {e}')
+
+def oauth_confirm_registration(request):
+    if request.method != 'POST':
+        HttpResponseBadRequest("Bad request")
+
+    data = json.loads(request.body)
+
+    token = data.get('token')
+    if not token or token == '':
+        return JsonResponse({'error': 'No token provided'})
+
+    user = User.objects.get(tmp_token=token)
+    if not user or user.register_complete or user.intra_id == 0:
+        return JsonResponse({'error': 'Invalid token'})
+
+    time_diff = timezone.now() - user.token_creation_date
+    if time_diff > timedelta(minutes=5):
+        return JsonResponse({'error': 'Expired token'})
+
+    user.tmp_token = ''
+    return JsonResponse({'message': 'Success'})
 
 #TODO
 # Erreur si le user dit non a l'autorisation de l'intra
