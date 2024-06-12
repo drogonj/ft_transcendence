@@ -31,7 +31,7 @@ export function renderLogin() {
     document.getElementById('auth-form').addEventListener('submit', handleLogin);
     document.getElementById('signup-link').addEventListener('click', function(event) {
         event.preventDefault();
-        navigateTo('/signup');
+        navigateTo('/signup', true);
     });
 }
 
@@ -72,7 +72,7 @@ export function renderSignup() {
     document.getElementById('auth-form').addEventListener('submit', handleSignup);
     document.getElementById('login-link').addEventListener('click', function(event) {
         event.preventDefault();
-        navigateTo('/login');
+        navigateTo('/login', true);
     });
 }
 
@@ -113,10 +113,10 @@ export async function renderHome() {
         document.getElementById('logout-button').addEventListener('click', handleLogout);
         document.getElementById('update-user-info').addEventListener('click', (event) => {
             event.preventDefault();
-            navigateTo('/update/');
+            navigateTo('/update/', true);
         });
     } else {
-        navigateTo('/login');
+        navigateTo('/login', false);
     }
 }
 
@@ -152,6 +152,7 @@ export async function renderConfirmRegistration() {
                        <div class="auth-box">
                         <div class="content">
                          <h2>Confirm Registration</h2>
+                         <p>We ask to create new username & password for your first connection, you will be able to connect via 'Login to 42' button the next times</p>
                          <form id="auth-form" class="form">
                           <div class="inputBox">
                            <input type="text" id="username" name="username" required>
@@ -179,6 +180,6 @@ export async function renderConfirmRegistration() {
     document.getElementById('auth-form').addEventListener('submit', handleConfirmRegistration);
     document.getElementById('login-link').addEventListener('click', function(event) {
         event.preventDefault();
-        navigateTo('/login');
+        navigateTo('/login', true);
     });
 }

@@ -14,6 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from datetime import timedelta
 import json, os, secrets, mimetypes, requests
+from django.contrib.auth.hashers import make_password
 
 User = get_user_model()
 
@@ -30,13 +31,13 @@ class LoginView(View):
 
         user = authenticate(request, username=user_auth, password=password)
 
-        if not user.register_complete and user.intra_id != 0:
-            return JsonResponse({'success': False, 'message': 'Registration with 42 not completed'})
-        if user is not None:
-            login(request, user)
-            return JsonResponse({'success': True, 'message': 'Login successful'})
-        else:
+        if not user:
             return JsonResponse({'success': False, 'message': 'Invalid credentials'}, status=400)
+        elif not user.register_complete and user.intra_id != 0:
+            return JsonResponse({'success': False, 'message': 'Registration with 42 not completed'})
+        else:
+            login(request, user, 'app.authentication_backends.EmailOrUsernameModelBackend')
+            return JsonResponse({'success': True, 'message': 'Login successful'})
 
 @method_decorator(csrf_protect, name='dispatch')
 class SignupView(View):
@@ -60,6 +61,7 @@ class SignupView(View):
             user = User.objects.create_user(intra_id=0, username=username, email=email, password=password)
 
             user.save()
+            login(request, user, 'app.authentication_backends.EmailOrUsernameModelBackend')
 
             return JsonResponse({'message': 'Signup successful.'})
         except Exception as e:
@@ -127,10 +129,13 @@ def oauth_callback(request):
         if response.status_code != 200:
             return HttpResponseBadRequest(f'Failed to retrieve user\'s datas: {response.status_code} {response.text}')
         user_data = response.json()
-        # return HttpResponse(f'Token received:{token_data} User data:{response.json()}')
 
         if User.objects.filter(intra_id=user_data.get('id')).exists():
             user = User.objects.get(intra_id=user_data.get('id'))
+            if not user.register_complete:
+                tmp_token = user.generate_tmp_token()
+                user.save()
+                return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}")
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(os.getenv('WEBSITE_URL'))
         else:
@@ -138,6 +143,7 @@ def oauth_callback(request):
                 intra_id=user_data.get('id'),
                 username=secrets.token_hex(30 // 2),
                 email=user_data.get('email'),
+                profil_image=user_data.get('image', {}).get('link'),
                 password='none',
             )
             tmp_token = user.generate_tmp_token()
@@ -148,6 +154,7 @@ def oauth_callback(request):
     except requests.exceptions.RequestException as e:
         return HttpResponseBadRequest(f'Request failed: {e}')
 
+@csrf_protect
 def oauth_confirm_registration(request):
     if request.method != 'POST':
         HttpResponseBadRequest("Bad request")
@@ -158,15 +165,34 @@ def oauth_confirm_registration(request):
     if not token or token == '':
         return JsonResponse({'error': 'No token provided'})
 
+    if not User.objects.filter(tmp_token=token).exists():
+        return JsonResponse({'error': 'Invalid token'})
+
     user = User.objects.get(tmp_token=token)
-    if not user or user.register_complete or user.intra_id == 0:
+    if user.register_complete or user.intra_id == 0:
         return JsonResponse({'error': 'Invalid token'})
 
     time_diff = timezone.now() - user.token_creation_date
-    if time_diff > timedelta(minutes=5):
-        return JsonResponse({'error': 'Expired token'})
+    if time_diff > timedelta(minutes=2):
+        return JsonResponse({'error': 'Expired token, try Login with 42 again'})
 
+    username = data.get('username')
+    password = data.get('password')
+    confirm_password = data.get('confirm_password')
+
+    if password != confirm_password:
+        return JsonResponse({'error': 'Passwords does not match'})
+
+    if not username or User.objects.filter(username=username).exists():
+        return JsonResponse({'error': 'Username already exists'})
+
+    user.username = username
+    user.password = make_password(password)
     user.tmp_token = ''
+    user.register_complete = True
+    user.save()
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
     return JsonResponse({'message': 'Success'})
 
 #TODO
@@ -190,6 +216,7 @@ def get_user_info(request):
     profil_image_url = request.build_absolute_uri(user.profil_image.url)
 
     data = {
+        'id': user.id,
         'username': user.username,
         'email': user.email,
         'profil_image': profil_image_url,

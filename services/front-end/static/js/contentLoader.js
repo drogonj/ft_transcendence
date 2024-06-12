@@ -2,40 +2,47 @@ import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConf
 
 export const app = document.getElementById('app');
 
-export function navigateTo(route) {
+export function cleanUrl() {
     const currentUrl = new URL(window.location.href);
-    const params = currentUrl.search; // Inclut les paramètres de requête existants
-    const newRoute = route.includes('?') ? route : route + params; // Ajoutez les paramètres de requête à la nouvelle route s'ils ne sont pas déjà présents
-    history.pushState({route: newRoute}, 'SPA Application', newRoute);
-    updateContent(newRoute);
+    const newUrl = currentUrl.origin + currentUrl.pathname; // Conserve uniquement l'origine et le chemin sans les paramètres
+    history.replaceState({ route: newUrl }, 'SPA Application', newUrl);
 }
 
-// Écouter les événements de l'API History
-window.addEventListener('popstate', function (event) {
-    var route = event.state.route;
-    // Mettre à jour le contenu de la page en fonction de la route
-    updateContent(route);
-});
+export function navigateTo(route, pushState) {
+    if (pushState)
+        history.pushState({route: route}, 'SPA Application', route);
+    else
+        history.replaceState({route: route}, 'SPA Application', route);
 
-function updateContent(route) {
+    // const currentUrl = new URL(window.location.href);
+    // const params = currentUrl.search;
+    // const newRoute = route.includes('?') ? route : route + params;
     const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
 
-    if (route.startsWith('/login')) {
+    if (route === '/login' || route === '/login/') {
         renderLogin();
-    } else if (route.startsWith('/signup')) {
+    } else if (route === '/signup' || route === '/signup/') {
         renderSignup();
     } else if (route === '/') {
         renderHome();
-    } else if (route.startsWith('/update')) {
+    } else if (route === '/update' || route === '/update/') {
         renderUserUpdateForm();
     } else if (confirmRegistrationUrlRegex.test(route)) {
         renderConfirmRegistration();
     } else {
-        navigateTo('/');
+        navigateTo('/', false);
     }
 }
 
+// Écouter les événements de l'API History
+window.addEventListener('popstate', function (event) {
+    if (event.state) {
+        var route = event.state.route;
+        navigateTo(route, false);
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('js-error').remove();
-    navigateTo(window.location.pathname + window.location.search);
+    navigateTo(window.location.pathname + window.location.search, true);
 });

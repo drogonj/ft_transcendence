@@ -1,4 +1,4 @@
-import { navigateTo } from "./contentLoader.js";
+import { navigateTo, cleanUrl } from "./contentLoader.js";
 
 export let csrfToken = '';
 
@@ -25,7 +25,7 @@ export async function handleLogin(event) {
     });
     const data = await response.json();
     if (data.success) {
-        navigateTo('/');
+        navigateTo('/', true);
     } else {
         alert('Login failed: ' + data.message);
     }
@@ -54,7 +54,7 @@ export async function handleSignup(event) {
     });
     const data = await response.json();
     if (data.message) {
-        navigateTo('/login');
+        navigateTo('/', true);
     } else {
         alert(data.error);
     }
@@ -71,7 +71,7 @@ export async function handleLogout() {
     });
     const data = await response.json();
     if (data.success) {
-        navigateTo('/login');
+        navigateTo('/login', false);
     } else {
         alert('Logout failed: ' + data.message);
     }
@@ -135,7 +135,7 @@ export async function handleConfirmRegistration(event) {
     const params = new URLSearchParams(url.search)
     const token = params.get('token')
     if (!token)
-        navigateTo('/')
+        navigateTo('/', false)
     const signupData = {
         token: token,
         username: formData.get('username'),
@@ -155,7 +155,8 @@ export async function handleConfirmRegistration(event) {
     });
     const data = await response.json();
     if (data.message) {
-        navigateTo('/login');
+        cleanUrl()
+        navigateTo('/', true);
     } else {
         alert(data.error);
     }
