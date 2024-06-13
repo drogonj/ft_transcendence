@@ -1,6 +1,6 @@
 .ball {
-    height: 25px;
-    width: 25px;
+    height: 2vh;
+    width: 2vh;
     background-color: var(--bg-secondary);
     border-radius: 50%;
     position: absolute;

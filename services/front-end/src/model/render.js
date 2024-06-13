@@ -114,10 +114,11 @@ export async function renderHome() {
                         <a href="#" id="update-user-info">User update info</a>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);
-        document.getElementById('launch-game').addEventListener('click', (event) => {
+        document.getElementById('launch-game').addEventListener('click', getRenderFuncRef("menu-start-settings.html"));
+        /*document.getElementById('launch-game').addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo('/game', true);
-        });
+        });*/
         document.getElementById('update-user-info').addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo('/update/', true);

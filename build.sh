@@ -28,6 +28,10 @@ else
   elif [ $1 == "down" ]
   then
     docker compose -f ./docker-compose.yml down
+  elif [ $1 == "re" ]
+  then
+    docker compose -f ./docker-compose_tmp.yml rm -f -s
+    docker compose -f ./docker-compose_tmp.yml up -d --build
   else
     echo Error: Unknow action
   fi

@@ -1,3 +1,6 @@
+import Page from "./page.js";
+import {handleLogin} from "./auth.js";
+import launch from "../main.js";
 import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConfirmRegistration, renderGame } from './render.js';
 
 export const app = document.getElementById('app');
@@ -42,6 +45,19 @@ window.addEventListener('popstate', function (event) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    loadPages();
     document.getElementById('js-error').remove();
     navigateTo(window.location.pathname + window.location.search, false);
 });
+
+
+async function loadPages() {
+    await new Page("example.html")
+        .withNavigation("signup-link")
+        .withListener("auth-form", "submit", handleLogin)
+        .build();
+
+    await new Page("menu-start-settings.html")
+        .withListener("buttonPlay", "click", launch)
+        .build();
+}
