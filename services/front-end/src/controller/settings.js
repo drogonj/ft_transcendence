@@ -1,3 +1,5 @@
+import {renderPageWithName} from "../model/page.js";
+
 export const tickRate = 10;
 export let moveSpeed;
 export const moveStep = 10;
@@ -14,7 +16,6 @@ export default function loadSettings(inputsHtml) {
 	maxBallAngle = inputsHtml[3].value * Math.PI / 180
 	maxTime = inputsHtml[4].value;
 	respawnIfAllBallsGone = inputsHtml[5].checked;
-	document.getElementById("menuStart").remove();
-	document.getElementById("main").style.display = "block"
+	renderPageWithName("pong-game.html")
 	document.body.style.cursor = "none";
 }
