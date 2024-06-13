@@ -1,6 +1,6 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout } from './auth.js';
-import Page, {getRenderFuncRef} from "./page.js";
+import {getRenderFuncRef} from "./page.js";
 
 export function renderLogin() {
     app.innerHTML = `

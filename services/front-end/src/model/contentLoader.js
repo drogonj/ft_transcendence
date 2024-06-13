@@ -45,4 +45,7 @@ async function loadPages() {
     await new Page("menu-start-settings.html")
         .withListener("buttonPlay", "click", launch)
         .build();
+
+    await new Page("pong-game.html")
+        .build();
 }
