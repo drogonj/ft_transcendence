@@ -18,6 +18,7 @@ import loadSettings from "./controller/settings.js";
 document.getElementById("buttonPlay").addEventListener("click", function (evemt) {
 	launch()
 });
+
 function launch() {
 	loadSettings(document.getElementsByTagName("input"))
 	loadMap();
