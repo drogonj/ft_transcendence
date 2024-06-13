@@ -1,6 +1,7 @@
 import { renderLogin, renderHome, renderSignup } from './render.js';
 import Page from "./page.js";
 import {handleLogin} from "./auth.js";
+import launch from "../main.js";
 
 export const app = document.getElementById('app');
 
@@ -29,14 +30,19 @@ function updateContent(route) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    loadPages();
     document.getElementById('js-error').remove()
     navigateTo(window.location.pathname)
 });
 
 
-/*async function loadPages() {
+async function loadPages() {
     await new Page("example.html")
         .withNavigation("signup-link")
         .withListener("auth-form", "submit", handleLogin)
         .build();
-}*/
+
+    await new Page("menu-start-settings.html")
+        .withListener("buttonPlay", "click", launch)
+        .build();
+}

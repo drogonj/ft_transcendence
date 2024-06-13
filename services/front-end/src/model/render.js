@@ -1,5 +1,6 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout } from './auth.js';
+import Page, {getRenderFuncRef} from "./page.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -82,31 +83,8 @@ export async function renderHome() {
                         <button id="launch-game">Launch game</button>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);
-        document.getElementById('launch-game').addEventListener('click', renderGame);
+        document.getElementById('launch-game').addEventListener('click', getRenderFuncRef("menu-start-settings.html"));
     } else {
         navigateTo('/login');
     }
-}
-
-function renderGame() {
-    app.innerHTML = `
-                     <div id="main">
-                        <div id="header"> </div>
-                        <div id="map">
-                            <div class="playerPaddle"></div>
-                            <div class="ball"></div>
-                        </div>
-                     </div>
-                `;
-}
-
-function loadPage(page) {
-    fetch(page)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('app').innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error loading page:', error);
-        });
 }
