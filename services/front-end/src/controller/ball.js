@@ -61,9 +61,9 @@ Ball.prototype.triggerBallInsideBorder = function () {
 Ball.prototype.triggerBallInGoal = function () {
     const ballRect = this.ballHtml.getBoundingClientRect();
     if (ballRect.right >= getMapRight())
-        markPoint(this, getRightPlayerHeader());
-    else if (ballRect.left <= getMapLeft())
         markPoint(this, getLeftPlayerHeader());
+    else if (ballRect.left <= getMapLeft())
+        markPoint(this, getRightPlayerHeader());
 }
 
 Ball.prototype.calculBallTraj = function(paddle) {
