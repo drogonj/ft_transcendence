@@ -60,3 +60,12 @@ export default class Page {
 		await this.loadPage( htmlFolderPath + this.htmlFileName);
 	}
 }
+
+export function getRenderFuncRef(targetHtmlFile) {
+		const page = getPage(targetHtmlFile);
+		return page.render.bind(page);
+}
+
+export function getPage(targetHtmlFile) {
+		return pages[targetHtmlFile];
+}

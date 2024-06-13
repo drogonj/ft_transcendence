@@ -50,3 +50,7 @@ export function markPoint(ball, header) {
 export function isMapContainMaxBall() {
 	return maxBall <= getBallNumber();
 }
+
+export function isMapContainNoBall() {
+	return getBallNumber() === 0;
+}

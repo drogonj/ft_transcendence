@@ -5,8 +5,6 @@ import loadMap from "./controller/map.js";
 import {loadHeader} from "./controller/header.js";
 import loadSettings from "./controller/settings.js";
 
-
-
 //Delete all the coming balls (don't give point)
 //Slow all the comings balls for X seconds
 //Increase the speed of the next hit ball
@@ -15,11 +13,7 @@ import loadSettings from "./controller/settings.js";
 //Steal 10% of the enemy points (minimum 1)
 //Slow the enemy paddle by 50% for X seconds
 
-document.getElementById("buttonPlay").addEventListener("click", function (evemt) {
-	launch()
-});
-
-function launch() {
+export default function launch() {
 	loadSettings(document.getElementsByTagName("input"))
 	loadMap();
 	loadListeners();

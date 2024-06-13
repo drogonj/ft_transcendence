@@ -5,6 +5,7 @@ export let ballSpeed;
 export let maxBallAngle;
 export let maxTime;
 export let maxBall;
+export let respawnIfAllBallsGone;
 
 export default function loadSettings(inputsHtml) {
 	moveSpeed = inputsHtml[0].value;
@@ -12,6 +13,7 @@ export default function loadSettings(inputsHtml) {
 	maxBall = inputsHtml[2].value;
 	maxBallAngle = inputsHtml[3].value * Math.PI / 180
 	maxTime = inputsHtml[4].value;
+	respawnIfAllBallsGone = inputsHtml[5].checked;
 	document.getElementById("menuStart").remove();
 	document.getElementById("main").style.display = "block"
 	document.body.style.cursor = "none";

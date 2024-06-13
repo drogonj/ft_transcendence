@@ -1,12 +1,12 @@
 import {moveBall, removeBall} from "../view/ball_view.js";
-import {ballSpeed, maxBall, maxBallAngle, tickRate} from "./settings.js";
+import {ballSpeed, maxBall, maxBallAngle, respawnIfAllBallsGone, tickRate} from "./settings.js";
 import {getAllPaddles, getLeftPaddle, getLeftPlayerHeader, getRightPaddle, getRightPlayerHeader} from "./player.js";
 import {
     addBallToMap,
     getMapHeight,
     getMapLeft,
     getMapRight,
-    isBottomPartOfMap, isMapContainMaxBall,
+    isBottomPartOfMap, isMapContainMaxBall, isMapContainNoBall,
     isTopPartOfMap,
     markPoint
 } from "./map.js";
@@ -15,9 +15,8 @@ import {getRandomNumberBetweenOne, getRandomNumberWithDecimal} from "./math_util
 const balls = [];
 
 export default function loadBall() {
-    for (let i = 0; i < maxBall; i++) {
+    while(!isMapContainMaxBall())
         createNewBall();
-    }
     tick();
 }
 
@@ -97,11 +96,22 @@ function tick() {
         ball.triggerBallInGoal()
         moveBall(ball);
     });
-    if (!isMapContainMaxBall())
-        createNewBall();
+    ballsSpawnTrigger();
 	setTimeout(tick, tickRate);
 }
 
 export function getBallNumber() {
     return balls.length;
+}
+
+function ballsSpawnTrigger() {
+    if (isMapContainMaxBall())
+        return;
+
+    if (!respawnIfAllBallsGone)
+        createNewBall();
+
+    if (isMapContainNoBall())
+        while(!isMapContainMaxBall())
+            createNewBall();
 }
