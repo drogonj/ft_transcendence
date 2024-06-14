@@ -2,8 +2,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import validate_email, RegexValidator
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.utils import timezone
+from PIL import Image, UnidentifiedImageError
+import requests
+from io import BytesIO
 import uuid
+import os
 
 class MyAccountManager(BaseUserManager):
     def create_user(self, intra_id, email, username, password, **extra_fields):
@@ -26,7 +31,8 @@ class MyAccountManager(BaseUserManager):
 
 #TODO Avatar upload
 def get_profil_image_filepath(self, filename):
-    return f'profil_images/{self.pk}/{"profile_image.jpg"}'
+    extension = os.path.splitext(filename)[1]
+    return f'profil_images/{self.pk}/profile_image{extension}'
 
 def get_default_profile_image():
     return "avatars/default.png"
@@ -56,6 +62,8 @@ class Account(AbstractBaseUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
+    SUPPORTED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
+
     def __str__(self):
         return self.username
 
@@ -72,3 +80,36 @@ class Account(AbstractBaseUser):
     
     def has_module_perms(self, app_label):
         return True
+
+    def get_intra_pic(self, link):
+        if not link:
+            return False
+        response = requests.get(link)
+        if response.status_code == 200:
+            image = BytesIO(response.content)
+            image_file = File(image, name=f'{self.id}.jpg')
+            self.profil_image.save(f'{self.id}.jpg', image_file)
+            self.save()
+        else:
+            return False
+
+    def change_profile_pic(self, new_image):
+        try:
+            extension = os.path.splitext(new_image.name)[1].lower()
+            if extension not in self.SUPPORTED_IMAGE_EXTENSIONS:
+                raise Exception('Extension not supported')
+
+            try:
+                with Image.open(new_image) as img:
+                    img.verify()
+            except Exception as e:
+                raise Exception('Corrupted file')
+
+            if self.profil_image.path != "avatars/default.png":
+                if os.path.isfile(self.profil_image.path):
+                    os.remove(self.profil_image.path)
+
+            self.profil_image = new_image
+            self.save()
+        except Exception as e:
+            raise e

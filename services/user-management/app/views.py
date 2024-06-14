@@ -130,6 +130,8 @@ def oauth_callback(request):
             return HttpResponseBadRequest(f'Failed to retrieve user\'s datas: {response.status_code} {response.text}')
         user_data = response.json()
 
+
+        #If user already exist
         if User.objects.filter(intra_id=user_data.get('id')).exists():
             user = User.objects.get(intra_id=user_data.get('id'))
             if not user.register_complete:
@@ -138,14 +140,14 @@ def oauth_callback(request):
                 return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}")
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(os.getenv('WEBSITE_URL'))
-        else:
+        else:  # Else register user
             user = User.objects.create_user(
                 intra_id=user_data.get('id'),
                 username=secrets.token_hex(30 // 2),
                 email=user_data.get('email'),
-                profil_image=user_data.get('image', {}).get('link'),
                 password='none',
             )
+            user.get_intra_pic(user_data.get('image', {}).get('versions', {}).get('small'))
             tmp_token = user.generate_tmp_token()
             user.save()
             return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}")
@@ -235,7 +237,7 @@ class UserUpdateView(LoginRequiredMixin, FormView):
             user.username = username
             user.email = email
             if profile_picture:
-                user.profil_image = profile_picture
+                user.change_profile_pic(profile_picture)
             user.save()
 
             return JsonResponse({'success': True})
