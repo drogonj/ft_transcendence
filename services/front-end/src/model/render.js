@@ -1,5 +1,6 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout } from './auth.js';
+import { launch } from 'main.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -90,14 +91,7 @@ export async function renderHome() {
 
 function renderGame() {
     app.innerHTML = `
-                     <div id="main">
-                        <div id="header"> </div>
-                        <div id="map">
-                            <div class="playerPaddle"></div>
-                            <div class="ball"></div>
-                        </div>
-                     </div>
-                `;
+    `;
 }
 
 function loadPage(page) {

@@ -16,10 +16,21 @@ services:
     container_name: user-management
     build: ./services/user-management/
     expose:
-      - "8000:8000"
+      - "8000"
     env_file: services/.env
-    volumes:
-      - tmp:/singlepageapp
+    # volumes:
+    #   - tmp:/singlepageapp
+    networks:
+      - network
+
+  ai:
+    container_name: ai
+    build: services/ai/
+    expose:
+      - "8042"
+    env_file: services/.env
+    # volumes:
+    #   - tmp:/ai
     networks:
       - network
 
