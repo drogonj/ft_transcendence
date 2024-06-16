@@ -6,6 +6,12 @@
     <title>SPA Application</title>
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="src/css/styles.css" type="text/css" />
+    <link rel="stylesheet" href="src/css/header.css" type="text/css" />
+    <link rel="stylesheet" href="src/css/map.css" type="text/css" />
+    <link rel="stylesheet" href="src/css/player.css" type="text/css" />
+    <link rel="stylesheet" href="src/css/ball.css" type="text/css" />
+    <link rel="stylesheet" href="src/css/menu.css" type="text/css" />
     <script>
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -29,6 +35,9 @@
             window.addEventListener('popstate', function(event) {
                 // Récupérer la route depuis l'état de l'historique
                 var route = event.state.route;
+                if (route === '/login') {
+                    navigateTo('/login');
+                }
                 // Mettre à jour le contenu de la page en fonction de la route
                 updateContent(route);
             });
@@ -194,6 +203,7 @@
 
             document.getElementById('js-error').remove()
             navigateTo(window.location.pathname)
+            
         });
     </script>
 </head>

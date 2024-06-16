@@ -25,7 +25,7 @@ export async function handleLogin(event) {
     });
     const data = await response.json();
     if (data.success) {
-        navigateTo('/');
+        navigateTo('/home');
     } else {
         alert('Login failed: ' + data.message);
     }

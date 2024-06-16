@@ -3,9 +3,6 @@ import loadPlayers from "./controller/player.js";
 import loadBall from "./controller/ball.js";
 import loadMap from "./controller/map.js";
 import {loadHeader} from "./controller/header.js";
-import loadSettings from "./controller/settings.js";
-
-
 
 //Delete all the coming balls (don't give point)
 //Slow all the comings balls for X seconds
@@ -15,11 +12,12 @@ import loadSettings from "./controller/settings.js";
 //Steal 10% of the enemy points (minimum 1)
 //Slow the enemy paddle by 50% for X seconds
 
-document.getElementById("buttonPlay").addEventListener("click", function (evemt) {
-	launch()
-});
-function launch() {
-	loadSettings(document.getElementsByTagName("input"))
+// document.getElementById("buttonPlay").addEventListener("click", (event) {
+// 	launch();
+// });
+
+export function launch(inputsHtml) {
+	//loadSettings(document.getElementsByTagName("input"));
 	loadMap();
 	loadListeners();
 	loadPlayers();

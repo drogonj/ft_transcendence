@@ -19,7 +19,7 @@ function updateContent(route) {
         renderLogin()
     } else if (route === '/signup' || route === '/signup/') {
         renderSignup()
-    } else if (route === '/') {
+    } else if (route === '/home') {
         renderHome()
     } else {
         navigateTo('/')
