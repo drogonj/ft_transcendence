@@ -57,7 +57,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'user-management.urls'
 
-TEMPLATES_DIR = os.path.abspath(os.path.join(BASE_DIR, '../singlepageapp'))
+TEMPLATES_DIR = os.path.abspath(os.path.join(BASE_DIR, '../user-management'))
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

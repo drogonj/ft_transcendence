@@ -16,7 +16,7 @@ import {loadHeader} from "../controller/header.js";
 // 	launch();
 // });
 
-export function launch(inputsHtml) {
+export function launch() {
 	loadMap();
 	loadListeners();
 	loadPlayers();

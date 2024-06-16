@@ -12,9 +12,9 @@ RUN apk update && apk upgrade && \
 
 COPY ./conf/transcendence.conf /etc/nginx/conf.d/transcendence.conf
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
-COPY ./static /singlepageapp/static/
-COPY ./src /singlepageapp/src/
-COPY ./assets /singlepageapp/assets/
-COPY ./index.html /singlepageapp
+COPY ./static /user-management/static/
+COPY ./src /user-management/src/
+COPY ./assets /user-management/assets/
+COPY ./index.html /user-management
 
 CMD ["nginx", "-g", "daemon off;"]

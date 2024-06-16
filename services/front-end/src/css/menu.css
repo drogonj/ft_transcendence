@@ -11,8 +11,8 @@
 	padding: 10px;
 	display: flex;
 	flex-direction: column;
-	justify-content: center; /* Horizontally center the items */
-	align-items: center; /* Vertically center the items */
+	justify-content: center;
+	align-items: center;
 	font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	font-size: 14px;
 	font-weight: 500;

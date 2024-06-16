@@ -111,6 +111,13 @@ function renderSettings() {
         <output class="menuItem">Max game time</output>
         <input id="inputMaxGameTime" class="menuItem slider" type="range" min="1" max="15" value="5">
 
+        <output class="menuItem">AI opponent</output>
+
+        <label class="container menuItem">
+            <input id="inputAI" type="checkbox" />
+            <span class="checkmark"></span>
+        </label>
+
         <output class="menuItem">Enable sounds</output>
 
         <label class="container menuItem">
@@ -123,11 +130,11 @@ function renderSettings() {
     `;
     document.getElementById("buttonPlay").addEventListener("click", () => {
         loadSettings(document.getElementsByTagName("input"));
-        renderGame(inputsHtml);
+        renderGame();
     });
 }
 
-function renderGame(inputsHtml) {
+function renderGame() {
     app.innerHTML = `
     <div id="main" style="display: none">
     <div id="header">

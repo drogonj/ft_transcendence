@@ -12,6 +12,4 @@ export default function loadSettings(inputsHtml) {
 	maxBall = inputsHtml[2].value;
 	maxBallAngle = inputsHtml[3].value * Math.PI / 180
 	maxTime = inputsHtml[4].value;
-	document.getElementById("menuStart").remove();
-	//document.body.style.cursor = "none";
 }

@@ -1,5 +1,5 @@
 """
-WSGI config for singlepageapp project.
+WSGI config for user-management project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

@@ -1,5 +1,5 @@
 """
-ASGI config for singlepageapp project.
+ASGI config for user-management project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
