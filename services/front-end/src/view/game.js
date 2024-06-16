@@ -12,10 +12,6 @@ import {loadHeader} from "../controller/header.js";
 //Steal 10% of the enemy points (minimum 1)
 //Slow the enemy paddle by 50% for X seconds
 
-// document.getElementById("buttonPlay").addEventListener("click", (event) {
-// 	launch();
-// });
-
 export function launch() {
 	loadMap();
 	loadListeners();

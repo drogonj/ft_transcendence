@@ -6,7 +6,7 @@ services:
       - "8080:443"
     restart: always
     depends_on:
-      - user-management
+      - ai
     volumes:
       - tmp:/data
     networks:
@@ -23,16 +23,16 @@ services:
     networks:
       - network
 
-  # ai:
-  #   container_name: ai
-  #   build: services/ai/
-  #   expose:
-  #     - "8042"
-  #   env_file: services/.env
-  #   volumes:
-  #     - tmp:/ai
-  #   networks:
-  #     - network
+  ai:
+    container_name: ai
+    build: services/ai/
+    expose:
+      - "8042"
+    env_file: services/.env
+    volumes:
+      - tmp:/ai
+    networks:
+      - network
 
 networks:
   network:
