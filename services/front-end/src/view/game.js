@@ -1,8 +1,8 @@
-import loadListeners from "./controller/listeners.js"
-import loadPlayers from "./controller/player.js";
-import loadBall from "./controller/ball.js";
-import loadMap from "./controller/map.js";
-import {loadHeader} from "./controller/header.js";
+import loadListeners from "../controller/listeners.js"
+import loadPlayers from "../controller/player.js";
+import loadBall from "../controller/ball.js";
+import loadMap from "../controller/map.js";
+import {loadHeader} from "../controller/header.js";
 
 //Delete all the coming balls (don't give point)
 //Slow all the comings balls for X seconds
@@ -17,7 +17,6 @@ import {loadHeader} from "./controller/header.js";
 // });
 
 export function launch(inputsHtml) {
-	//loadSettings(document.getElementsByTagName("input"));
 	loadMap();
 	loadListeners();
 	loadPlayers();

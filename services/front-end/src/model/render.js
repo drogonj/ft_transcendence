@@ -1,7 +1,7 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout } from './auth.js';
 import loadSettings from '../controller/settings.js';
-import { launch } from '../main.js';
+import { launch } from '../view/game.js';
 
 export function renderLogin() {
     app.innerHTML = `

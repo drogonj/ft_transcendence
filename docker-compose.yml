@@ -6,9 +6,9 @@ services:
       - "8080:443"
     restart: always
     depends_on:
-      - user-management
-    #volumes:
-    #  - tmp:/singlepageapp
+      - ai
+    volumes:
+      - tmp:/singlepageapp
     networks:
       - network
 
@@ -18,8 +18,8 @@ services:
     expose:
       - "8000"
     env_file: services/.env
-    # volumes:
-    #   - tmp:/singlepageapp
+    volumes:
+      - tmp:/singlepageapp
     networks:
       - network
 
@@ -29,8 +29,8 @@ services:
     expose:
       - "8042"
     env_file: services/.env
-    # volumes:
-    #   - tmp:/ai
+    volumes:
+      - tmp:/ai
     networks:
       - network
 
