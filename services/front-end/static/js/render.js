@@ -147,39 +147,49 @@ export async function renderUserUpdateForm() {
 }
 
 export async function renderConfirmRegistration() {
-    app.innerHTML = `
-                    <section>
-                       <div class="auth-box">
-                        <div class="content">
-                         <h2>Confirm Registration</h2>
-                         <p>We ask to create new username & password for your first connection, you will be able to connect via 'Login to 42' button the next times</p>
-                         <form id="auth-form" class="form">
-                          <div class="inputBox">
-                           <input type="text" id="username" name="username" required>
-                           <i>Username</i>
-                          </div>
-                          <div class="inputBox">
-                           <input type="password" id="password" name="password" required>
-                           <i>Password</i>
-                          </div>
-                           <div class="inputBox" id="confirm-passw-box">
-                           <input type="password" id="confirm_password" name="confirm_password" required>
-                           <i>Confirm password</i>
-                          </div>
-                          <div class="links">
-                            <a href="" id="login-link">Login</a>
-                          </div>
-                          <div class="inputBox">
-                           <input type="submit" value="Confirm Registration">
-                          </div>
-                         </form>
-                        </div>
-                       </div>
-                      </section>
-                `;
-    document.getElementById('auth-form').addEventListener('submit', handleConfirmRegistration);
-    document.getElementById('login-link').addEventListener('click', function(event) {
-        event.preventDefault();
-        navigateTo('/login', true);
-    });
+    const response = await fetch('/api/user/is_authenticated/');
+    const data = await response.json();
+    if (data.is_authenticated) {
+        navigateTo('/', false)
+    } else {
+        app.innerHTML = `
+                        <section>
+                           <div class="auth-box">
+                            <div class="content">
+                             <h2>Confirm Registration</h2>
+                             <p>We ask to create new username & password for your first connection, you will be able to connect via 'Login to 42' button the next times</p>
+                             <form id="auth-form" class="form">
+                              <div class="inputBox">
+                               <input type="text" id="username" name="username" required>
+                               <i>Username</i>
+                              </div>
+                              <div class="inputBox">
+                               <input type="password" id="password" name="password" required>
+                               <i>Password</i>
+                              </div>
+                               <div class="inputBox" id="confirm-passw-box">
+                               <input type="password" id="confirm_password" name="confirm_password" required>
+                               <i>Confirm password</i>
+                              </div>
+                              <div class="links">
+                                <a href="" id="login-link">Login</a>
+                              </div>
+                              <div class="inputBox">
+                               <input type="submit" value="Confirm Registration">
+                              </div>
+                             </form>
+                            </div>
+                           </div>
+                          </section>
+                    `;
+        const url = new URL(window.location.href)
+        const params = new URLSearchParams(url.search)
+        const username = params.get('username')
+        document.getElementById('username').setAttribute('value', username);
+        document.getElementById('auth-form').addEventListener('submit', handleConfirmRegistration);
+        document.getElementById('login-link').addEventListener('click', function (event) {
+            event.preventDefault();
+            navigateTo('/login', true);
+        });
+    }
 }

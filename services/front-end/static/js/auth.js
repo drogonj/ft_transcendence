@@ -156,7 +156,7 @@ export async function handleConfirmRegistration(event) {
     const data = await response.json();
     if (data.message) {
         cleanUrl()
-        navigateTo('/', true);
+        navigateTo('/', false);
     } else {
         alert(data.error);
     }

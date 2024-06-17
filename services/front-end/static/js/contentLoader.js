@@ -44,5 +44,5 @@ window.addEventListener('popstate', function (event) {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('js-error').remove();
-    navigateTo(window.location.pathname + window.location.search, true);
+    navigateTo(window.location.pathname + window.location.search, false);
 });

@@ -137,7 +137,7 @@ def oauth_callback(request):
             if not user.register_complete:
                 tmp_token = user.generate_tmp_token()
                 user.save()
-                return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}")
+                return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(os.getenv('WEBSITE_URL'))
         else:  # Else register user
@@ -150,7 +150,7 @@ def oauth_callback(request):
             user.get_intra_pic(user_data.get('image', {}).get('versions', {}).get('small'))
             tmp_token = user.generate_tmp_token()
             user.save()
-            return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}")
+            return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
             #return redirect(f'{os.getenv('WEBSITE_URL')}/change_password/?oauth_registration')
 
     except requests.exceptions.RequestException as e:
@@ -159,7 +159,7 @@ def oauth_callback(request):
 @csrf_protect
 def oauth_confirm_registration(request):
     if request.method != 'POST':
-        HttpResponseBadRequest("Bad request")
+        return HttpResponseBadRequest("Bad request")
 
     data = json.loads(request.body)
 
