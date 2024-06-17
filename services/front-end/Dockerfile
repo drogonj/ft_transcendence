@@ -13,8 +13,8 @@ RUN apk update && apk upgrade && \
 COPY ./entrypoint.sh /
 RUN chmod +x ./entrypoint.sh
 
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./conf/transcendence.conf /etc/nginx/conf.d/transcendence.conf
-COPY ./static /singlepageapp/static/
 COPY ./src /singlepageapp/src/
 COPY ./assets /singlepageapp/assets/
-COPY ./index.html /singlepageapp
+COPY ./src/html/* /singlepageapp/

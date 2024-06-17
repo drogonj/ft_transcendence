@@ -25,7 +25,7 @@ export async function handleLogin(event) {
     });
     const data = await response.json();
     if (data.success) {
-        navigateTo('/', true);
+        navigateTo('/home', true);
     } else {
         alert('Login failed: ' + data.message);
     }
@@ -54,7 +54,7 @@ export async function handleSignup(event) {
     });
     const data = await response.json();
     if (data.message) {
-        navigateTo('/', true);
+        navigateTo('/home', true);
     } else {
         alert(data.error);
     }
@@ -135,7 +135,7 @@ export async function handleConfirmRegistration(event) {
     const params = new URLSearchParams(url.search)
     const token = params.get('token')
     if (!token)
-        navigateTo('/', false)
+        navigateTo('/home', false)
     const signupData = {
         token: token,
         username: formData.get('username'),
@@ -156,7 +156,7 @@ export async function handleConfirmRegistration(event) {
     const data = await response.json();
     if (data.message) {
         cleanUrl()
-        navigateTo('/', false);
+        navigateTo('/home', false);
     } else {
         alert(data.error);
     }

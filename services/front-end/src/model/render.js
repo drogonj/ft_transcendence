@@ -106,13 +106,18 @@ export async function renderHome() {
         app.innerHTML = `
                         <h1>Home Page</h1>
                         <p>Logged in as ${data.current_user}</p>
-                        <img src="/api/user/get_avatar/" alt="avatar"/>
+                        <div id="avatar-container">
+                            <img src="/api/user/get_avatar/" alt="avatar" id="avatar"/>
+                        </div>
                         <button id="logout-button">Logout</button>
                         <button id="launch-game">Launch game</button>
                         <a href="#" id="update-user-info">User update info</a>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);
-        document.getElementById('launch-game').addEventListener('click', renderGame);
+        document.getElementById('launch-game').addEventListener('click', (event) => {
+            event.preventDefault();
+            navigateTo('/game', true);
+        });
         document.getElementById('update-user-info').addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo('/update/', true);
@@ -152,7 +157,7 @@ export async function renderConfirmRegistration() {
     const response = await fetch('/api/user/is_authenticated/');
     const data = await response.json();
     if (data.is_authenticated) {
-        navigateTo('/', false)
+        navigateTo('/home', false)
     } else {
         app.innerHTML = `
                         <section>
@@ -196,7 +201,7 @@ export async function renderConfirmRegistration() {
     }
 }
 
-function renderGame() {
+export function renderGame() {
     app.innerHTML = `
                      <div id="main">
                         <div id="header"> </div>

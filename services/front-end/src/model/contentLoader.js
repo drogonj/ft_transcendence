@@ -1,4 +1,4 @@
-import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConfirmRegistration } from './render.js';
+import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConfirmRegistration, renderGame } from './render.js';
 
 export const app = document.getElementById('app');
 
@@ -14,23 +14,22 @@ export function navigateTo(route, pushState) {
     else
         history.replaceState({route: route}, 'SPA Application', route);
 
-    // const currentUrl = new URL(window.location.href);
-    // const params = currentUrl.search;
-    // const newRoute = route.includes('?') ? route : route + params;
     const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
 
     if (route === '/login' || route === '/login/') {
         renderLogin();
     } else if (route === '/signup' || route === '/signup/') {
         renderSignup();
-    } else if (route === '/') {
+    } else if (route === '/home' || route === '/home/') {
         renderHome();
     } else if (route === '/update' || route === '/update/') {
         renderUserUpdateForm();
     } else if (confirmRegistrationUrlRegex.test(route)) {
         renderConfirmRegistration();
+    } else if (route === '/game' || route === '/game/') {
+        renderGame();
     } else {
-        navigateTo('/', false);
+        navigateTo('/home', false)
     }
 }
 
