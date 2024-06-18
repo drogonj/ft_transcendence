@@ -62,7 +62,10 @@
 
 .spellContainer {
     display: flex;
-    justify-content: space-between;
+}
+
+#headerRight .spellContainer {
+    justify-content: right;
 }
 
 .spell {
