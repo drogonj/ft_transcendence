@@ -17,7 +17,7 @@ else
         break
       fi
     done
-  done < services/.env
+  done < .env
   echo "$txt" > "docker-compose_tmp.yml"
   if [ $1 == "up" ]
   then
