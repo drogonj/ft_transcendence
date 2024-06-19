@@ -2,7 +2,7 @@ import { navigateTo, cleanUrl } from "./contentLoader.js";
 
 export let csrfToken = '';
 
-async function getCsrfToken() {
+export async function getCsrfToken() {
     const response = await fetch('/api/user/get_csrf_token/');
     const data = await response.json();
     csrfToken = data.csrfToken;

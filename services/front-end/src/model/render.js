@@ -1,5 +1,6 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration} from './auth.js';
+import { addFriend } from './friends.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -112,8 +113,16 @@ export async function renderHome() {
                         <button id="logout-button">Logout</button>
                         <button id="launch-game">Launch game</button>
                         <a href="#" id="update-user-info">User update info</a>
+                        <br><br>
+                        <button id="add-friend-button">add friend</button>
+                        <div>
+                            <label for="target-username">Username:</label>
+                            <input type="text" id="target-username" name="target-username" value="" required>
+                        </div>
+                        <p id="add-friend-response"></p>
                     `;
         document.getElementById('logout-button').addEventListener('click', handleLogout);
+        document.getElementById('add-friend-button').addEventListener('click', addFriend);
         document.getElementById('launch-game').addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo('/game', true);

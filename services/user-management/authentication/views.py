@@ -36,7 +36,7 @@ class LoginView(View):
         elif not user.register_complete and user.intra_id != 0:
             return JsonResponse({'success': False, 'message': 'Registration with 42 not completed'})
         else:
-            login(request, user, 'app.authentication_backends.EmailOrUsernameModelBackend')
+            login(request, user, 'authentication.authentication_backends.EmailOrUsernameModelBackend')
             return JsonResponse({'success': True, 'message': 'Login successful'})
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -61,7 +61,7 @@ class SignupView(View):
             user = User.objects.create_user(intra_id=0, username=username, email=email, password=password)
 
             user.save()
-            login(request, user, 'app.authentication_backends.EmailOrUsernameModelBackend')
+            login(request, user, 'authentication.authentication_backends.EmailOrUsernameModelBackend')
 
             return JsonResponse({'message': 'Signup successful.'})
         except Exception as e:
@@ -215,13 +215,11 @@ def oauth_confirm_registration(request):
 @login_required
 def get_user_info(request):
     user = request.user
-    profil_image_url = request.build_absolute_uri(user.profil_image.url)
 
     data = {
         'id': user.id,
         'username': user.username,
         'email': user.email,
-        'profil_image': profil_image_url,
     }
     return JsonResponse(data)
 

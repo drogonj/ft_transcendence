@@ -45,13 +45,14 @@ INSTALLED_APPS = [
     'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
-    'app',
+    'authentication',
+    'friends',
 ]
 
-AUTH_USER_MODEL = "app.Account"
+AUTH_USER_MODEL = "authentication.Account"
 
 AUTHENTICATION_BACKENDS = (
-    'app.authentication_backends.EmailOrUsernameModelBackend',
+    'authentication.authentication_backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
