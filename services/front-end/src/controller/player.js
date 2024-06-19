@@ -1,6 +1,6 @@
 import {keyDown} from "./listeners.js"
 import {moveStep, moveSpeed} from "./settings.js";
-import {movePlayerPaddleUp, movePlayerPaddleDown, displayPlayerPoint} from "../view/player_view.js";
+import {movePlayerPaddleUp, movePlayerPaddleDown} from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
 
 const players = [];

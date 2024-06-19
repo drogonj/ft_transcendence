@@ -6,7 +6,7 @@ export let maxBallAngle;
 export let maxTime;
 export let maxBall;
 
-export default function loadSettings(inputsHtml) {
+export default async function loadSettings(inputsHtml) {
 	moveSpeed = inputsHtml[0].value;
 	ballSpeed = inputsHtml[1].value;
 	maxBall = inputsHtml[2].value;

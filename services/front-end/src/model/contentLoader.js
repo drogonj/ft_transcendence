@@ -1,4 +1,4 @@
-import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConfirmRegistration, renderGame } from './render.js';
+import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConfirmRegistration, renderSettings, renderGame } from './render.js';
 
 export const app = document.getElementById('app');
 
@@ -28,6 +28,8 @@ export function navigateTo(route, pushState) {
         renderConfirmRegistration();
     } else if (route === '/game' || route === '/game/') {
         renderGame();
+    } else if (route === '/settings' || route === '/settings/') {
+        renderSettings();
     } else {
         navigateTo('/home', false)
     }
