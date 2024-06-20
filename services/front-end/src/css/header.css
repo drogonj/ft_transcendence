@@ -18,15 +18,16 @@
 }
 
 #headerMiddle {
-    font-size: 45px;
+    background-color: green;
+    font-size: 4vh;
 }
 
 #headerLeft, #headerRight {
-    font-size: 20px;
-    flex: 0 0 500px; /* Fixed width for left and right blocks */
+    font-size: 3vh;
+    background-color: red;
+    flex: 0 0 25vh; /* Fixed width for left and right blocks */
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
 }
 
 #headerRight {
@@ -42,22 +43,18 @@
     margin-left: 1%;
 }
 
-.spellNameAndElo {
-    margin: 20px;
-}
-
 .playerNameAndElo {
+    background-color: #83B4FF;
     display: flex;
     align-items: center;
 }
 
 .scorePlayer {
-    font-size: 50px;
-    margin-right: 10px;
+    font-size: 5vh;
 }
 
 .playerElo {
-    font-size: 15px;
+    font-size: 2vh;
 }
 
 .spellContainer {
@@ -73,6 +70,6 @@
     padding: 5px;
     margin: 1px;
     text-align: center;
-    width: 32px;
-    height: 32px;
+    width: 4vh;
+    height: 4vh;
 }

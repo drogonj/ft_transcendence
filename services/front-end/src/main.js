@@ -13,6 +13,8 @@ import loadSettings from "./controller/settings.js";
 //Steal 10% of the enemy points (minimum 1)
 //Slow the enemy paddle by 50% for X seconds
 
+launch();
+
 export default function launch() {
 	loadSettings(document.getElementsByTagName("input"))
 	loadMap();
