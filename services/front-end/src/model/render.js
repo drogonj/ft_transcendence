@@ -1,5 +1,5 @@
 import { navigateTo, app } from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration} from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, getCsrfToken, csrfToken } from './auth.js';
 import { addFriend } from './friends.js';
 
 export function renderLogin() {
@@ -104,6 +104,36 @@ export async function renderHome() {
     const response = await fetch('/api/user/is_authenticated/');
     const data = await response.json();
     if (data.is_authenticated) {
+
+        // Fetch friends list
+        const friendsResponse = await fetch('/api/user/get_friends/');
+        const friendsData = await friendsResponse.json();
+
+        let friendsList = '';
+        friendsData.friends.forEach(friend => {
+            friendsList += `
+                <div id="${friend.username}">
+                    <p>${friend.username}</p>
+                    <img src="${friend.avatar}" alt="${friend.username}'s Avatar">
+                    <button class="delete-friend-button" data-friend-username="${friend.username}">Delete</button>
+                </div>
+            `;
+        });
+
+        // Fetch friendship requests list
+        const friendshipRequestsResponse = await fetch('/api/user/get_received_friendship_requests/');
+        const friendshipRequestsData = await friendshipRequestsResponse.json();
+
+        let friendshipRequestsList = '';
+        friendshipRequestsData.requests.forEach(request => {
+            friendshipRequestsList += `
+                <div>
+                    <p>${request.username}</p>
+                    <img src="${request.avatar}" alt="${request.username}'s Avatar">
+                </div>
+            `;
+        });
+
         app.innerHTML = `
                         <h1>Home Page</h1>
                         <p>Logged in as ${data.current_user}</p>
@@ -119,8 +149,42 @@ export async function renderHome() {
                             <label for="target-username">Username:</label>
                             <input type="text" id="target-username" name="target-username" value="" required>
                         </div>
+                        <div id="friends-list">
+                            <h3>--- Friends list ---</h3>
+                            ${friendsList}
+                        </div>
+                        <div id="friendship-requests-list">
+                            <h3>--- Friendship requests list ---</h3>
+                            ${friendshipRequestsList}
+                            <h3>--------------------</h3>
+                        </div>
                         <p id="add-friend-response"></p>
                     `;
+
+        // Ajoutez un écouteur d'événement pour chaque bouton "Supprimer"
+        document.querySelectorAll('.delete-friend-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                const friendUsername = button.dataset.friendUsername;
+
+                await getCsrfToken();
+
+                const response = await fetch('/api/user/remove_friend/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ friend_username: friendUsername })
+                });
+
+                const responseData = await response.json();
+                if (response.ok) {
+                    const element = document.getElementById(friendUsername);
+                    element.remove();
+                    alert(responseData.message);
+                }
+            });
+        });
         document.getElementById('logout-button').addEventListener('click', handleLogout);
         document.getElementById('add-friend-button').addEventListener('click', addFriend);
         document.getElementById('launch-game').addEventListener('click', (event) => {

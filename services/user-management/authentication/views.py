@@ -15,6 +15,7 @@ from django.utils import timezone
 from datetime import timedelta
 import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
+from .models import get_default_profile_image
 
 User = get_user_model()
 

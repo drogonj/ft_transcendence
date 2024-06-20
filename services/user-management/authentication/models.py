@@ -29,7 +29,7 @@ class MyAccountManager(BaseUserManager):
 
         return self.create_user(0, email, username, password, **extra_fields)
 
-#TODO Avatar upload
+
 def get_profil_image_filepath(self, filename):
     extension = os.path.splitext(filename)[1]
     return f'profil_images/{self.pk}/profile_image{extension}'

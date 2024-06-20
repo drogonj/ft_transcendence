@@ -140,7 +140,7 @@ export async function handleConfirmRegistration(event) {
         token: token,
         username: formData.get('username'),
         password: formData.get('password'),
-        confirm_password: formData.get('confirm_password')
+        confirm_password: formData.get('confirm_password'),
     };
 
     await getCsrfToken();
