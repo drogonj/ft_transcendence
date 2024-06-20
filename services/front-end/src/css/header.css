@@ -1,59 +1,63 @@
 #header {
-    /*background-color: var(--bg-primary);*/
-    background-color: pink;
-
-
+    background-color: var(--bg-primary);
+    width: 98%;
     height: 8%;
-    /*border: 2vh solid var(--bg-secondary);*/
+    border: 2vh solid var(--bg-secondary);
     border-bottom-width: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 7vmin;
+}
+
+#header {
     color: var(--bg-secondary); /* Replace with your desired color code */
 }
 
+#header p {
+    margin: 0;
+}
+
 #headerMiddle {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: lightgreen;
-    text-align: center;
+    background-color: green;
+    font-size: 3vh;
 }
 
 #headerLeft, #headerRight {
-    margin: 5px;
+    font-size: 2vh;
     background-color: red;
     display: flex;
     align-items: center;
+}
+
+#headerRight {
+    justify-content: right;
+    margin-right: 1%;
 }
 
 #headerRight .scorePlayer {
     justify-content: right;
 }
 
+#headerLeft {
+    margin-left: 1%;
+}
+
 .playerNameAndElo {
-    margin: 2px;
     background-color: #83B4FF;
     display: flex;
     align-items: center;
-    font-size: 40%;
 }
 
 .scorePlayer {
-    background-color: #8803fc;
-    font-size: 80%;
+    font-size: 5vh;
 }
 
 .playerElo {
-    font-size: 60%;
-    margin: 3px;
+    font-size: 2vh;
 }
 
 .spellContainer {
     display: flex;
-    background-color: #464646;
-    height: 50%;
 }
 
 #headerRight .spellContainer {
@@ -65,4 +69,6 @@
     padding: 5px;
     margin: 1px;
     text-align: center;
+    width: 4vh;
+    height: 4vh;
 }
