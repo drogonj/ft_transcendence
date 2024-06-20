@@ -14,18 +14,17 @@
 }
 
 #header p {
-    margin: 5px;
+    margin: 0;
 }
 
 #headerMiddle {
     background-color: green;
-    font-size: 4vh;
+    font-size: 3vh;
 }
 
 #headerLeft, #headerRight {
-    font-size: 3vh;
+    font-size: 2vh;
     background-color: red;
-    flex: 0 0 25vh; /* Fixed width for left and right blocks */
     display: flex;
     align-items: center;
 }
