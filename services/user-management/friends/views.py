@@ -64,7 +64,7 @@ class AddFriendView(View):
             return JsonResponse({'message': f'You are now friends with {to_user.username}'}, status=200)
 
         try:
-            invitation = FriendshipRequest.objects.create(from_user=request.user, to_user=to_user)
+            FriendshipRequest.objects.create(from_user=request.user, to_user=to_user)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
@@ -86,19 +86,19 @@ class AcceptFriendshipRequest(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            from_user = User.objects.get(username=data.username)
+            from_user = User.objects.get(username=data.get('username'))
             FriendshipRequest.objects.accept_friendship_request(request.user, from_user)
             return JsonResponse({'message': 'friendship request accepted'})
         except Exception:
             return HttpResponseBadRequest()
+
 @method_decorator(login_required, name='dispatch')
 class DeclineFriendshipRequest(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            from_user = User.objects.get(username=data.username)
+            from_user = User.objects.get(username=data.get('username'))
             FriendshipRequest.objects.cancel_friendship_request(request.user, from_user)
             return JsonResponse({'message': 'friendship request canceled'})
         except Exception:
             return HttpResponseBadRequest()
-

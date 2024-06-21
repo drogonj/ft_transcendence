@@ -52,6 +52,8 @@ class FriendshipRequestManager(models.Manager):
     def cancel_friendship_request(self, to_user, from_user):
         if self.filter(from_user=from_user, to_user=to_user).exists():
             self.filter(from_user=from_user, to_user=to_user).delete()
+        else:
+            raise Exception("No friendship request found")
 
 class FriendshipRequest(models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friendship_request_from')

@@ -1,6 +1,6 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, getCsrfToken, csrfToken } from './auth.js';
-import { addFriend } from './friends.js';
+import { addFriend, removeFriend, acceptFriendshipRequest, declineFriendshipRequest } from './friends.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -112,7 +112,7 @@ export async function renderHome() {
         let friendsList = '';
         friendsData.friends.forEach(friend => {
             friendsList += `
-                <div id="${friend.username}">
+                <div id="friend-${friend.username}">
                     <p>${friend.username}</p>
                     <img src="${friend.avatar}" alt="${friend.username}'s Avatar">
                     <button class="delete-friend-button" data-friend-username="${friend.username}">Delete</button>
@@ -127,9 +127,11 @@ export async function renderHome() {
         let friendshipRequestsList = '';
         friendshipRequestsData.requests.forEach(request => {
             friendshipRequestsList += `
-                <div>
+                <div id="friendship-request-${request.username}">
                     <p>${request.username}</p>
                     <img src="${request.avatar}" alt="${request.username}'s Avatar">
+                    <button class="accept-friendship-request-button" data-friend-username="${request.username}">Accept</button>
+                    <button class="decline-friendship-request-button" data-friend-username="${request.username}">Decline</button>
                 </div>
             `;
         });
@@ -161,28 +163,19 @@ export async function renderHome() {
                         <p id="add-friend-response"></p>
                     `;
 
-        // Ajoutez un écouteur d'événement pour chaque bouton "Supprimer"
         document.querySelectorAll('.delete-friend-button').forEach(button => {
             button.addEventListener('click', async () => {
-                const friendUsername = button.dataset.friendUsername;
-
-                await getCsrfToken();
-
-                const response = await fetch('/api/user/remove_friend/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify({ friend_username: friendUsername })
-                });
-
-                const responseData = await response.json();
-                if (response.ok) {
-                    const element = document.getElementById(friendUsername);
-                    element.remove();
-                    alert(responseData.message);
-                }
+                await removeFriend(event)
+            });
+        });
+        document.querySelectorAll('.accept-friendship-request-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                await acceptFriendshipRequest(event)
+            });
+        });
+        document.querySelectorAll('.decline-friendship-request-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                await declineFriendshipRequest(event)
             });
         });
         document.getElementById('logout-button').addEventListener('click', handleLogout);
