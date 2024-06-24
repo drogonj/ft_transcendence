@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Font Size Test</title>
+	<style>
+		:root {
+			--primary: #DAE1E7;
+			--secondary: #83B4FF;
+			--bg-primary: #1A2130;
+			--bg-secondary: #DAE1E7;
+			--bg-three: #5A72A0;
+		}
+
+		#main {
+			height: 90vmin;
+			width: 95vmin;
+			display: block;
+			position: absolute;
+			left: 50%;
+			transform: translate(-50%);
+			background-color: red;
+		}
+
+		#header {
+			background-color: pink;
+			height: 8%;
+			border-bottom-width: 0;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			font-size: 7vmin;
+			color: var(--bg-secondary); /* Replace with your desired color code */
+		}
+
+		#headerLeft {
+			margin: 5px;
+			background-color: red;
+			display: flex;
+			align-items: center;
+		}
+
+		.playerNameAndElo {
+			margin: 2px;
+			background-color: #83B4FF;
+			display: flex;
+			align-items: center;
+			font-size: 40%;
+		}
+
+		.scorePlayer {
+			background-color: #8803fc;
+			font-size: 80%;
+		}
+
+		.playerElo {
+			font-size: 60%;
+			margin: 3px;
+		}
+
+		.spellContainer {
+			display: flex;
+			background-color: #464646;
+			height: 50%;
+		}
+
+		.spell {
+			background-color: var(--bg-secondary);
+			padding: 5px;
+			margin: 1px;
+			text-align: center;
+		}
+	</style>
+
+</head>
+<body>
+<div id="main">
+	<div id="header">
+		<div id="headerLeft">
+			<div class="scorePlayer">0</div>
+			<div class="spellNameAndElo">
+				<div class="playerNameAndElo">
+					<div>Player Left</div>
+					<div class="playerElo">(4987)</div>
+				</div>
+				<div class="spellContainer">
+					<div class="spell"></div>
+					<div class="spell"></div>
+					<div class="spell"></div>
+					<div class="spell"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
