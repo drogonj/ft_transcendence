@@ -188,6 +188,29 @@ export async function renderHome() {
             event.preventDefault();
             navigateTo('/update/', true);
         });
+
+        const socket = new WebSocket('wss://localhost:8080/ws/friend-requests/');
+
+        socket.onopen = function(e) {
+            console.log("WebSocket connection established.");
+        };
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log(data.message);
+        };
+
+        socket.onclose = function(event) {
+            if (event.wasClean) {
+                console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+            } else {
+                console.log('[close] Connection died');
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error(`[error] ${error.message}`);
+        };
     } else {
         navigateTo('/login', false);
     }

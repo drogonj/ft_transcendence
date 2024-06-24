@@ -5,7 +5,20 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
 from django.utils.decorators import method_decorator
 import json, os, secrets, mimetypes, requests
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from .models import Friendship, FriendshipRequest
+
+def send_friend_request_notification(to_user_id, message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'user_{to_user_id}',
+        {
+            'type': 'friend_request_notification',
+            'message': message,
+        }
+    )
+
 
 User = get_user_model()
 
@@ -65,6 +78,7 @@ class AddFriendView(View):
 
         try:
             FriendshipRequest.objects.create(from_user=request.user, to_user=to_user)
+            send_friend_request_notification(to_user.id, f'You have a new friend request!')
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
