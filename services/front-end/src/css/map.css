@@ -1,10 +1,10 @@
 #map {
     background-color: var(--bg-primary);
-    height: 87%;
-    width: 98%;
+    height: 100%;
+    width: 100%;
     position: relative;
-    border: solid 2vh var(--bg-secondary);
-    border-top: solid 5px var(--bg-secondary);
+    /*border: solid 2vmin var(--bg-secondary);
+    border-top: solid 5px var(--bg-secondary);*/
 }
 
 .centerLine::before {

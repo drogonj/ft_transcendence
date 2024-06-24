@@ -38,11 +38,13 @@ a {
     object-fit: cover; /* zoom et centre l'image */
     object-position: center; /* centre l'image */
 }
+
 #main {
-    height: 98vh;
-    width: 95vw;
+    height: 90vmin;
+    width: 95vmin;
     display: block;
     position: absolute;
     left: 50%;
     transform: translate(-50%);
+    background-color: red;
 }
