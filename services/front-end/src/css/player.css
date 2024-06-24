@@ -1,6 +1,6 @@
 .playerPaddle {
-    height: 1%;
-    width: 1%;
+    height: 1vh;
+    width: 1vw;
     position: absolute;
     top: 50px;
     padding-bottom:10%;
