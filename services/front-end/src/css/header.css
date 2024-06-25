@@ -1,16 +1,20 @@
 #header {
-    /*background-color: var(--bg-primary);*/
-    background-color: pink;
-
-
+    background-color: var(--bg-primary);
     height: 8%;
-    /*border: 2vh solid var(--bg-secondary);*/
+    width: 100%;
+    border: 2vmin solid var(--bg-secondary);
     border-bottom-width: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 7vmin;
     color: var(--bg-secondary); /* Replace with your desired color code */
+}
+
+.iconPlayer {
+    height: 85%;
+    width: 60%;
+    background-color: #ffffff;
 }
 
 #headerMiddle {
@@ -21,14 +25,21 @@
     text-align: center;
 }
 
+.spellNameAndElo {
+    height: 100%;
+    width: 100%;
+}
+
 #headerLeft, #headerRight {
+    background-color: #ffcc00;
     margin: 5px;
-    background-color: red;
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
 #headerRight .scorePlayer {
+    background-color: pink;
     justify-content: right;
 }
 
@@ -52,8 +63,9 @@
 
 .spellContainer {
     display: flex;
-    background-color: #464646;
-    height: 50%;
+    height: 40%;
+    width: 60%;
+    background-color: #1A2130;
 }
 
 #headerRight .spellContainer {
@@ -62,7 +74,7 @@
 
 .spell {
     background-color: var(--bg-secondary);
-    padding: 5px;
-    margin: 1px;
-    text-align: center;
+    height: 86%;
+    width: 25%;
+    margin: 2%;
 }
