@@ -94,3 +94,50 @@ export async function declineFriendshipRequest(event) {
         alert(responseData.message);
     }
 }
+
+export async function getFriendsListAsHtml() {
+    const friendsResponse = await fetch('/api/user/get_friends/');
+    const friendsData = await friendsResponse.json();
+
+    let friendsList = '<ul id="friends-content" class="friend-menu-content active">';
+    friendsData.friends.forEach(friend => {
+        friendsList += `
+                <li id="friend-${friend.username}">
+                    <div class="avatar-container">
+                        <img class="avatar" src="${friend.avatar}" alt="${friend.username}'s Avatar">
+                    </div>
+                    <p>${friend.username}
+                    <button class="delete-friend-button" data-friend-username="${friend.username}">
+                        <img src="/src/images/red_cross.png" alt="remove">
+                    </button>
+                </li>
+            `;
+    });
+    friendsList += '</ul>'
+    return friendsList
+}
+
+export async function getFriendshipRequestsListAsHtml() {
+    const friendshipRequestsResponse = await fetch('/api/user/get_received_friendship_requests/');
+    const friendshipRequestsData = await friendshipRequestsResponse.json();
+
+    let friendshipRequestsList = '<ul id="requests-content" class="friend-menu-content">';
+    friendshipRequestsData.requests.forEach(request => {
+        friendshipRequestsList += `
+                <li id="friendship-request-${request.username}">
+                    <div class="avatar-container">
+                        <img class="avatar" src="${request.avatar}" alt="${request.username}'s Avatar">
+                    </div>
+                    <p>${request.username}</p>
+                    <button class="accept-friendship-request-button" data-friend-username="${request.username}">
+                        <img src="/src/images/green_check.png" alt="accept">
+                    </button>
+                    <button class="decline-friendship-request-button" data-friend-username="${request.username}">
+                        <img src="/src/images/red_cross.png" alt="cancel">
+                    </button>
+                </li>
+            `;
+    });
+    friendshipRequestsList += '</ul>'
+    return friendshipRequestsList
+}

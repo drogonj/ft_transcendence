@@ -31,7 +31,13 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         pass
 
     async def friend_request_notification(self, event):
-        # Envoie le message de notification au client WebSocket
+        # Accéder aux données envoyées
+        from_user = event['from_user']
+        avatar = event['avatar']
+
+        # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
-            'message': event['message']
+            'type': 'friend_request_notification',
+            'from_user': from_user,
+            'avatar': avatar,
         }))

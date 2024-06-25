@@ -22,22 +22,6 @@ a {
     color: #282828;
 }
 
-#avatar-container {
-    width: 5vw; /* ou une autre taille fixe ou relative */
-    height: 5vw; /* assure que le conteneur est carré */
-    border-radius: 50%; /* rend le conteneur circulaire */
-    overflow: hidden; /* cache les parties débordantes de l'image */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* zoom et centre l'image */
-    object-position: center; /* centre l'image */
-}
 #main {
     height: 98vh;
     width: 95vw;

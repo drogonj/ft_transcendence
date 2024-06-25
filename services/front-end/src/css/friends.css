@@ -1,0 +1,116 @@
+
+.friend-menu-container {
+    position: fixed;
+    right: 5px;
+    bottom: 0;
+}
+
+.friend-menu-button {
+    background-color: #8b66b2;
+    color: white;
+    border: none;
+    margin: 0;
+    padding: 12px;
+    width: min(325px, 54vw); /* Match the width with the button */
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    text-align: center;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.friend-menu {
+    list-style: none;
+    padding: 0;
+    position: absolute;
+    bottom: 35px; /* Adjust based on your button height */
+    background-color: white;
+    box-shadow: 0 0 10px rgba(129, 66, 199, 0.69);
+    border-radius: 5px 5px 0 0;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+    width: min(325px, 54vw); /* Match the width with the button */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    height: 500px; /* Fixed height for the menu */
+    overflow-y: auto; /* Add vertical scroll if content overflows */
+}
+
+.friend-menu-header {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}
+
+.friend-menu-header button {
+    background-color: #8b66b2;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.friend-menu-content {
+    display: none; /* Hide content by default */
+    list-style-type: none;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.friend-menu-content.active {
+    display: block; /* Show active content */
+}
+
+.friend-menu li {
+    display: flex; /* Use flexbox to align items */
+    align-items: center; /* Center items vertically */
+    justify-content: space-between; /* Distribute space evenly */
+    height: 50px;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    text-align: left; /* Align text to the left */
+}
+
+.friend-menu li:last-child {
+    border-bottom: none;
+}
+
+.friend-menu li:hover {
+    background-color: #f0f0f0;
+}
+
+.avatar-container {
+    width: 40px; /* Fixed size for avatar container */
+    height: 40px; /* Fixed size for avatar container */
+    border-radius: 50%; /* Make the container circular */
+    overflow: hidden; /* Hide overflow */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the container */
+    object-position: center; /* Center the image */
+}
+
+.friend-menu li p {
+    margin: 0;
+    flex-grow: 1; /* Allow text to grow */
+    padding-left: 10px; /* Space between avatar and text */
+}
+
+.friend-menu li button {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.friend-menu li button img {
+    width: 15px;
+    height: 15px;
+}

@@ -1,6 +1,13 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, getCsrfToken, csrfToken } from './auth.js';
-import { addFriend, removeFriend, acceptFriendshipRequest, declineFriendshipRequest } from './friends.js';
+import {
+    addFriend,
+    removeFriend,
+    acceptFriendshipRequest,
+    declineFriendshipRequest,
+    getFriendsListAsHtml,
+    getFriendshipRequestsListAsHtml
+} from './friends.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -77,64 +84,16 @@ export function renderSignup() {
     });
 }
 
-// export function renderResetPassword() {
-//     app.innerHTML = `
-//         <section>
-//             <div class="auth-box">
-//                 <div class="content">
-//                     <h2>Reset Password</h2>
-//                     <form id="reset-password-form" class="form">
-//                         <div class="inputBox">
-//                             <input type="email" id="email" name="email" required>
-//                             <i>Email</i>
-//                         </div>
-//                         <div class="inputBox">
-//                             <input type="submit" value="Reset Password">
-//                         </div>
-//                     </form>
-//                 </div>
-//             </div>
-//         </section>
-//     `;
-//     document.getElementById('reset-password-form').addEventListener('submit', handleResetPassword);
-// }
-
-
 export async function renderHome() {
     const response = await fetch('/api/user/is_authenticated/');
     const data = await response.json();
     if (data.is_authenticated) {
 
         // Fetch friends list
-        const friendsResponse = await fetch('/api/user/get_friends/');
-        const friendsData = await friendsResponse.json();
-
-        let friendsList = '';
-        friendsData.friends.forEach(friend => {
-            friendsList += `
-                <div id="friend-${friend.username}">
-                    <p>${friend.username}</p>
-                    <img src="${friend.avatar}" alt="${friend.username}'s Avatar">
-                    <button class="delete-friend-button" data-friend-username="${friend.username}">Delete</button>
-                </div>
-            `;
-        });
+        let friendsList = await getFriendsListAsHtml();
 
         // Fetch friendship requests list
-        const friendshipRequestsResponse = await fetch('/api/user/get_received_friendship_requests/');
-        const friendshipRequestsData = await friendshipRequestsResponse.json();
-
-        let friendshipRequestsList = '';
-        friendshipRequestsData.requests.forEach(request => {
-            friendshipRequestsList += `
-                <div id="friendship-request-${request.username}">
-                    <p>${request.username}</p>
-                    <img src="${request.avatar}" alt="${request.username}'s Avatar">
-                    <button class="accept-friendship-request-button" data-friend-username="${request.username}">Accept</button>
-                    <button class="decline-friendship-request-button" data-friend-username="${request.username}">Decline</button>
-                </div>
-            `;
-        });
+        let friendshipRequestsList = await getFriendshipRequestsListAsHtml();
 
         app.innerHTML = `
                         <h1>Home Page</h1>
@@ -151,16 +110,21 @@ export async function renderHome() {
                             <label for="target-username">Username:</label>
                             <input type="text" id="target-username" name="target-username" value="" required>
                         </div>
-                        <div id="friends-list">
-                            <h3>--- Friends list ---</h3>
-                            ${friendsList}
+                        <div class="friend-menu-container">
+                            <button id="friend-menu-button" class="friend-menu-button">Amis</button>
+                            <div id="friend-menu" class="friend-menu">
+                                <div class="friend-menu-header">
+                                    <button id="friends-button">Amis</button>
+                                    <button id="requests-button">Demandes d'amis</button>
+                                    <button id="add-friend-button">Ajouter un ami</button>
+                                 </div>
+                                 ${friendsList}
+                                 ${friendshipRequestsList}
+                                <ul id="add-friend" class="friend-menu-content">
+                                    <!--TODO-->
+                                </ul>
+                            </div>
                         </div>
-                        <div id="friendship-requests-list">
-                            <h3>--- Friendship requests list ---</h3>
-                            ${friendshipRequestsList}
-                            <h3>--------------------</h3>
-                        </div>
-                        <p id="add-friend-response"></p>
                     `;
 
         document.querySelectorAll('.delete-friend-button').forEach(button => {
@@ -189,6 +153,36 @@ export async function renderHome() {
             navigateTo('/update/', true);
         });
 
+        document.getElementById('friend-menu-button').addEventListener('click', function() {
+            let menu = document.getElementById('friend-menu');
+            let menuButton = document.getElementById('friend-menu-button');
+            if (menu.style.maxHeight) {
+                menuButton.style.borderRadius = "5px 5px 0 0";
+                menu.style.maxHeight = null;
+            } else {
+                menuButton.style.borderRadius = "0";
+                menu.style.maxHeight = "500px";
+            }
+        });
+
+        document.getElementById('friends-button').addEventListener('click', function() {
+            document.getElementById('friends-content').classList.add('active');
+            document.getElementById('add-friend').classList.remove('active');
+            document.getElementById('requests-content').classList.remove('active');
+        });
+
+        document.getElementById('requests-button').addEventListener('click', function() {
+            document.getElementById('requests-content').classList.add('active');
+            document.getElementById('add-friend').classList.remove('active');
+            document.getElementById('friends-content').classList.remove('active');
+        });
+
+        document.getElementById('add-friend-button').addEventListener('click', function() {
+            document.getElementById('add-friend').classList.add('active');
+            document.getElementById('friends-content').classList.remove('active');
+            document.getElementById('requests-content').classList.remove('active');
+        });
+
         const socket = new WebSocket('wss://localhost:8080/ws/friend-requests/');
 
         socket.onopen = function(e) {
@@ -197,7 +191,37 @@ export async function renderHome() {
 
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
-            console.log(data.message);
+            const type = data.type
+            console.log('pute')
+            console.log(data)
+
+            if (type === 'friend_request_notification') {
+                const from_user = data.from_user
+                const avatar = data.avatar
+
+                const friendshipRequestsContainer = document.getElementById('requests-content');
+
+                // Créer un nouvel élément li pour la nouvelle demande d'amitié
+                const newFriendshipRequest = document.createElement('li');
+                newFriendshipRequest.id = `friendship-request-${from_user}`;
+
+                // Structure HTML de la demande d'amitié
+                newFriendshipRequest.innerHTML = `
+                        <div class="avatar-container">
+                            <img class="avatar" src="${avatar}" alt="${from_user}'s Avatar">
+                        </div>
+                        <p>${from_user}</p>
+                        <button class="accept-friendship-request-button" data-friend-username="${from_user}">
+                            <img src="/src/images/green_check.png" alt="accept">
+                        </button>
+                        <button class="decline-friendship-request-button" data-friend-username="${from_user}">
+                            <img src="/src/images/red_cross.png" alt="cancel">
+                        </button>
+                 `;
+
+                // Ajouter le nouvel élément à la liste existante
+                friendshipRequestsContainer.insertAdjacentElement('beforeend', newFriendshipRequest);
+            }
         };
 
         socket.onclose = function(event) {
