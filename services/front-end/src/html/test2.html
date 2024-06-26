@@ -5,120 +5,21 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Font Size Test</title>
 	<style>
-		:root {
-			--primary: #DAE1E7;
-			--secondary: #83B4FF;
-			--bg-primary: #1A2130;
-			--bg-secondary: #DAE1E7;
-			--bg-three: #5A72A0;
-		}
-
-		#main {
-			height: 90vmin;
-			width: 95vmin;
-			display: block;
-			position: absolute;
-			left: 50%;
-			transform: translate(-50%);
-			background-color: red;
-		}
-
-		#header {
-			background-color: var(--bg-primary);
-			height: 8%;
-			width: 100%;
-			border: 2vmin solid var(--bg-secondary);
-			border-bottom-width: 0;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			font-size: 7vmin;
-			color: var(--bg-secondary); /* Replace with your desired color code */
-		}
-
-		.iconPlayer {
-			height: 85%;
-			width: 60%;
-			background-color: #ffffff;
-		}
-
-		#headerMiddle {
-
-			text-align: center;
-			width: 500px;
-		}
-
-		.spellNameAndElo {
-			height: 100%;
-			width: 100%;
-		}
-
-		#headerLeft, #headerRight {
-			flex-grow: 1;
-			background-color: #ffcc00;
-			margin: 5px;
-			display: flex;
-			align-items: center;
-			height: 100%;
-		}
-
-		#headerRight .scorePlayer {
-			justify-content: right;
-		}
-
-		.playerNameAndElo {
-			margin: 2px;
-			background-color: #83B4FF;
-			display: flex;
-			align-items: center;
-			font-size: 40%;
-		}
-
-		.scorePlayer {
-			background-color: #8803fc;
-			font-size: 80%;
-		}
-
-		.playerElo {
-			font-size: 60%;
-			margin: 3px;
-		}
-
-		.spellContainer {
-			display: flex;
-			height: 40%;
-			width: 60%;
+		body {
 			background-color: #1A2130;
 		}
 
-		#headerRight .spellContainer {
-			justify-content: right;
+		#main {
+			background-color: #83B4FF;
+			aspect-ratio: 16/9;
+			width: 95vw;
 		}
 
-		.spell {
-			background-color: var(--bg-secondary);
-			height: 86%;
-			width: 25%;
-			margin: 2%;
-		}
 	</style>
 
 </head>
 <body>
 <div id="main">
-	<div id="header">
-		<div id="headerLeft">
-
-		</div>
-
-		<div id="headerMiddle">
-			<div id="headerTimer">10</div>
-		</div>
-
-		<div id="headerRight">
-
-		</div>
-	</div>
 
 </div>
 </body>
