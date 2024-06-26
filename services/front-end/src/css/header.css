@@ -17,30 +17,8 @@
     background-color: #ffffff;
 }
 
-#headerMiddle {
-    text-align: center;
-    margin: 5%;
-}
-
 .spellNameAndElo {
     height: 100%;
-}
-
-#headerLeft, #headerRight {
-    background-color: #8803fc;
-    flex-grow: 1;
-    margin: 5px;
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
-
-#headerRight .playerNameAndElo {
-    justify-content: right;
-}
-
-#headerRight .spellContainer {
-    justify-content: right;
 }
 
 .playerNameAndElo {
@@ -51,7 +29,8 @@
 }
 
 .scorePlayer {
-    font-size: 50%;}
+    font-size: 50%;
+}
 
 .playerElo {
     font-size: 60%;
@@ -61,13 +40,28 @@
 .spellContainer {
     display: flex;
     height: 40%;
-    width: 60%;
-    background-color: #1A2130;
+    width: 100%;
+    justify-content: center;
 }
 
 .spell {
     background-color: var(--bg-secondary);
     height: 100%;
-    width: 25%;
+    width: 15%;
     margin-left: 2%;
+
+}
+
+#headerMiddle {
+    text-align: center;
+    margin: 5%;
+}
+
+#headerLeft, #headerRight {
+    flex-grow: 1;
+    margin: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
 }
