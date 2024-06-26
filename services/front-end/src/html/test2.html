@@ -24,8 +24,10 @@
 		}
 
 		#header {
-			background-color: pink;
+			background-color: var(--bg-primary);
 			height: 8%;
+			width: 100%;
+			border: 2vmin solid var(--bg-secondary);
 			border-bottom-width: 0;
 			display: flex;
 			justify-content: space-between;
@@ -34,12 +36,34 @@
 			color: var(--bg-secondary); /* Replace with your desired color code */
 		}
 
-		#headerLeft {
+		.iconPlayer {
+			height: 85%;
+			width: 60%;
+			background-color: #ffffff;
+		}
+
+		#headerMiddle {
+
+			text-align: center;
+			width: 500px;
+		}
+
+		.spellNameAndElo {
+			height: 100%;
+			width: 100%;
+		}
+
+		#headerLeft, #headerRight {
+			flex-grow: 1;
+			background-color: #ffcc00;
 			margin: 5px;
-			background-color: red;
 			display: flex;
 			align-items: center;
 			height: 100%;
+		}
+
+		#headerRight .scorePlayer {
+			justify-content: right;
 		}
 
 		.playerNameAndElo {
@@ -48,7 +72,6 @@
 			display: flex;
 			align-items: center;
 			font-size: 40%;
-			height: 10%;
 		}
 
 		.scorePlayer {
@@ -62,18 +85,21 @@
 		}
 
 		.spellContainer {
-			height: 25%;
-			width: 100%;
 			display: flex;
-			background-color: #464646;
+			height: 40%;
+			width: 60%;
+			background-color: #1A2130;
+		}
+
+		#headerRight .spellContainer {
+			justify-content: right;
 		}
 
 		.spell {
 			background-color: var(--bg-secondary);
-			height: 96%;
-			width: 96%;
+			height: 86%;
+			width: 25%;
 			margin: 2%;
-			text-align: center;
 		}
 	</style>
 
@@ -82,20 +108,18 @@
 <div id="main">
 	<div id="header">
 		<div id="headerLeft">
-			<div class="scorePlayer">0</div>
-			<div class="spellNameAndElo">
-				<div class="playerNameAndElo">
-					<div>Player Left</div>
-					<div class="playerElo">(4987)</div>
-				</div>
-				<div class="spellContainer">
-					<div class="spell"></div>
-					<div class="spell"></div>
-					<div class="spell"></div>
-					<div class="spell"></div>
-			</div>
-			</div>
+
+		</div>
+
+		<div id="headerMiddle">
+			<div id="headerTimer">10</div>
+		</div>
+
+		<div id="headerRight">
+
 		</div>
 	</div>
+
+</div>
 </body>
 </html>

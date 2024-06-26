@@ -13,48 +13,45 @@
 
 .iconPlayer {
     height: 85%;
-    width: 60%;
+    width: 20%;
     background-color: #ffffff;
 }
 
 #headerMiddle {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: lightgreen;
     text-align: center;
+    margin: 5%;
 }
 
 .spellNameAndElo {
     height: 100%;
-    width: 100%;
 }
 
 #headerLeft, #headerRight {
-    background-color: #ffcc00;
+    background-color: #8803fc;
+    flex-grow: 1;
     margin: 5px;
     display: flex;
     align-items: center;
     height: 100%;
 }
 
-#headerRight .scorePlayer {
-    background-color: pink;
+#headerRight .playerNameAndElo {
+    justify-content: right;
+}
+
+#headerRight .spellContainer {
     justify-content: right;
 }
 
 .playerNameAndElo {
     margin: 2px;
-    background-color: #83B4FF;
     display: flex;
     align-items: center;
     font-size: 40%;
 }
 
 .scorePlayer {
-    background-color: #8803fc;
-    font-size: 80%;
-}
+    font-size: 50%;}
 
 .playerElo {
     font-size: 60%;
@@ -68,13 +65,9 @@
     background-color: #1A2130;
 }
 
-#headerRight .spellContainer {
-    justify-content: right;
-}
-
 .spell {
     background-color: var(--bg-secondary);
-    height: 86%;
+    height: 100%;
     width: 25%;
-    margin: 2%;
+    margin-left: 2%;
 }
