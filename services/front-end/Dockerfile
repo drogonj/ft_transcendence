@@ -23,7 +23,13 @@ RUN cd /opt && \
     mkdir /etc/nginx/modsec && \
     mv modsecurity.conf-recommended /etc/nginx/modsec/modsecurity.conf && \
     cp unicode.mapping /etc/nginx/modsec/ && \
-    sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf
+    sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf && \
+    sed -i 's/\/var\/log\/modsec_audit.log/\/var\/log\/nginx\/modsec_audit.log/g' /etc/nginx/modsec/modsecurity.conf && \
+    #Include OWASP rules to ModSec
+    git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git /etc/nginx/modsec/owasp-crs && \
+    mv /etc/nginx/modsec/owasp-crs/crs-setup.conf.example /etc/nginx/modsec/owasp-crs/crs-setup.conf && \
+    echo "Include owasp-crs/crs-setup.conf" >> /etc/nginx/modsec/modsecurity.conf && \
+    echo "Include owasp-crs/rules/*.conf" >> /etc/nginx/modsec/modsecurity.conf
 
 RUN mkdir /opt/cpg && \
     cd /opt/cpg && \
@@ -31,7 +37,7 @@ RUN mkdir /opt/cpg && \
     tar -xvzf nginx-1.25.5.tar.gz && \
     git clone https://github.com/SpiderLabs/ModSecurity-nginx && \
     cd nginx-1.25.5 && \
-    ./configure --with-compat --with-openssl=/usr/include/openssl/ --add-dynamic-module=../ModSecurity-nginx && \
+    ./configure --user=nginx --group=nginx --with-compat --with-http_ssl_module --with-http_realip_module --with-pcre-jit --add-dynamic-module=../ModSecurity-nginx --with-debug && \
     make modules && \
     cp objs/ngx_http_modsecurity_module.so /usr/lib/nginx/modules/ && \
     cd .. && \
