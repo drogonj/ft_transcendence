@@ -106,8 +106,8 @@ def oauth_redirect(request):
 def oauth_callback(request):
     #Creating POST to get API authorization token
     code = request.GET.get('code')
-    if not code:
-        return HttpResponseBadRequest("Bad request")
+    if not code or request.GET.get('error'):
+        return redirect(f"{os.getenv('WEBSITE_URL')}/")
     data = {
         'grant_type': 'authorization_code',
         'client_id': os.getenv("42OAUTH_UID"),

@@ -9,7 +9,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models import Friendship, FriendshipRequest
 
-def send_friend_request_notification(to_user_id, from_user, avatar):
+def send_friend_request_notification(to_user_id, from_user):
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         f'user_{to_user_id}',
@@ -20,6 +20,27 @@ def send_friend_request_notification(to_user_id, from_user, avatar):
         }
     )
 
+def send_accepted_friendship_request_notification(to_user_id, from_user):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'user_{to_user_id}',
+        {
+            'type': 'accepted_friendship_request_notification',
+            'from_user': from_user.username,
+            'avatar': from_user.profil_image.url,
+        }
+    )
+
+def send_canceled_friendship_notification(to_user_id, from_user):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'user_{to_user_id}',
+        {
+            'type': 'canceled_friendship_notification',
+            'from_user': from_user.username,
+            'avatar': from_user.profil_image.url,
+        }
+    )
 
 User = get_user_model()
 
@@ -79,7 +100,7 @@ class AddFriendView(View):
 
         try:
             FriendshipRequest.objects.create(from_user=request.user, to_user=to_user)
-            send_friend_request_notification(to_user.id, from_user=request.user, avatar=request.user.profil_image)
+            send_friend_request_notification(to_user.id, from_user=request.user)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
@@ -92,6 +113,7 @@ class RemoveFriendView(View):
             data = json.loads(request.body)
             target = User.objects.get(username=data.get('friend_username'))
             Friendship.objects.cancel_friendship(request.user, target)
+            send_canceled_friendship_notification(target.id, request.user)
             return JsonResponse({'message': 'friendship canceled'})
         except Exception:
             return HttpResponseBadRequest()
@@ -103,6 +125,7 @@ class AcceptFriendshipRequest(View):
             data = json.loads(request.body)
             from_user = User.objects.get(username=data.get('username'))
             FriendshipRequest.objects.accept_friendship_request(request.user, from_user)
+            send_accepted_friendship_request_notification(from_user.id, request.user)
             return JsonResponse({'message': 'friendship request accepted'})
         except Exception:
             return HttpResponseBadRequest()

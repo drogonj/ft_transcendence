@@ -41,3 +41,27 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
             'from_user': from_user,
             'avatar': avatar,
         }))
+
+    async def accepted_friendship_request_notification(self, event):
+        # Accéder aux données envoyées
+        from_user = event['from_user']
+        avatar = event['avatar']
+
+        # Envoyer les données au WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'accepted_friendship_request_notification',
+            'from_user': from_user,
+            'avatar': avatar,
+        }))
+
+    async def canceled_friendship_notification(self, event):
+        # Accéder aux données envoyées
+        from_user = event['from_user']
+        avatar = event['avatar']
+
+        # Envoyer les données au WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'canceled_friendship_notification',
+            'from_user': from_user,
+            'avatar': avatar,
+        }))

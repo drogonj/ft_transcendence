@@ -5,8 +5,10 @@ import {
     removeFriend,
     acceptFriendshipRequest,
     declineFriendshipRequest,
-    getFriendsListAsHtml,
-    getFriendshipRequestsListAsHtml
+    loadFriends,
+    loadFriendshipRequests,
+    addFriendshipRequestToMenu,
+    addFriendToMenu,
 } from './friends.js';
 
 export function renderLogin() {
@@ -88,13 +90,6 @@ export async function renderHome() {
     const response = await fetch('/api/user/is_authenticated/');
     const data = await response.json();
     if (data.is_authenticated) {
-
-        // Fetch friends list
-        let friendsList = await getFriendsListAsHtml();
-
-        // Fetch friendship requests list
-        let friendshipRequestsList = await getFriendshipRequestsListAsHtml();
-
         app.innerHTML = `
                         <h1>Home Page</h1>
                         <p>Logged in as ${data.current_user}</p>
@@ -118,30 +113,19 @@ export async function renderHome() {
                                     <button id="requests-button">Demandes d'amis</button>
                                     <button id="add-friend-button">Ajouter un ami</button>
                                  </div>
-                                 ${friendsList}
-                                 ${friendshipRequestsList}
+                                 <ul id="friends-content" class="friend-menu-content active"></ul>
+                                 <ul id="requests-content" class="friend-menu-content"></ul>
                                 <ul id="add-friend" class="friend-menu-content">
                                     <!--TODO-->
                                 </ul>
                             </div>
                         </div>
                     `;
+        // Fetch friends list
+        await loadFriends();
+        // Fetch friendship requests list
+        await loadFriendshipRequests();
 
-        document.querySelectorAll('.delete-friend-button').forEach(button => {
-            button.addEventListener('click', async () => {
-                await removeFriend(event)
-            });
-        });
-        document.querySelectorAll('.accept-friendship-request-button').forEach(button => {
-            button.addEventListener('click', async () => {
-                await acceptFriendshipRequest(event)
-            });
-        });
-        document.querySelectorAll('.decline-friendship-request-button').forEach(button => {
-            button.addEventListener('click', async () => {
-                await declineFriendshipRequest(event)
-            });
-        });
         document.getElementById('logout-button').addEventListener('click', handleLogout);
         document.getElementById('add-friend-button').addEventListener('click', addFriend);
         document.getElementById('launch-game').addEventListener('click', (event) => {
@@ -192,35 +176,18 @@ export async function renderHome() {
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
             const type = data.type
-            console.log('pute')
             console.log(data)
 
+            const from_user = data.from_user
+            const avatar = data.avatar
             if (type === 'friend_request_notification') {
-                const from_user = data.from_user
-                const avatar = data.avatar
-
-                const friendshipRequestsContainer = document.getElementById('requests-content');
-
-                // Créer un nouvel élément li pour la nouvelle demande d'amitié
-                const newFriendshipRequest = document.createElement('li');
-                newFriendshipRequest.id = `friendship-request-${from_user}`;
-
-                // Structure HTML de la demande d'amitié
-                newFriendshipRequest.innerHTML = `
-                        <div class="avatar-container">
-                            <img class="avatar" src="${avatar}" alt="${from_user}'s Avatar">
-                        </div>
-                        <p>${from_user}</p>
-                        <button class="accept-friendship-request-button" data-friend-username="${from_user}">
-                            <img src="/src/images/green_check.png" alt="accept">
-                        </button>
-                        <button class="decline-friendship-request-button" data-friend-username="${from_user}">
-                            <img src="/src/images/red_cross.png" alt="cancel">
-                        </button>
-                 `;
-
-                // Ajouter le nouvel élément à la liste existante
-                friendshipRequestsContainer.insertAdjacentElement('beforeend', newFriendshipRequest);
+                addFriendshipRequestToMenu(from_user, avatar)
+            } else if (type === 'accepted_friendship_request_notification') {
+                addFriendToMenu(from_user, avatar)
+            } else if (type === 'canceled_friendship_notification') {
+                const divId = "friend-" + from_user
+                const element = document.getElementById(divId);
+                element.remove();
             }
         };
 
@@ -235,6 +202,7 @@ export async function renderHome() {
         socket.onerror = function(error) {
             console.error(`[error] ${error.message}`);
         };
+
     } else {
         navigateTo('/login', false);
     }
@@ -244,7 +212,8 @@ export async function renderUserUpdateForm() {
     const response = await fetch('/api/user/info/');
     const userData = await response.json();
 
-    app.innerHTML = `
+    if (userData.is_authenticated){
+        app.innerHTML = `
         <h2>Update User Information</h2>
         <form id="user-update-form">
             <div>
@@ -263,7 +232,10 @@ export async function renderUserUpdateForm() {
         </form>
     `;
 
-    document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
+        document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
+    } else {
+        navigateTo('/login')
+    }
 }
 
 export async function renderConfirmRegistration() {
