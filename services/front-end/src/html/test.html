@@ -5,37 +5,31 @@
 	<title>Title</title>
 
 	<style>
-		body {
+		.containerRectangle, .rectangle {
+			aspect-ratio: 16 / 9;
+			max-width: 95vw;
+			max-height: 95vh;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+		}
+
+		.containerRectangle {
+			height: 100%;
+			background-color: red;
+		}
+
+		.rectangle {
+			width: 100%;
 			background-color: #1A2130;
-		}
-
-		#a {
-			background-color: #5A72A0;
-			width: 40vw;
-			height: 5vh;
-		}
-
-		#s {
-			display: flex;
-		}
-
-		.b {
-			background-color: #8803fc;
-			height: 32px;
-			width: 32px;
-			margin: 3px;
 		}
 	</style>
 
 </head>
 <body>
-	<div id="a">
-		<div id="s">
-			<div class="b"></div>
-			<div class="b"></div>
-			<div class="b"></div>
-			<div class="b"></div>
-		</div>
+	<div class="containerRectangle">
+		<div class="rectangle"></div>
 	</div>
 </body>
 </html>

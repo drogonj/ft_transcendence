@@ -39,12 +39,23 @@ a {
     object-position: center; /* centre l'image */
 }
 
-#main {
-    height: 90vmin;
-    width: 95vmin;
-    display: block;
+#main, #mapAndHeader {
+    aspect-ratio: 16 / 9;
+    max-width: 95vw;
+    max-height: 95vh;
     position: absolute;
+    top: 50%;
     left: 50%;
-    transform: translate(-50%);
+    transform: translate(-50%,-50%);
     background-color: red;
+}
+
+#main {
+    height: 100%;
+    background-color: red;
+}
+
+#mapAndHeader {
+    width: 100%;
+    background-color: #1A2130;
 }

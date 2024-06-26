@@ -17,7 +17,6 @@ launch();
 
 export default function launch() {
 	loadSettings(document.getElementsByTagName("input"))
-	document.getElementById("menuStart").remove()
 	loadMap();
 	loadListeners();
 	loadPlayers();

@@ -5,6 +5,7 @@
     position: relative;
     border: solid 2vmin var(--bg-secondary);
     border-top: solid 5px var(--bg-secondary);
+    box-sizing: border-box;
 }
 
 .centerLine::before {
