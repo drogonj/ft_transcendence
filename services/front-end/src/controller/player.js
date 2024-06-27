@@ -23,7 +23,8 @@ Player.prototype.paddleCanMoveUp = function() {
 }
 
 Player.prototype.paddleCanMoveDown = function() {
-		return (this.paddleHtml.offsetTop + this.paddleHtml.offsetHeight) + moveStep < getMapHeight();
+	console.log(this.paddleHtml.getBoundingClientRect().bottom,  (this.paddleHtml.offsetTop + this.paddleHtml.offsetHeight) + moveStep, getMapHeight());
+		return this.paddleHtml.getBoundingClientRect().bottom + moveStep < getMapHeight();
 }
 
 function tick() {

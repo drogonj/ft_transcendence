@@ -5,7 +5,7 @@ import {
     addBallToMap,
     getMapHeight,
     getMapLeft,
-    getMapRight,
+    getMapRight, getMapTop,
     isBottomPartOfMap, isMapContainMaxBall, isMapContainNoBall,
     isTopPartOfMap,
     markPoint
@@ -52,8 +52,7 @@ Ball.prototype.triggerBallInsidePlayer = function () {
 Ball.prototype.triggerBallInsideBorder = function () {
     const ballRect = this.ballHtml.getBoundingClientRect();
 
-    if (ballRect.bottom >= getMapHeight() + document.getElementById("header").offsetHeight
-        || ballRect.top <= document.getElementById("header").offsetHeight)
+    if (ballRect.bottom >= getMapHeight() || ballRect.top <= getMapTop())
         this.calculBallBorderTraj()
 }
 
