@@ -3,7 +3,7 @@ daphne==4.1.0
 django-cors-headers==4.3.1
 psycopg2-binary==2.9.9
 asgiref==3.8.1
-djangorestframework==3.15.1
+djangorestframework==3.15.2
 pillow==10.3.0
-python-dotenv
-requests
+python-dotenv==1.0.1
+requests==1.6.3
