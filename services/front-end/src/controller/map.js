@@ -14,6 +14,7 @@ function Map() {
 }
 
 export function getMapHeight() {
+	console.log(map.mapHtml.getBoundingClientRect().height, parseInt(map.computedStyle.borderBottomWidth));
 	return map.mapHtml.getBoundingClientRect().height - parseInt(map.computedStyle.borderBottomWidth);
 }
 
