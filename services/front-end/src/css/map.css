@@ -1,5 +1,5 @@
 #map {
-    background-color: #8803fc;
+    background-color: var(--bg-primary);
     height: 92%;
     width: 100%;
     position: relative;

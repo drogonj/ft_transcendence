@@ -13,9 +13,18 @@ function Map() {
 	this.computedStyle = getComputedStyle(this.mapHtml);
 }
 
+/**
+ * Gets the map bottom value of the map excluding the border.
+ *
+ * @returns {number}
+ */
+
 export function getMapHeight() {
-	console.log(map.mapHtml.getBoundingClientRect().height, parseInt(map.computedStyle.borderBottomWidth));
-	return map.mapHtml.getBoundingClientRect().height - parseInt(map.computedStyle.borderBottomWidth);
+	return map.mapHtml.getBoundingClientRect().bottom - getMapBorderHeight();
+}
+
+export function getMapTop() {
+		return map.mapHtml.getBoundingClientRect().top;
 }
 
 export function getMapWidth() {
@@ -23,11 +32,11 @@ export function getMapWidth() {
 }
 
 export function getMapLeft() {
-	return map.mapHtml.getBoundingClientRect().left + parseInt(map.computedStyle.borderLeftWidth);
+	return map.mapHtml.getBoundingClientRect().left + getMapBorderHeight();
 }
 
 export function getMapRight() {
-	return map.mapHtml.getBoundingClientRect().right - parseInt(map.computedStyle.borderRightWidth);
+	return map.mapHtml.getBoundingClientRect().right - getMapBorderHeight();
 }
 
 export function addBallToMap(ballHtml) {
@@ -54,4 +63,12 @@ export function isMapContainMaxBall() {
 
 export function isMapContainNoBall() {
 	return getBallNumber() === 0;
+}
+
+function getMapBorderHeight() {
+	return parseInt(map.computedStyle.borderBottom)
+}
+
+function getMapBorderWidth() {
+	return parseInt(map.computedStyle.borderRightWidth);
 }
