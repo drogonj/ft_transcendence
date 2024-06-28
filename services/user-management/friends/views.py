@@ -28,6 +28,7 @@ def send_accepted_friendship_request_notification(to_user_id, from_user):
             'type': 'accepted_friendship_request_notification',
             'from_user': from_user.username,
             'avatar': from_user.profil_image.url,
+            'is_connected': from_user.is_connected,
         }
     )
 
@@ -53,7 +54,7 @@ class GetFriendsView(View):
             friends_info.append({
                 'username': friend.username,
                 'avatar': friend.profil_image.url,
-                # Ajoutez d'autres informations pertinentes que vous souhaitez retourner
+                'is_connected': friend.is_connected,
             })
         return JsonResponse({'friends': friends_info})
 
@@ -126,7 +127,10 @@ class AcceptFriendshipRequest(View):
             from_user = User.objects.get(username=data.get('username'))
             FriendshipRequest.objects.accept_friendship_request(request.user, from_user)
             send_accepted_friendship_request_notification(from_user.id, request.user)
-            return JsonResponse({'message': 'friendship request accepted'})
+            return JsonResponse({
+                'message': 'friendship request accepted',
+                'is_connected': from_user.is_connected,
+            })
         except Exception:
             return HttpResponseBadRequest()
 

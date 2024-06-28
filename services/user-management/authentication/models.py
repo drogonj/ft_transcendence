@@ -52,6 +52,8 @@ class Account(AbstractBaseUser):
     is_superuser        = models.BooleanField(default=False)
     profil_image        = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
 
+    is_connected        = models.BooleanField(default=False)
+
     intra_id            = models.IntegerField(default=0)
     register_complete   = models.BooleanField(default=False)
     tmp_token           = models.CharField(max_length=100, unique=True, blank=True, null=True)

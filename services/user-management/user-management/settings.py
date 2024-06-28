@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     '*',
 ]
 
+AUTH_USER_MODEL = "authentication.Account"
 
 # Application definition
 
@@ -50,8 +51,6 @@ INSTALLED_APPS = [
     'authentication',
     'friends',
 ]
-
-AUTH_USER_MODEL = "authentication.Account"
 
 AUTHENTICATION_BACKENDS = (
     'authentication.authentication_backends.EmailOrUsernameModelBackend',

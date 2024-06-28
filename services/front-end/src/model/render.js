@@ -9,6 +9,7 @@ import {
     loadFriendshipRequests,
     addFriendshipRequestToMenu,
     addFriendToMenu,
+    changeFriendStatus,
 } from './friends.js';
 
 export function renderLogin() {
@@ -90,6 +91,8 @@ export async function renderHome() {
     const response = await fetch('/api/user/is_authenticated/');
     const data = await response.json();
     if (data.is_authenticated) {
+        const socket = new WebSocket('wss://localhost:8080/ws/friend-requests/');
+
         app.innerHTML = `
                         <h1>Home Page</h1>
                         <p>Logged in as ${data.current_user}</p>
@@ -126,7 +129,10 @@ export async function renderHome() {
         // Fetch friendship requests list
         await loadFriendshipRequests();
 
-        document.getElementById('logout-button').addEventListener('click', handleLogout);
+        document.getElementById('logout-button').addEventListener('click', (event) => {
+            handleLogout();
+            socket.close();
+        });
         document.getElementById('add-friend-button').addEventListener('click', addFriend);
         document.getElementById('launch-game').addEventListener('click', (event) => {
             event.preventDefault();
@@ -167,8 +173,6 @@ export async function renderHome() {
             document.getElementById('requests-content').classList.remove('active');
         });
 
-        const socket = new WebSocket('wss://localhost:8080/ws/friend-requests/');
-
         socket.onopen = function(e) {
             console.log("WebSocket connection established.");
         };
@@ -178,16 +182,23 @@ export async function renderHome() {
             const type = data.type
             console.log(data)
 
-            const from_user = data.from_user
-            const avatar = data.avatar
+            const from_user = data.username;
+
             if (type === 'friend_request_notification') {
+                const avatar = data.avatar
                 addFriendshipRequestToMenu(from_user, avatar)
             } else if (type === 'accepted_friendship_request_notification') {
-                addFriendToMenu(from_user, avatar)
+                const avatar = data.avatar
+                const is_connected = data.is_connected
+                addFriendToMenu(from_user, avatar, is_connected)
             } else if (type === 'canceled_friendship_notification') {
                 const divId = "friend-" + from_user
                 const element = document.getElementById(divId);
                 element.remove();
+            } else if (type === 'friend_connected_notification') {
+                changeFriendStatus(from_user, true);
+            } else if (type === 'friend_disconnected_notification') {
+                changeFriendStatus(from_user, false)
             }
         };
 

@@ -81,6 +81,7 @@
     border-bottom: 1px solid #ccc;
     text-align: left; /* Align text to the left */
     border-radius: 5px;
+    background: #f0f0f0;
 }
 
 .friend-menu li:last-child {
@@ -88,7 +89,7 @@
 }
 
 .friend-menu li:hover {
-    background-color: #f0f0f0;
+    background-color: #d4d4d4;
 }
 
 .avatar-container {
@@ -129,3 +130,26 @@
     transform: scale(1.2)
 }
 
+.status-indicator {
+    position: relative; /* Change to relative for proper positioning within parent element */
+    width: 10px; /* Increase size for better visibility */
+    height: 10px; /* Increase size for better visibility */
+    border-radius: 50%;
+    display: inline-block; /* Ensure it's inline for proper layout */
+    margin-right: 10px; /* Add some margin for spacing */
+}
+
+.status-indicator.online {
+    background-color: green;
+}
+
+.status-indicator.offline {
+    background-color: red;
+}
+
+.status-indicator-text {
+    font-size: 0.75em;
+    display: inline-block; /* Ensure text and indicator are inline */
+    vertical-align: middle; /* Align text vertically with the indicator */
+    margin-left: 5px; /* Add some margin for spacing */
+}

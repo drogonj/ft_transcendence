@@ -8,6 +8,14 @@ class FriendshipManager(models.Manager):
         friends = self.filter(from_user=user).values_list('to_user', flat=True)
         return User.objects.filter(id__in=friends)
 
+    def get_connected_friends(self, user):
+        friends = self.get_friends(user)
+        list = []
+        for friend in friends:
+            if friend.is_connected == True:
+                list.append(friend)
+        return list
+
     def exist(self, first, second):
         if self.filter(from_user=first, to_user=second).exists() \
             or self.filter(from_user=second, to_user=first).exists():

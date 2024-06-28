@@ -1,5 +1,22 @@
 import { getCsrfToken, csrfToken } from "./auth.js";
 
+export function changeFriendStatus(userId, is_connected) {
+    let friendElement = document.getElementById(`friend-${userId}`);
+    if (friendElement) {
+        const statusIndicator = friendElement.querySelector('.status-indicator');
+        const statusIndicatorText = friendElement.querySelector('.status-indicator-text');
+
+        if (statusIndicator) {
+            statusIndicator.classList.remove('offline', 'online');
+            statusIndicator.classList.add(is_connected ? 'online' : 'offline');
+        }
+
+        if (statusIndicatorText) {
+            statusIndicatorText.textContent = is_connected ? 'online' : 'offline';
+        }
+    }
+}
+
 export async function addFriend(event) {
     event.preventDefault();
 
@@ -65,7 +82,8 @@ export async function acceptFriendshipRequest(event) {
         const divId = "friendship-request-" + friendUsername
         const element = document.getElementById(divId);
         element.remove();
-        await addFriendToMenu(friendUsername, friendAvatar)
+        console.log(responseData)
+        await addFriendToMenu(friendUsername, friendAvatar, responseData.is_connected)
     }
 }
 
@@ -93,7 +111,7 @@ export async function declineFriendshipRequest(event) {
 }
 
 // Function to add a friend to the menu
-export function addFriendToMenu(user, avatar) {
+export function addFriendToMenu(user, avatar, is_connected) {
     const friendsContainer = document.getElementById('friends-content');
 
     // Create a new li element for the friend
@@ -102,6 +120,8 @@ export function addFriendToMenu(user, avatar) {
 
     // HTML structure of the friend
     newFriend.innerHTML = `
+        <div class="status-indicator ${is_connected ? 'online' : 'offline'}"></div>
+        <p class="status-indicator-text">${is_connected ? 'online' : 'offline'}</p>
         <div class="avatar-container">
             <img class="avatar" src="${avatar}" alt="${user}'s Avatar">
         </div>
@@ -113,6 +133,8 @@ export function addFriendToMenu(user, avatar) {
 
     // Add the new element to the existing list
     friendsContainer.insertAdjacentElement('beforeend', newFriend);
+
+    changeFriendStatus(user, is_connected);
 
     // Add event listener for the delete button
     newFriend.querySelector('.delete-friend-button').addEventListener('click', async (event) => {
@@ -128,8 +150,9 @@ export async function loadFriends() {
 
         // Use for...of loop to iterate over friends and await each addFriendToMenu call
         for (const friend of friendsData.friends) {
-            addFriendToMenu(friend.username, friend.avatar);
+            addFriendToMenu(friend.username, friend.avatar, friend.is_connected);
         }
+
     } catch (error) {
         console.error('Error loading friends:', error);
     }
