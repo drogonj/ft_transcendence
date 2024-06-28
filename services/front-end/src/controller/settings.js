@@ -5,6 +5,7 @@ export let ballSpeed;
 export let maxBallAngle;
 export let maxTime;
 export let maxBall;
+export let ai = false;
 
 export default async function loadSettings(inputsHtml) {
 	moveSpeed = inputsHtml[0].value;
@@ -12,7 +13,8 @@ export default async function loadSettings(inputsHtml) {
 	maxBall = inputsHtml[2].value;
 	maxBallAngle = inputsHtml[3].value * Math.PI / 180
 	maxTime = inputsHtml[4].value;
+	ai = inputsHtml[5].checked;
 	document.getElementById("menuStart").remove();
-	document.getElementById("main").style.display = "block"
+	// document.getElementById("main").style.display = "block"
 	document.body.style.cursor = "none";
 }

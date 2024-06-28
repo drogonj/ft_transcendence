@@ -5,10 +5,9 @@ import {getMapHeight} from "./map.js";
 
 const players = [];
 
-export default function loadPlayers() {
+export default function loadPlayers(inputsHtml) {
 	players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1, document.getElementById("headerLeft")));
 	players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1, document.getElementById("headerRight")));
-
 	tick();
 }
 

@@ -1,7 +1,7 @@
 import { navigateTo, app } from './contentLoader.js';
 import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration} from './auth.js';
 import loadSettings from '../controller/settings.js';
-import { launch } from '../view/game.js';
+import { launch } from '../controller/game.js';
 
 export function renderLogin() {
     app.innerHTML = `
@@ -174,7 +174,7 @@ export async function renderSettings() {
 }
 
 
-export async function renderGame() {
+export async function renderGame(inputsHtml) {
 	app.innerHTML = `
 	<div id="main" style="display: none">
 	<div id="header">
@@ -219,7 +219,7 @@ export async function renderGame() {
 	</div>
 	`;
 	document.getElementById("main").style.display = "block";
-	launch();
+	launch(inputsHtml);
 }
 
 export async function renderUserUpdateForm() {

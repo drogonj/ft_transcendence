@@ -35,8 +35,8 @@ services:
   postgres:
     container_name: postgres
     build: ./services/postgres/
-    # volumes:
-    #   - ./services/volumes/postgres:/var/lib/postgresql/data/
+#    volumes:
+#      - ./services/volumes/postgres:/var/lib/postgresql/data/
     env_file: .env
     environment:
       - POSTGRES_USER=${SQL_USER}
