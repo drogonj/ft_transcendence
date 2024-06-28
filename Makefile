@@ -2,8 +2,10 @@ clean:
 	@docker compose down
 	@docker system prune -f
 	@sudo rm -rf services/volumes/ || true
-	@docker volume rm ft_transcendence_django || true
-	@docker volume rm ft_transcendence_nginx || true
+	@docker volume rm $$(docker volume ls -q) || true
+
+fullclean: clean
+	@docker image rm $$(docker image ls -q) || true
 
 up:
 	@docker compose up
