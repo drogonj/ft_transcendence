@@ -2,25 +2,113 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Font Size Test</title>
+	<title>Title</title>
+
 	<style>
-		body {
+		:root {
+			--primary: #DAE1E7;
+			--secondary: #83B4FF;
+			--bg-primary: #1A2130;
+			--bg-secondary: #DAE1E7;
+			--bg-three: #5A72A0;
+}
+
+		.containerRectangle, .rectangle {
+			aspect-ratio: 16 / 9;
+			max-width: 95vw;
+			max-height: 95vh;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+		}
+
+		.containerRectangle {
+			height: 100%;
+			background-color: red;
+		}
+
+		.rectangle {
+			width: 100%;
 			background-color: #1A2130;
 		}
 
-		#main {
-			background-color: #83B4FF;
-			aspect-ratio: 16/9;
-			width: 95vw;
-		}
+		#header {
+		background-color: var(--bg-primary);
+		height: 12%;
+		width: 100%;
+		border: 1vmin solid var(--bg-secondary);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 7vmin;
+		color: var(--bg-secondary);
+		box-sizing: border-box;
+	}
 
+	.spellNameAndElo {
+		height: 100%;
+	}
+
+	.playerNameAndElo {
+		margin: 2px;
+		display: flex;
+		align-items: center;
+		font-size: 40%;
+	}
+
+	.playerElo {
+		font-size: 60%;
+		margin: 3px;
+	}
+
+	.spellContainer {
+		background-color: #ffcc00;
+		display: flex;
+		height: 40%;
+		width: 100%;
+		justify-content: center;
+	}
+
+	.spell {
+		background-color: var(--bg-secondary);
+		height: 100%;
+		width: 20%;
+		margin-left: 2%;
+
+	}
+
+	#headerLeft {
+		flex-grow: 1;
+		margin: 5px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		height: 100%;
+	}
 	</style>
 
 </head>
 <body>
-<div id="main">
-
-</div>
+	<div class="containerRectangle">
+		<div class="rectangle">
+			<div id="header">
+            <div id="headerLeft">
+                <div class="spellNameAndElo">
+                    <div class="playerNameAndElo">
+                        <div>Player Left</div>
+                        <div class="playerElo">(4987)</div>
+                    </div>
+                    <div class="spellContainer">
+                        <div class="spell"></div>
+                        <div class="spell"></div>
+                        <div class="spell"></div>
+                        <div class="spell"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+		</div>
+	</div>
 </body>
 </html>
