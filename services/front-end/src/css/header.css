@@ -54,12 +54,12 @@
 }
 
 #headerMiddle {
+    width: 26%;
     text-align: center;
-    margin: 5%;
 }
 
 #headerLeft, #headerRight {
-    flex-grow: 1;
+    width: 32%;
     margin: 5px;
     display: flex;
     justify-content: space-between;
