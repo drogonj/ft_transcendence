@@ -3,6 +3,8 @@ import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfi
 import loadSettings from '../controller/settings.js';
 import { launch } from '../controller/game.js';
 
+let inputsHtml = {};
+
 export function renderLogin() {
     app.innerHTML = `
                     <section>
@@ -129,7 +131,7 @@ export async function renderHome() {
     }
 }
 
-export async function renderSettings() {
+export function renderSettings() {
 	app.innerHTML = `
 		<div id="menuStart" class="menu">
 		<h1>Game settings</h1>
@@ -168,13 +170,13 @@ export async function renderSettings() {
 	`;
 	document.getElementById('buttonPlay').addEventListener('click', (event) => {
 		event.preventDefault();
-		loadSettings(document.getElementsByTagName("input"));
+		inputsHtml = loadSettings(document.getElementsByTagName("input"));
 		navigateTo('/game', true);
 	});
 }
 
 
-export async function renderGame(inputsHtml) {
+export function renderGame() {
 	app.innerHTML = `
 	<div id="main" style="display: none">
 	<div id="header">
@@ -218,7 +220,7 @@ export async function renderGame(inputsHtml) {
 	</div>
 	</div>
 	`;
-	document.getElementById("main").style.display = "block";
+	//document.getElementById("main").style.display = "block";
 	launch(inputsHtml);
 }
 

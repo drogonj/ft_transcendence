@@ -1,14 +1,20 @@
 import {keyDown} from "./listeners.js"
-import {moveStep, moveSpeed} from "./settings.js";
+import {ai, moveStep, moveSpeed} from "./settings.js";
 import {movePlayerPaddleUp, movePlayerPaddleDown} from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
-
-const players = [];
+import {AI, getAIPaddle, moveAIPaddle} from "./ai.js";
+export const players = [];
 
 export default function loadPlayers(inputsHtml) {
-	players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1, document.getElementById("headerLeft")));
-	players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1, document.getElementById("headerRight")));
-	tick();
+	if (ai === true) {
+		players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1, document.getElementById("headerLeft")));
+		players.push(new AI(document.getElementsByClassName("playerPaddle")[1], 1, document.getElementById("headerRight")));
+	}
+	else {
+		players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1, document.getElementById("headerLeft")));
+		players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1, document.getElementById("headerRight")));
+	}
+	tick(inputsHtml);
 }
 
 function Player(paddleHtml, paddleDirection, paddleHeader) {
@@ -33,14 +39,17 @@ function tick() {
 		if (getLeftPaddle().paddleCanMoveDown())
 			movePlayerPaddleDown(getLeftPaddle());
 	}
-
-	if (keyDown['ArrowUp']) {
-		if (getRightPaddle().paddleCanMoveUp())
-			movePlayerPaddleUp(getRightPaddle())
-	} else if (keyDown['ArrowDown']) {
-		if (getRightPaddle().paddleCanMoveDown())
-			movePlayerPaddleDown(getRightPaddle());
+	if (ai === false) {
+		if (keyDown['ArrowUp']) {
+			if (getRightPaddle().paddleCanMoveUp())
+				movePlayerPaddleUp(getRightPaddle())
+		} else if (keyDown['ArrowDown']) {
+			if (getRightPaddle().paddleCanMoveDown())
+				movePlayerPaddleDown(getRightPaddle());
+		}
 	}
+	else
+		moveAIPaddle(getAIPaddle());
 	setTimeout(tick, moveSpeed);
 }
 

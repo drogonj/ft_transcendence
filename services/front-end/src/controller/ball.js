@@ -1,6 +1,6 @@
 import {moveBall, removeBall} from "../view/ball_view.js";
 import {ballSpeed, maxBall, maxBallAngle, tickRate} from "./settings.js";
-import {getAllPaddles, getLeftPaddle, getLeftPlayerHeader, getRightPaddle, getRightPlayerHeader} from "./player.js";
+import {getAllPaddles, getLeftPlayerHeader, getRightPlayerHeader} from "./player.js";
 import {
     addBallToMap,
     getMapHeight,
