@@ -1,8 +1,14 @@
 export function moveBall(ball) {
-	ball.ballHtml.style.top = (ball.ballHtml.offsetTop - ball.ballVy) + "px";
-	ball.ballHtml.style.left = (ball.ballHtml.offsetLeft - ball.ballVx) + "px";
+	ball.ballTopPosition -= ball.ballVy;
+	ball.ballLeftPosition -= ball.ballVx;
+	displayBall(ball);
 }
 
 export function removeBall(ball) {
 	ball.ballHtml.remove();
+}
+
+export function displayBall(ball) {
+	ball.ballHtml.style.top = ball.ballTopPosition + "%";
+	ball.ballHtml.style.left = ball.ballLeftPosition + "%";
 }

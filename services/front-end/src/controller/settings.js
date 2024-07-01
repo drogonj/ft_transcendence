@@ -10,8 +10,9 @@ export let respawnIfAllBallsGone;
 
 export default function loadSettings(inputsHtml) {
 	moveSpeed = inputsHtml[0].value - 10;
-	ballSpeed = inputsHtml[1].value;
+	ballSpeed = 1;
 	maxBall = inputsHtml[2].value;
+	console.log(inputsHtml[1].value)
 	maxBallAngle = inputsHtml[3].value * Math.PI / 180
 	maxTime = inputsHtml[4].value;
 	respawnIfAllBallsGone = inputsHtml[5].checked;
