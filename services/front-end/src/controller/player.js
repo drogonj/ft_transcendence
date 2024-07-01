@@ -7,6 +7,7 @@ import {
 } from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
 import {getRandomNumber} from "./math_utils.js";
+import {getRandomSpells} from "./spell.js";
 
 const players = [];
 
@@ -20,8 +21,10 @@ export default function loadPlayers() {
 function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.paddleHtml = paddleHtml;
 	this.paddleHeader = paddleHeader;
+	this.moveSpeed = moveSpeed;
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
+	this.playerSpells = getRandomSpells();
 	setPaddleSize(this, paddleSize);
 	displayPlayerPaddle(this);
 }
@@ -34,19 +37,28 @@ Player.prototype.paddleCanMoveDown = function() {
 		return this.paddleHtml.getBoundingClientRect().bottom + moveStep < getMapHeight();
 }
 
+Player.prototype.triggerKey = function() {
+	keyDown.forEach((key) => {
+
+	})
+	setTimeout(this.triggerKey, this.moveSpeed);
+}
+
 function tick() {
-	if (keyDown['w']) {
+	if (keyDown.has('w')) {
 		if (getLeftPaddle().paddleCanMoveUp())
 			movePlayerPaddleUp(getLeftPaddle())
-	} else if (keyDown['s']) {
+	} else if (keyDown.has('s')) {
 		if (getLeftPaddle().paddleCanMoveDown())
 			movePlayerPaddleDown(getLeftPaddle());
+	} else if (keyDown.has('1')) {
+		getLeftPaddle().playerSpells[0].executor(getLeftPaddle());
 	}
 
-	if (keyDown['ArrowUp']) {
+	if (keyDown.has('ArrowUp')) {
 		if (getRightPaddle().paddleCanMoveUp())
 			movePlayerPaddleUp(getRightPaddle())
-	} else if (keyDown['ArrowDown']) {
+	} else if (keyDown.has('ArrowDown')) {
 		if (getRightPaddle().paddleCanMoveDown())
 			movePlayerPaddleDown(getRightPaddle());
 	}

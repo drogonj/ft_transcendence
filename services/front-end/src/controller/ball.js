@@ -26,7 +26,7 @@ function createNewBall() {
 
 Ball.prototype.deleteBall = function () {
     balls.splice(balls.indexOf(this), 1);
-    removeBall(this)
+    removeBall(this);
 }
 
 function Ball() {
@@ -88,7 +88,15 @@ Ball.prototype.calculBallBorderTraj = function() {
     if (isTopPartOfMap(this.ballHtml.getBoundingClientRect().y) && this.ballVy < 0)
         return;
 
-    this.ballVy = -this.ballVy
+    this.ballVy = -this.ballVy;
+}
+
+Ball.prototype.getBallSide = function() {
+    return this.ballLeftPosition > 50;
+}
+
+Ball.prototype.getBallDirection = function () {
+    return this.ballVx;
 }
 
 function tick() {
@@ -117,4 +125,13 @@ function ballsSpawnTrigger() {
     if (isMapContainNoBall())
         while(!isMapContainMaxBall())
             createNewBall();
+}
+
+export function getAllBallInSide(side) {
+    return balls.filter((ball) => {
+        if (side === 0)
+            return ball.getBallDirection() > 0;
+        else
+            return ball.getBallDirection() <= 0;
+    })
 }
