@@ -1,4 +1,5 @@
 import { navigateTo, cleanUrl } from "./contentLoader.js";
+import { renderUserProfile } from "./render.js";
 
 export let csrfToken = '';
 
@@ -77,33 +78,6 @@ export async function handleLogout() {
     }
 }
 
-// export async function handleResetPasswordLink(event) {
-//     event.preventDefault();
-//     navigateTo('/reset-password');
-// }
-
-// export async function handleResetPassword(event) {
-//     event.preventDefault();
-//     const email = document.getElementById('email').value;
-
-//     await getCsrfToken();
-
-//     const response = await fetch('/api/reset-password/', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'X-CSRFToken': csrfToken
-//         },
-//         body: JSON.stringify({ email: email })
-//     });
-//     const data = await response.json();
-//     if (data.success) {
-//         alert('Un email de réinitialisation de mot de passe a été envoyé à votre adresse email.');
-//     } else {
-//         alert('Échec de la réinitialisation de mot de passe : ' + data.message);
-//     }
-// }
-
 export async function handleUserUpdate(event) {
     event.preventDefault();
 
@@ -159,5 +133,32 @@ export async function handleConfirmRegistration(event) {
         navigateTo('/home', false);
     } else {
         alert(data.error);
+    }
+}
+
+export async function handleUserSearch(event) {
+    event.preventDefault();
+    const query = document.getElementById('search-query').value;
+    const response = await fetch(`/api/user/search/?q=${query}`);
+    const data = await response.json();
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = '<h2>Search Results</h2>';
+    if (data.users.length > 0) {
+        const resultsList = document.createElement('ul');
+        data.users.forEach(user => {
+            const listItem = document.createElement('li');
+            const profileLink = document.createElement('a');
+            profileLink.href = '#';
+            profileLink.textContent = `${user.username} - ${user.email}`;
+            profileLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                navigateTo(`/profile/${user.id}/`, true);
+            });
+            listItem.appendChild(profileLink);
+            resultsList.appendChild(listItem);
+        });
+        resultsContainer.appendChild(resultsList);
+    } else {
+        resultsContainer.innerHTML += '<p>No users found.</p>';
     }
 }

@@ -1,5 +1,5 @@
-import { navigateTo, app } from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, getCsrfToken, csrfToken } from './auth.js';
+import {navigateTo, app, cleanUrl} from './contentLoader.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, handleUserSearch, getCsrfToken, csrfToken } from './auth.js';
 import {
     addFriend,
     removeFriend,
@@ -101,7 +101,13 @@ export async function renderHome() {
                         </div>
                         <button id="logout-button">Logout</button>
                         <button id="launch-game">Launch game</button>
+                        <button id="profile-button">Go to Profile</button>
+                        <form id="search-form">
+                            <input type="text" id="search-query" name="q" placeholder="Search users..." required>
+                            <button type="submit">Search</button>
+                        </form>
                         <a href="#" id="update-user-info">User update info</a>
+                        <div id="search-results"></div>
                         <br><br>
                         <button id="add-friend-button">add friend</button>
                         <div>
@@ -129,6 +135,15 @@ export async function renderHome() {
         // Fetch friendship requests list
         await loadFriendshipRequests();
 
+        document.getElementById('update-user-info').addEventListener('click', (event) => {
+            event.preventDefault();
+            navigateTo('/update/', true);
+        });
+        document.getElementById('profile-button').addEventListener('click', (event) => {
+            event.preventDefault();
+            navigateTo(`/profile/${data.user_id}/`, true);
+        });
+        document.getElementById('search-form').addEventListener('submit', handleUserSearch);
         document.getElementById('logout-button').addEventListener('click', (event) => {
             handleLogout();
             socket.close();
@@ -137,10 +152,6 @@ export async function renderHome() {
         document.getElementById('launch-game').addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo('/game', true);
-        });
-        document.getElementById('update-user-info').addEventListener('click', (event) => {
-            event.preventDefault();
-            navigateTo('/update/', true);
         });
 
         document.getElementById('friend-menu-button').addEventListener('click', function() {
@@ -243,9 +254,13 @@ export async function renderUserUpdateForm() {
             </div>
             <button type="submit">Update</button>
         </form>
+        <button id="home">Home</button>
     `;
-
         document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
+        document.getElementById('home').addEventListener('click', (event) => {
+            event.preventDefault();
+            navigateTo('/');
+        });
     } catch (error) {
         navigateTo('/login');
     }
@@ -311,13 +326,30 @@ export function renderGame() {
                 `;
 }
 
-function loadPage(page) {
-    fetch(page)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('app').innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error loading page:', error);
-        });
+export async function renderUserProfile(userId) {
+    const response = await fetch(`/api/user/profile/${userId}/`);
+
+    if (!response.ok) {
+        navigateTo('/home');
+    }
+
+    const userData = await response.json();
+
+    app.innerHTML = `
+        <div class="profile-container">
+            <h1>User Profile</h1>
+            <div class="profile-picture">
+                <img src="${userData.avatar}" alt="Profile Picture">
+            </div>
+            <div class="profile-details">
+                <p><strong>Username:</strong> ${userData.username}</p>
+                <p><strong>Email:</strong> ${userData.email}</p>
+            </div> 
+        </div>
+        <button id="home">Home</button>
+    `;
+    document.getElementById('home').addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo('/', true);
+    });
 }

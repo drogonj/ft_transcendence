@@ -1,9 +1,5 @@
-from django.shortcuts import render
-from django.contrib.auth.forms import PasswordResetForm
-from django.contrib.auth.views import PasswordResetView
-from django.urls import reverse_lazy
 from django.views.generic import FormView
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.views import View
@@ -15,7 +11,7 @@ from django.utils import timezone
 from datetime import timedelta
 import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
-from .models import get_default_profile_image
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -77,10 +73,11 @@ class LogoutView(View):
 class IsAuthenticatedView(View):
     def get(self, request):
         is_authenticated = request.user.is_authenticated
+        user_id = request.user.id
         current_user = 'unknown'
         if is_authenticated:
             current_user = request.user.username
-        return JsonResponse({'is_authenticated': is_authenticated, 'current_user': current_user})
+        return JsonResponse({'is_authenticated': is_authenticated, 'current_user': current_user, 'user_id': user_id})
 
 @method_decorator(login_required, name='dispatch')
 class LogoutView(View):
@@ -198,31 +195,28 @@ def oauth_confirm_registration(request):
 
     return JsonResponse({'message': 'Success'})
 
-#TODO
-# Erreur si le user dit non a l'autorisation de l'intra
-
-# class ResetPasswordView(FormView):
-#     form_class = PasswordResetForm
-#     success_url = reverse_lazy('password_reset_done')
-
-#     def form_valid(self, form):
-#         form.save(request=self.request)
-#         return JsonResponse({'success': True})
-
-#     def form_invalid(self, form):
-#         errors = form.errors.get_json_data()
-#         return JsonResponse({'success': False, 'errors': errors})
-
-@login_required
-def get_user_info(request):
-    user = request.user
-
-    data = {
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-    }
-    return JsonResponse(data)
+@method_decorator(login_required, name='dispatch')
+class UserInfoView(View):
+    def get(self, request, user_id=None):
+        if user_id:
+            user = get_object_or_404(User, id=user_id)
+        else:
+            user = request.user
+        profil_image_url = user.profil_image.url
+        if user_id:
+            data = {
+                'username': user.username,
+                'email': user.email,
+                'avatar': profil_image_url,
+                'user_id': user.id,
+            }
+        else:
+            data = {
+                'username': user.username,
+                'email': user.email,
+                'avatar': profil_image_url,
+            }
+        return JsonResponse(data)
 
 @method_decorator(login_required, name='dispatch')
 class UserUpdateView(LoginRequiredMixin, FormView):
@@ -246,3 +240,12 @@ class UserUpdateView(LoginRequiredMixin, FormView):
     def get(self, request, *args, **kwargs):
         return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
+@login_required
+def search_users(request):
+    query = request.GET.get('q')
+    if query:
+        users = User.objects.filter(Q(username__icontains=query) | Q(email__icontains=query))
+        user_data = [{'username': user.username, 'email': user.email, 'id': user.id} for user in users]
+    else:
+        user_data = []
+    return JsonResponse({'users': user_data})
