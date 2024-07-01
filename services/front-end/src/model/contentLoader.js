@@ -1,4 +1,12 @@
-import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConfirmRegistration, renderGame } from './render.js';
+import {
+    renderLogin,
+    renderHome,
+    renderSignup,
+    renderUserUpdateForm,
+    renderConfirmRegistration,
+    renderGame,
+    renderUserProfile
+} from './render.js';
 
 export const app = document.getElementById('app');
 
@@ -8,13 +16,15 @@ export function cleanUrl() {
     history.replaceState({ route: newUrl }, 'SPA Application', newUrl);
 }
 
-export function navigateTo(route, pushState) {
+export function navigateTo(route, pushState, data) {
     if (pushState)
         history.pushState({route: route}, 'SPA Application', route);
     else
         history.replaceState({route: route}, 'SPA Application', route);
 
+    const url = window.location.href;
     const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
+    const profileRegex = /\/profile\/(\d+)/;
 
     if (route === '/login' || route === '/login/') {
         renderLogin();
@@ -28,8 +38,11 @@ export function navigateTo(route, pushState) {
         renderConfirmRegistration();
     } else if (route === '/game' || route === '/game/') {
         renderGame();
+    } else if (profileRegex.test(route)) {
+        const userId = url.match(/\/profile\/(\d+)\//)[1];
+        renderUserProfile(userId);
     } else {
-        navigateTo('/home', false)
+        navigateTo('/home', false);
     }
 }
 

@@ -5,6 +5,7 @@ User = get_user_model()
 
 class AccountAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'intra_id',
         'username',
         'email',

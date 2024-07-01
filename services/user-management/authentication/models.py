@@ -29,7 +29,7 @@ class MyAccountManager(BaseUserManager):
 
         return self.create_user(0, email, username, password, **extra_fields)
 
-#TODO Avatar upload
+
 def get_profil_image_filepath(self, filename):
     extension = os.path.splitext(filename)[1]
     return f'profil_images/{self.pk}/profile_image{extension}'
@@ -52,10 +52,12 @@ class Account(AbstractBaseUser):
     is_superuser        = models.BooleanField(default=False)
     profil_image        = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
 
+    is_connected        = models.BooleanField(default=False)
+
     intra_id            = models.IntegerField(default=0)
     register_complete   = models.BooleanField(default=False)
     tmp_token           = models.CharField(max_length=100, unique=True, blank=True, null=True)
-    token_creation_date = models.DateTimeField(verbose_name="token_creation_date", default=timezone.now())
+    token_creation_date = models.DateTimeField(verbose_name="token_creation_date", default=timezone.now)
 
     objects = MyAccountManager()
 
@@ -74,6 +76,12 @@ class Account(AbstractBaseUser):
         self.tmp_token = uuid.uuid4().hex
         self.token_creation_date = timezone.now()
         return self.tmp_token
+
+    def get_info(self):
+        return [
+            self.username,
+            self.profil_image.url,
+        ]
 
     def has_perm(self, perm, obj=None):
         return self.is_admin
