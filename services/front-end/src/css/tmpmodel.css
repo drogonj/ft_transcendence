@@ -41,6 +41,10 @@ section p {
 	font-size: 0.9em;
 }
 
+section label {
+	color: whitesmoke;
+}
+
 section .auth-box
 {
 	position: absolute;

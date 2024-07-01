@@ -1,9 +1,5 @@
-from django.shortcuts import render
-from django.contrib.auth.forms import PasswordResetForm
-from django.contrib.auth.views import PasswordResetView
-from django.urls import reverse_lazy
 from django.views.generic import FormView
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.views import View
@@ -15,6 +11,7 @@ from django.utils import timezone
 from datetime import timedelta
 import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -36,7 +33,7 @@ class LoginView(View):
         elif not user.register_complete and user.intra_id != 0:
             return JsonResponse({'success': False, 'message': 'Registration with 42 not completed'})
         else:
-            login(request, user, 'app.authentication_backends.EmailOrUsernameModelBackend')
+            login(request, user, 'authentication.authentication_backends.EmailOrUsernameModelBackend')
             return JsonResponse({'success': True, 'message': 'Login successful'})
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -61,7 +58,7 @@ class SignupView(View):
             user = User.objects.create_user(intra_id=0, username=username, email=email, password=password)
 
             user.save()
-            login(request, user, 'app.authentication_backends.EmailOrUsernameModelBackend')
+            login(request, user, 'authentication.authentication_backends.EmailOrUsernameModelBackend')
 
             return JsonResponse({'message': 'Signup successful.'})
         except Exception as e:
@@ -76,10 +73,11 @@ class LogoutView(View):
 class IsAuthenticatedView(View):
     def get(self, request):
         is_authenticated = request.user.is_authenticated
+        user_id = request.user.id
         current_user = 'unknown'
         if is_authenticated:
             current_user = request.user.username
-        return JsonResponse({'is_authenticated': is_authenticated, 'current_user': current_user})
+        return JsonResponse({'is_authenticated': is_authenticated, 'current_user': current_user, 'user_id': user_id})
 
 @method_decorator(login_required, name='dispatch')
 class LogoutView(View):
@@ -105,8 +103,8 @@ def oauth_redirect(request):
 def oauth_callback(request):
     #Creating POST to get API authorization token
     code = request.GET.get('code')
-    if not code:
-        return HttpResponseBadRequest("Bad request")
+    if not code or request.GET.get('error'):
+        return redirect(f"{os.getenv('WEBSITE_URL')}/")
     data = {
         'grant_type': 'authorization_code',
         'client_id': os.getenv("42OAUTH_UID"),
@@ -197,33 +195,28 @@ def oauth_confirm_registration(request):
 
     return JsonResponse({'message': 'Success'})
 
-#TODO
-# Erreur si le user dit non a l'autorisation de l'intra
-
-# class ResetPasswordView(FormView):
-#     form_class = PasswordResetForm
-#     success_url = reverse_lazy('password_reset_done')
-
-#     def form_valid(self, form):
-#         form.save(request=self.request)
-#         return JsonResponse({'success': True})
-
-#     def form_invalid(self, form):
-#         errors = form.errors.get_json_data()
-#         return JsonResponse({'success': False, 'errors': errors})
-
-@login_required
-def get_user_info(request):
-    user = request.user
-    profil_image_url = request.build_absolute_uri(user.profil_image.url)
-
-    data = {
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'profil_image': profil_image_url,
-    }
-    return JsonResponse(data)
+@method_decorator(login_required, name='dispatch')
+class UserInfoView(View):
+    def get(self, request, user_id=None):
+        if user_id:
+            user = get_object_or_404(User, id=user_id)
+        else:
+            user = request.user
+        profil_image_url = user.profil_image.url
+        if user_id:
+            data = {
+                'username': user.username,
+                'email': user.email,
+                'avatar': profil_image_url,
+                'user_id': user.id,
+            }
+        else:
+            data = {
+                'username': user.username,
+                'email': user.email,
+                'avatar': profil_image_url,
+            }
+        return JsonResponse(data)
 
 @method_decorator(login_required, name='dispatch')
 class UserUpdateView(LoginRequiredMixin, FormView):
@@ -247,3 +240,12 @@ class UserUpdateView(LoginRequiredMixin, FormView):
     def get(self, request, *args, **kwargs):
         return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
+@login_required
+def search_users(request):
+    query = request.GET.get('q')
+    if query:
+        users = User.objects.filter(Q(username__icontains=query) | Q(email__icontains=query))
+        user_data = [{'username': user.username, 'email': user.email, 'id': user.id} for user in users]
+    else:
+        user_data = []
+    return JsonResponse({'users': user_data})
