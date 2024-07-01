@@ -1,10 +1,9 @@
 import {keyDown} from "./listeners.js"
-import {moveStep, moveSpeed} from "./settings.js";
+import {moveStep, moveSpeed, paddleSize} from "./settings.js";
 import {
 	movePlayerPaddleUp,
 	movePlayerPaddleDown,
-	displayPlayerPoint,
-	displayPlayerPaddle
+	displayPlayerPaddle, setPaddleSize
 } from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
 import {getRandomNumber} from "./math_utils.js";
@@ -23,6 +22,7 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.paddleHeader = paddleHeader;
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
+	setPaddleSize(this, paddleSize);
 	displayPlayerPaddle(this);
 }
 

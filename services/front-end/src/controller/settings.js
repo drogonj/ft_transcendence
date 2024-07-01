@@ -5,15 +5,18 @@ export let maxBallAngle;
 export let maxTime;
 export let maxBall;
 export let respawnIfAllBallsGone;
+export let ballSize;
+export let paddleSize;
 
 export default function loadSettings(inputsHtml) {
 	moveSpeed = inputsHtml[0].value - 10;
-	ballSpeed = 10;
-	maxBall = inputsHtml[2].value;
-	console.log(inputsHtml[1].value)
-	maxBallAngle = inputsHtml[3].value * Math.PI / 180
-	maxTime = inputsHtml[4].value;
-	respawnIfAllBallsGone = inputsHtml[5].checked;
+	paddleSize = inputsHtml[1].value;
+	ballSpeed = inputsHtml[2].value;
+	ballSize = inputsHtml[3].value;
+	maxBall = inputsHtml[4].value;
+	maxBallAngle = inputsHtml[5].value * Math.PI / 180
+	maxTime = inputsHtml[6].value;
+	respawnIfAllBallsGone = inputsHtml[7].checked;
 	//renderPageWithName("pong-game.html")
 	//document.body.style.cursor = "none";
 }

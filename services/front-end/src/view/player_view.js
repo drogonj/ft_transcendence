@@ -15,3 +15,7 @@ export function displayPlayerPoint(scoreHtml, text) {
 export function displayPlayerPaddle(playerPaddle) {
 	playerPaddle.paddleHtml.style.top = playerPaddle.playerTopPosition + "%";
 }
+
+export function setPaddleSize(playerPaddle, size) {
+	playerPaddle.paddleHtml.style.height = size + "%";
+}

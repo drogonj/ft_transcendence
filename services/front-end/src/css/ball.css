@@ -1,6 +1,4 @@
 .ball {
-    height: 4%;
-    width: 2%;
     background-color: var(--bg-secondary);
     border-radius: 50%;
     position: absolute;

@@ -12,12 +12,20 @@ import loadSettings from "./controller/settings.js";
 //If the player is winning, remove 15% of the max game time, otherwise increase by 15%
 //Steal 10% of the enemy points (minimum 1)
 //Slow the enemy paddle by 50% for X seconds
+//ball settings speed
 
-launch();
+launchLocal();
+
+function launchLocal() {
+	document.getElementById("buttonPlay").addEventListener("click", (event) => {
+		document.getElementById("main").style.display = "block"
+		launch();
+		document.getElementById("menuStart").remove();
+	});
+}
 
 export default function launch() {
 	loadSettings(document.getElementsByTagName("input"))
-	document.getElementById("menuStart").remove();
 	loadMap();
 	loadListeners();
 	loadPlayers();

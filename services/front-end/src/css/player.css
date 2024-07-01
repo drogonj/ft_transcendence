@@ -1,5 +1,4 @@
 .playerPaddle {
-    height: 20%;
     width: 1%;
     position: absolute;
     margin-left: 1%;
@@ -11,5 +10,5 @@
 }
 
 #paddleRight {
-    margin-left: 97%;
+    margin-left: 98%;
 }

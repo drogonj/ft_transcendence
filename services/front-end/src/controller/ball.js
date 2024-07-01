@@ -1,5 +1,5 @@
-import {displayBall, moveBall, removeBall} from "../view/ball_view.js";
-import {ballSpeed, maxBall, maxBallAngle, respawnIfAllBallsGone} from "./settings.js";
+import {displayBall, moveBall, removeBall, setBallSize} from "../view/ball_view.js";
+import {ballSize, ballSpeed, maxBall, maxBallAngle, respawnIfAllBallsGone} from "./settings.js";
 import {getAllPaddles, getLeftPaddle, getLeftPlayerHeader, getRightPaddle, getRightPlayerHeader} from "./player.js";
 import {
     addBallToMap,
@@ -36,6 +36,7 @@ function Ball() {
     this.ballVy = getRandomNumberWithDecimal(0.1, 0.7);
     this.ballTopPosition = 50;
     this.ballLeftPosition = 50;
+    setBallSize(this, ballSize);
     displayBall(this);
     addBallToMap(this.ballHtml)
 }
