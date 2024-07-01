@@ -1,5 +1,3 @@
-import {moveStep} from "../controller/settings.js";
-
 export function movePlayerPaddleUp(playerPaddle) {
 	playerPaddle.playerTopPosition--;
 	displayPlayerPaddle(playerPaddle)

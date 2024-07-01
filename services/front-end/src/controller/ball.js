@@ -1,5 +1,5 @@
 import {displayBall, moveBall, removeBall} from "../view/ball_view.js";
-import {ballSpeed, maxBall, maxBallAngle, respawnIfAllBallsGone, tickRate} from "./settings.js";
+import {ballSpeed, maxBall, maxBallAngle, respawnIfAllBallsGone} from "./settings.js";
 import {getAllPaddles, getLeftPaddle, getLeftPlayerHeader, getRightPaddle, getRightPlayerHeader} from "./player.js";
 import {
     addBallToMap,
@@ -76,9 +76,8 @@ Ball.prototype.calculBallTraj = function(paddle) {
     const normalizedRelativeIntersectionY = (relativeIntersectY / (paddleHeight / 2));
     const bounceAngle = normalizedRelativeIntersectionY * maxBallAngle;
 
-    this.ballVx = ballSpeed * (paddle.paddleDirection * Math.cos(bounceAngle));
-    this.ballVy = ballSpeed * -Math.sin(bounceAngle);
-    console.log(this.ballVx, this.ballVy)
+    this.ballVx = paddle.paddleDirection * Math.cos(bounceAngle);
+    this.ballVy = -Math.sin(bounceAngle);
 }
 
 Ball.prototype.calculBallBorderTraj = function() {
@@ -100,7 +99,7 @@ function tick() {
         moveBall(ball);
     });
     ballsSpawnTrigger();
-	setTimeout(tick, tickRate);
+	setTimeout(tick, ballSpeed);
 }
 
 export function getBallNumber() {

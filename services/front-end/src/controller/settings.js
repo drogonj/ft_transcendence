@@ -1,5 +1,3 @@
-
-export const tickRate = 10;
 export let moveSpeed;
 export const moveStep = 10;
 export let ballSpeed;
@@ -10,7 +8,7 @@ export let respawnIfAllBallsGone;
 
 export default function loadSettings(inputsHtml) {
 	moveSpeed = inputsHtml[0].value - 10;
-	ballSpeed = 1;
+	ballSpeed = 10;
 	maxBall = inputsHtml[2].value;
 	console.log(inputsHtml[1].value)
 	maxBallAngle = inputsHtml[3].value * Math.PI / 180
