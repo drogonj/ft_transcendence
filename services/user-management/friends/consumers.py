@@ -57,7 +57,7 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
                 group_name,
                 {
                     'type': 'friend_connected_notification',
-                    'user_id': user.id,
+                    'id': user.id,
                     'username': user.username
                 }
             )
@@ -70,7 +70,7 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
                 group_name,
                 {
                     'type': 'friend_disconnected_notification',
-                    'user_id': user.id,
+                    'id': user.id,
                     'username': user.username
                 }
             )
@@ -79,10 +79,12 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         # Accéder aux données envoyées
         from_user = event['from_user']
         avatar = event['avatar']
+        id = event['id']
 
         # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'friend_request_notification',
+            'id': id,
             'username': from_user,
             'avatar': avatar,
         }))
@@ -92,10 +94,12 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         from_user = event['from_user']
         avatar = event['avatar']
         is_connected = event['is_connected']
+        id = event['id']
 
         # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'accepted_friendship_request_notification',
+            'id': id,
             'username': from_user,
             'avatar': avatar,
             'is_connected': is_connected,
@@ -105,32 +109,34 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         # Accéder aux données envoyées
         from_user = event['from_user']
         avatar = event['avatar']
+        id = event['id']
 
         # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'canceled_friendship_notification',
+            'id': id,
             'username': from_user,
             'avatar': avatar,
         }))
 
     async def friend_connected_notification(self, event):
-        user_id = event['user_id']
+        user_id = event['id']
         username = event['username']
 
         # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'friend_connected_notification',
-            'user_id': user_id,
+            'id': user_id,
             'username': username,
         }))
 
     async def friend_disconnected_notification(self, event):
-        user_id = event['user_id']
+        user_id = event['id']
         username = event['username']
 
         # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'friend_disconnected_notification',
-            'user_id': user_id,
+            'id': user_id,
             'username': username,
         }))

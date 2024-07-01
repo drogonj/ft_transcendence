@@ -15,6 +15,7 @@ def send_friend_request_notification(to_user_id, from_user):
         f'user_{to_user_id}',
         {
             'type': 'friend_request_notification',
+            'id': from_user.id,
             'from_user': from_user.username,
             'avatar': from_user.profil_image.url,
         }
@@ -26,6 +27,7 @@ def send_accepted_friendship_request_notification(to_user_id, from_user):
         f'user_{to_user_id}',
         {
             'type': 'accepted_friendship_request_notification',
+            'id': from_user.id,
             'from_user': from_user.username,
             'avatar': from_user.profil_image.url,
             'is_connected': from_user.is_connected,
@@ -38,6 +40,7 @@ def send_canceled_friendship_notification(to_user_id, from_user):
         f'user_{to_user_id}',
         {
             'type': 'canceled_friendship_notification',
+            'id': from_user.id,
             'from_user': from_user.username,
             'avatar': from_user.profil_image.url,
         }
@@ -52,6 +55,7 @@ class GetFriendsView(View):
         friends_info = []
         for friend in friends:
             friends_info.append({
+                'id': friend.id,
                 'username': friend.username,
                 'avatar': friend.profil_image.url,
                 'is_connected': friend.is_connected,
@@ -65,6 +69,7 @@ class GetReceivedFriendshipRequestsView(View):
         from_users = []
         for request in requests:
             from_users.append({
+                'id': request.from_user.id,
                 'username': request.from_user.username,
                 'avatar': request.from_user.profil_image.url,
             })
@@ -94,10 +99,19 @@ class AddFriendView(View):
         if FriendshipRequest.objects.filter(from_user=request.user, to_user=to_user).exists():
             return JsonResponse({'message': 'Request already sent'}, status=400)
 
+        if Friendship.objects.filter(from_user=request.user, to_user=to_user).exists():
+            return JsonResponse({'message': 'You are already friend with this user'}, status=400)
+
         # Check if a friendship request was received from the target user
         if FriendshipRequest.objects.filter(from_user=to_user, to_user=request.user).exists():
             FriendshipRequest.objects.accept_friendship_request(to_user=request.user, from_user=to_user)
-            return JsonResponse({'message': f'You are now friends with {to_user.username}'}, status=200)
+            send_accepted_friendship_request_notification(to_user.id, request.user)
+            return JsonResponse({
+                'message': 'friendship request accepted',
+                'id': to_user.id,
+                'avatar': to_user.profil_image.url,
+                'is_connected': to_user.is_connected,
+            })
 
         try:
             FriendshipRequest.objects.create(from_user=request.user, to_user=to_user)
@@ -112,7 +126,7 @@ class RemoveFriendView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            target = User.objects.get(username=data.get('friend_username'))
+            target = User.objects.get(id=data.get('friend_id'))
             Friendship.objects.cancel_friendship(request.user, target)
             send_canceled_friendship_notification(target.id, request.user)
             return JsonResponse({'message': 'friendship canceled'})
@@ -124,11 +138,12 @@ class AcceptFriendshipRequest(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            from_user = User.objects.get(username=data.get('username'))
+            from_user = User.objects.get(id=data.get('id'))
             FriendshipRequest.objects.accept_friendship_request(request.user, from_user)
             send_accepted_friendship_request_notification(from_user.id, request.user)
             return JsonResponse({
                 'message': 'friendship request accepted',
+                'username': from_user.username,
                 'is_connected': from_user.is_connected,
             })
         except Exception:
@@ -139,7 +154,7 @@ class DeclineFriendshipRequest(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            from_user = User.objects.get(username=data.get('username'))
+            from_user = User.objects.get(id=data.get('id'))
             FriendshipRequest.objects.cancel_friendship_request(request.user, from_user)
             return JsonResponse({'message': 'friendship request canceled'})
         except Exception:

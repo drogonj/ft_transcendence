@@ -6,6 +6,8 @@ do
   sleep 1
 done
 
+sleep 5
+
 cp -r /tmp_static/* /singlepageapp
 
 nginx -g 'daemon off;'

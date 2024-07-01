@@ -182,23 +182,24 @@ export async function renderHome() {
             const type = data.type
             console.log(data)
 
+            const user_id = data.id;
             const from_user = data.username;
 
             if (type === 'friend_request_notification') {
                 const avatar = data.avatar
-                addFriendshipRequestToMenu(from_user, avatar)
+                addFriendshipRequestToMenu(user_id, from_user, avatar)
             } else if (type === 'accepted_friendship_request_notification') {
                 const avatar = data.avatar
                 const is_connected = data.is_connected
-                addFriendToMenu(from_user, avatar, is_connected)
+                addFriendToMenu(user_id, from_user, avatar, is_connected)
             } else if (type === 'canceled_friendship_notification') {
-                const divId = "friend-" + from_user
+                const divId = "friend-" + user_id;
                 const element = document.getElementById(divId);
                 element.remove();
             } else if (type === 'friend_connected_notification') {
-                changeFriendStatus(from_user, true);
+                changeFriendStatus(user_id, true);
             } else if (type === 'friend_disconnected_notification') {
-                changeFriendStatus(from_user, false)
+                changeFriendStatus(user_id, false)
             }
         };
 
@@ -221,9 +222,10 @@ export async function renderHome() {
 
 export async function renderUserUpdateForm() {
     const response = await fetch('/api/user/info/');
-    const userData = await response.json();
 
-    if (userData.is_authenticated){
+    try {
+        const userData = await response.json();
+
         app.innerHTML = `
         <h2>Update User Information</h2>
         <form id="user-update-form">
@@ -244,8 +246,8 @@ export async function renderUserUpdateForm() {
     `;
 
         document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
-    } else {
-        navigateTo('/login')
+    } catch (error) {
+        navigateTo('/login');
     }
 }
 
