@@ -1,4 +1,4 @@
-import {moveBall, removeBall} from "../view/ball_view.js";
+import {displayBall, moveBall, removeBall} from "../view/ball_view.js";
 import {ballSpeed, maxBall, maxBallAngle, respawnIfAllBallsGone, tickRate} from "./settings.js";
 import {getAllPaddles, getLeftPaddle, getLeftPlayerHeader, getRightPaddle, getRightPlayerHeader} from "./player.js";
 import {
@@ -21,7 +21,7 @@ export default function loadBall() {
 }
 
 function createNewBall() {
-    balls.push(new Ball(getRandomNumberBetweenOne(), getRandomNumberWithDecimal(-8, 8)));
+    balls.push(new Ball());
 }
 
 Ball.prototype.deleteBall = function () {
@@ -29,11 +29,14 @@ Ball.prototype.deleteBall = function () {
     removeBall(this)
 }
 
-function Ball(ballVx = 1, ballVy = 0) {
+function Ball() {
     this.ballHtml = document.createElement('div');
     this.ballHtml.classList.add("ball");
-    this.ballVx = ballVx * (ballSpeed / 3);
-    this.ballVy = ballVy;
+    this.ballVx = 0.4 * getRandomNumberBetweenOne();
+    this.ballVy = getRandomNumberWithDecimal(0.1, 0.7);
+    this.ballTopPosition = 50;
+    this.ballLeftPosition = 50;
+    displayBall(this);
     addBallToMap(this.ballHtml)
 }
 
@@ -75,6 +78,7 @@ Ball.prototype.calculBallTraj = function(paddle) {
 
     this.ballVx = ballSpeed * (paddle.paddleDirection * Math.cos(bounceAngle));
     this.ballVy = ballSpeed * -Math.sin(bounceAngle);
+    console.log(this.ballVx, this.ballVy)
 }
 
 Ball.prototype.calculBallBorderTraj = function() {

@@ -3,7 +3,7 @@ export function getRandomNumber(min, max) {
 }
 
 export function getRandomNumberWithDecimal(min, max) {
-	return (Math.random() * (max - min) + min).toFixed(2);
+	return getRandomNumberBetweenOne() * (Math.random() * (max - min) + min).toFixed(1);
 }
 
 export function getRandomNumberBetweenOne() {
