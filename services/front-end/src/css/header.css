@@ -48,9 +48,11 @@
 .spell {
     background-color: var(--bg-secondary);
     height: 100%;
-    width: 20%;
+    width: 32%;
+    display: flex; /* Use flexbox to center the image */
+    justify-content: center;
+    align-items: center;
     margin-left: 2%;
-
 }
 
 #headerMiddle {
@@ -65,4 +67,10 @@
     justify-content: space-between;
     align-items: center;
     height: 100%;
+}
+
+#header img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
 }
