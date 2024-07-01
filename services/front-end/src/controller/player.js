@@ -2,6 +2,7 @@ import {keyDown} from "./listeners.js"
 import {moveStep, moveSpeed} from "./settings.js";
 import {movePlayerPaddleUp, movePlayerPaddleDown, displayPlayerPoint} from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
+import {getRandomNumber} from "./math_utils.js";
 
 const players = [];
 
@@ -16,6 +17,8 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.paddleHtml = paddleHtml;
 	this.paddleHeader = paddleHeader;
 	this.paddleDirection = paddleDirection;
+	this.playerTopPosition = getRandomNumber(3, 70);
+	this.paddleHtml.style.top = this.playerTopPosition + "%";
 }
 
 Player.prototype.paddleCanMoveUp = function() {
@@ -23,7 +26,6 @@ Player.prototype.paddleCanMoveUp = function() {
 }
 
 Player.prototype.paddleCanMoveDown = function() {
-	console.log(this.paddleHtml.getBoundingClientRect().bottom,  (this.paddleHtml.offsetTop + this.paddleHtml.offsetHeight) + moveStep, getMapHeight());
 		return this.paddleHtml.getBoundingClientRect().bottom + moveStep < getMapHeight();
 }
 

@@ -14,12 +14,10 @@ import loadSettings from "./controller/settings.js";
 //Slow the enemy paddle by 50% for X seconds
 
 launch();
-document.addEventListener("click", (event) => {
-	console.log(event.x, event.y)
-})
 
 export default function launch() {
 	loadSettings(document.getElementsByTagName("input"))
+	document.getElementById("menuStart").remove();
 	loadMap();
 	loadListeners();
 	loadPlayers();
