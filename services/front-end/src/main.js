@@ -4,6 +4,7 @@ import loadBall from "./controller/ball.js";
 import loadMap from "./controller/map.js";
 import {loadHeader} from "./controller/header.js";
 import loadSettings from "./controller/settings.js";
+import loadSpell, {getSpellWithName} from "./controller/spell.js";
 
 //Delete all the coming balls (don't give point)
 //Slow all the comings balls for X seconds
@@ -22,6 +23,9 @@ function launchLocal() {
 		launch();
 		document.getElementById("menuStart").remove();
 	});
+	loadSpell();
+	const s = getSpellWithName("test");
+	console.log(s.cooldown)
 }
 
 export default function launch() {
