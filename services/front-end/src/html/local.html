@@ -18,8 +18,14 @@
     <output class="menuItem">Paddle Move Speed</output>
     <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="10">
 
+    <output class="menuItem">Paddle Size</output>
+    <input id="inputPaddleSize" class="menuItem slider" type="range" min="5" max="40" value="20">
+
     <output class="menuItem">Ball Move Speed</output>
-    <input id="inputBallSpeed" class="menuItem slider" type="range" min="3" max="25" value="20">
+    <input id="inputBallSpeed" class="menuItem slider" type="range" min="6" max="20" value="10">
+
+    <output class="menuItem">Ball Size</output>
+    <input id="inputBallSize" class="menuItem slider" type="range" min="1" max="3" value="1.5" step="0.1">
 
     <output class="menuItem">Number of ball</output>
     <input id="inputNumberBall" class="menuItem slider" type="range" min="1" max="20" value="1">
@@ -47,7 +53,7 @@
     <button id="buttonPlay" class="menuItem button">Play</button>
 </div>
 
-<div id="main">
+<div id="main" style="display: none">
     <div id="mapAndHeader">
         <div id="header">
             <div id="headerLeft">
