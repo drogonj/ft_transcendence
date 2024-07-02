@@ -8,6 +8,7 @@ import json, os, secrets, mimetypes, requests
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models import Friendship, FriendshipRequest
+from django.db.models import Q
 
 def send_friend_request_notification(to_user_id, from_user):
     channel_layer = get_channel_layer()
@@ -83,17 +84,17 @@ class AddFriendView(View):
         except json.JSONDecodeError:
             return HttpResponseBadRequest("Invalid JSON")
 
-        username = data.get('username')
-        if not username:
+        user_id = data.get('id')
+        if not user_id:
             return JsonResponse({'error': 'No target provided'}, status=400)
 
-        if username == request.user.username:
+        if user_id == request.user.id:
             return JsonResponse({'error': 'What are you doing?'})
 
         try:
-            to_user = User.objects.get(username=username)
+            to_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return JsonResponse({'error': f'Target not found: {username}'}, status=404)
+            return JsonResponse({'error': f'Target not found'}, status=404)
 
         # Check if a friendship request already exists
         if FriendshipRequest.objects.filter(from_user=request.user, to_user=to_user).exists():
@@ -159,3 +160,15 @@ class DeclineFriendshipRequest(View):
             return JsonResponse({'message': 'friendship request canceled'})
         except Exception:
             return HttpResponseBadRequest()
+
+@login_required
+def search_users(request):
+    query = request.GET.get('q')
+    if query:
+        users = User.objects.filter(Q(username__icontains=query))
+        user_data = [{'username': user.username, 'id': user.id, 'avatar': user.profil_image.url} for user in users
+                     if user.username != request.user.username
+                     and not Friendship.objects.filter(from_user=user, to_user=request.user).exists()]
+    else:
+        user_data = []
+    return JsonResponse({'users': user_data})

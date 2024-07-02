@@ -1,5 +1,5 @@
 import {navigateTo, app, cleanUrl} from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, handleUserSearch, getCsrfToken, csrfToken } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, getCsrfToken, csrfToken } from './auth.js';
 import {
     addFriend,
     removeFriend,
@@ -10,6 +10,7 @@ import {
     addFriendshipRequestToMenu,
     addFriendToMenu,
     changeFriendStatus,
+    handleUserSearch,
 } from './friends.js';
 
 export function renderLogin() {
@@ -102,18 +103,7 @@ export async function renderHome() {
                         <button id="logout-button">Logout</button>
                         <button id="launch-game">Launch game</button>
                         <button id="profile-button">Go to Profile</button>
-                        <form id="search-form">
-                            <input type="text" id="search-query" name="q" placeholder="Search users..." required>
-                            <button type="submit">Search</button>
-                        </form>
                         <a href="#" id="update-user-info">User update info</a>
-                        <div id="search-results"></div>
-                        <br><br>
-                        <button id="add-friend-button">add friend</button>
-                        <div>
-                            <label for="target-username">Username:</label>
-                            <input type="text" id="target-username" name="target-username" value="" required>
-                        </div>
                         <div class="friend-menu-container">
                             <button id="friend-menu-button" class="friend-menu-button">Amis</button>
                             <div id="friend-menu" class="friend-menu">
@@ -124,8 +114,15 @@ export async function renderHome() {
                                  </div>
                                  <ul id="friends-content" class="friend-menu-content active"></ul>
                                  <ul id="requests-content" class="friend-menu-content"></ul>
-                                <ul id="add-friend" class="friend-menu-content">
-                                    <!--TODO-->
+                                 <ul id="add-friend" class="friend-menu-content">
+                                  <div id="search-bar">
+                                  <form id="search-user-form">
+                                       <input type="text" id="search-query" name="q" required>
+                                       <i>Username</i>
+                                       <input type="submit" value="search">
+                                   </form>
+                                  </div>
+                                  <div id="search-results"></div>
                                 </ul>
                             </div>
                         </div>
@@ -143,12 +140,11 @@ export async function renderHome() {
             event.preventDefault();
             navigateTo(`/profile/${data.user_id}/`, true);
         });
-        document.getElementById('search-form').addEventListener('submit', handleUserSearch);
+        document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
         document.getElementById('logout-button').addEventListener('click', (event) => {
             handleLogout();
             socket.close();
         });
-        document.getElementById('add-friend-button').addEventListener('click', addFriend);
         document.getElementById('launch-game').addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo('/game', true);
@@ -290,6 +286,10 @@ export async function renderConfirmRegistration() {
                                <div class="inputBox" id="confirm-passw-box">
                                <input type="password" id="confirm_password" name="confirm_password" required>
                                <i>Confirm password</i>
+                              </div>
+                              <div class="take-intra-pic">
+                                <input type="checkbox" id="intra-pic-checkbox" name="intra-pic-checkbox" checked />
+                                <label for="intra-pic-checkbox">Take intra picture</label>
                               </div>
                               <div class="links">
                                 <a href="" id="login-link">Login</a>

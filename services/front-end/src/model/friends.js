@@ -20,7 +20,9 @@ export function changeFriendStatus(userId, is_connected) {
 export async function addFriend(event) {
     event.preventDefault();
 
-    const username = document.getElementById('target-username').value;
+    const button = event.currentTarget;
+    const userId = button.getAttribute('data-user-id');
+    const username = button.getAttribute('data-user-username');
 
     await getCsrfToken();
 
@@ -30,7 +32,7 @@ export async function addFriend(event) {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken
         },
-        body: JSON.stringify({ username: username })
+        body: JSON.stringify({ id: userId })
     });
     const data = await response.json();
     if (data.error) {
@@ -38,6 +40,9 @@ export async function addFriend(event) {
     } else if (data.message && data.message === 'friendship request accepted') {
         addFriendToMenu(data.id, username, data.avatar, data.is_connected);
     }
+    const elementId = "user-" + userId;
+    const element = document.getElementById(elementId);
+    element.remove();
 }
 
 export async function removeFriend(event) {
@@ -205,5 +210,40 @@ export async function loadFriendshipRequests() {
         }
     } catch (error) {
         console.error('Error loading friendship requests:', error);
+    }
+}
+
+export async function handleUserSearch(event) {
+    event.preventDefault();
+    const query = document.getElementById('search-query').value;
+    const response = await fetch(`/api/user/search/?q=${query}`);
+    const data = await response.json();
+    const resultsContainer = document.getElementById('search-results');
+
+    resultsContainer.innerHTML = "";
+
+    if (data.users.length > 0) {
+        data.users.forEach(user => {
+            const userField = document.createElement('li');
+            userField.id = 'user-' + user.id;
+
+            userField.innerHTML = `
+                <div class="avatar-container">
+                    <img class="avatar" src="${user.avatar}" alt="${user.username}'s Avatar">
+                </div>
+                <a href="/profile/${user.id}/"><p>${user.username}</p></a>
+                <button class="add-friend-button" data-user-username="${user.username}" data-user-id="${user.id}">
+                    <img src="/src/images/green_cross.png" alt="add">
+                </button>
+            `;
+
+            resultsContainer.insertAdjacentElement('beforeend', userField);
+
+            userField.querySelector('.add-friend-button').addEventListener('click', async (event) => {
+                await addFriend(event);
+            });
+        });
+    } else {
+        resultsContainer.innerHTML += '<p>No users found.</p>';
     }
 }
