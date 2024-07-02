@@ -26,9 +26,12 @@ services:
     depends_on:
         postgres:
           condition: service_healthy
+        vault:
+          condition: service_started
     env_file:
       - .env
     environment:
+      - VAULT_ADDR=http://vault:8200
       - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
 
@@ -42,9 +45,26 @@ services:
       - POSTGRES_USER=${SQL_USER}
       - POSTGRES_DB=${SQL_DATABASE}
       - POSTGRES_PASSWORD=${SQL_PASSWORD}
+      - VAULT_ADDR=http://vault:8200
     networks:
      - network
 
+  vault:
+    build: ./services/vault/
+    container_name: vault
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+    env_file:
+      - .env
+    networks:
+      - network
+    depends_on:
+      - postgres
+  
 networks:
   network:
     driver: bridge
