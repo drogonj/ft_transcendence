@@ -49,10 +49,23 @@
     background-color: var(--bg-secondary);
     height: 100%;
     width: 32%;
-    display: flex; /* Use flexbox to center the image */
+    display: flex;
     justify-content: center;
     align-items: center;
     margin-left: 2%;
+    position: relative;
+}
+
+.spellCd {
+    position: absolute;
+    font-size: 32%;
+    background-color: rgba(128, 128, 128, 0.5);
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
 }
 
 #headerMiddle {

@@ -36,6 +36,7 @@ function Ball() {
     this.ballVy = getRandomNumberWithDecimal(0.1, 0.7);
     this.ballTopPosition = 50;
     this.ballLeftPosition = 50;
+    this.ballActiveSpell = null;
     setBallSize(this, ballSize);
     displayBall(this);
     addBallToMap(this.ballHtml)
@@ -48,8 +49,11 @@ Ball.prototype.triggerBallInsidePlayer = function () {
         const paddleRect = paddle.paddleHtml.getBoundingClientRect();
 
         if (ballRect.right > paddleRect.left && ballRect.left < paddleRect.right
-            && ballRect.top < paddleRect.bottom && ballRect.bottom > paddleRect.top)
-                this.calculBallTraj(paddle);
+            && ballRect.top < paddleRect.bottom && ballRect.bottom > paddleRect.top) {
+            if (this.ballActiveSpell)
+                this.ballActiveSpell.onHit(this);
+            this.calculBallTraj(paddle);
+        }
     }
 }
 

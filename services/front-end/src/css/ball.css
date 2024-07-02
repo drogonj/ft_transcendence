@@ -6,3 +6,25 @@
     top: 50%;
     transform: translate(-50%, -50%);
 }
+
+@keyframes changeColor {
+    0% {
+        background-color: var(--bg-secondary);
+        opacity: 1;
+    }
+
+    100% {
+        background-color: var(--change-color);
+        opacity: 0;
+    }
+}
+
+@keyframes changeColorReverse {
+    0% {
+        background-color: var(--change-color-reverse);
+    }
+
+    100% {
+        background-color: var(--bg-secondary);
+    }
+}
