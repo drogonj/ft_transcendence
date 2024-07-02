@@ -21,13 +21,14 @@ services:
       - "8000:8000"
     volumes:
       - django:/singlepageapp
+      - shared:/shared
     networks:
       - network
     depends_on:
         postgres:
           condition: service_healthy
         vault:
-          condition: service_started
+          condition: service_healthy
     env_file:
       - .env
     environment:
@@ -64,6 +65,13 @@ services:
       - network
     depends_on:
       - postgres
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+     - shared:/shared
   
 networks:
   network:
@@ -72,3 +80,4 @@ networks:
 volumes:
   nginx:
   django:
+  shared:

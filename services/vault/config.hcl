@@ -1,5 +1,5 @@
 storage "postgresql" {
-  connection_url = "postgres://${SQL_USER}:${SQL_PASSWORD}@postgres:5432/${SQL_DATABASE}?sslmode=disable"
+  connection_url = "postgres://${VAULT_DB_USER}:${VAULT_DB_PASSWORD}@postgres:5432/${VAULT_DB_NAME}?sslmode=disable"
 }
 
 listener "tcp" {
@@ -9,3 +9,4 @@ listener "tcp" {
 
 ui = true
 disable_mlock = true
+

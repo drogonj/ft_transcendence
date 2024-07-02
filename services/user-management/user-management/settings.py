@@ -91,10 +91,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'user-management.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 client = hvac.Client(url=os.environ['VAULT_ADDR'], token=os.environ['VAULT_TOKEN'])
 secrets = client.secrets.kv.v2.read_secret_version(path='myapp/database')['data']['data']
 DATABASES = {
@@ -107,6 +103,7 @@ DATABASES = {
         "PORT": os.environ.get("SQL_PORT"),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
