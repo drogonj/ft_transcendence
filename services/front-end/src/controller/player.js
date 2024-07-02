@@ -53,6 +53,8 @@ function tick() {
 			movePlayerPaddleDown(getLeftPaddle());
 	} else if (keyDown.has('1')) {
 		getLeftPaddle().playerSpells[0].executor(getLeftPaddle());
+	} else if (keyDown.has('2')) {
+		getLeftPaddle().playerSpells[1].executor(getLeftPaddle());
 	}
 
 	if (keyDown.has('ArrowUp')) {

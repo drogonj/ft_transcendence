@@ -4,6 +4,8 @@
     --bg-primary: #1A2130;
     --bg-secondary: #DAE1E7;
     --bg-three: #5A72A0;
+    --change-color: #8B0000;
+    --change-color-reverse: blue;
 }
 
 body {
@@ -15,6 +17,7 @@ body {
     -ms-user-select: none; /* Disable text selection in Internet Explorer/Edge */
     -webkit-touch-callout: none; /* Disable the callout that appears when long-pressing a link */
     color: #282828;
+    background-color: var(--bg-primary);
 }
 
 a {
