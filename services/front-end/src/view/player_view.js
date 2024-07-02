@@ -1,10 +1,10 @@
 export function movePlayerPaddleUp(playerPaddle) {
-	playerPaddle.playerTopPosition--;
+	playerPaddle.playerTopPosition -= playerPaddle.moveStep;
 	displayPlayerPaddle(playerPaddle)
 }
 
 export function movePlayerPaddleDown(playerPaddle) {
-	playerPaddle.playerTopPosition++;
+	playerPaddle.playerTopPosition += playerPaddle.moveStep;
 	displayPlayerPaddle(playerPaddle)
 }
 
@@ -18,4 +18,8 @@ export function displayPlayerPaddle(playerPaddle) {
 
 export function setPaddleSize(playerPaddle, size) {
 	playerPaddle.paddleHtml.style.height = size + "%";
+}
+
+export function setPaddleColor(paddle, color) {
+	paddle.paddleHtml.style.backgroundColor = color;
 }
