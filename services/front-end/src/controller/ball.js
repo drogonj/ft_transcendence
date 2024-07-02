@@ -50,9 +50,9 @@ Ball.prototype.triggerBallInsidePlayer = function () {
 
         if (ballRect.right > paddleRect.left && ballRect.left < paddleRect.right
             && ballRect.top < paddleRect.bottom && ballRect.bottom > paddleRect.top) {
+            this.calculBallTraj(paddle);
             if (this.ballActiveSpell)
                 this.ballActiveSpell.onHit(this);
-            this.calculBallTraj(paddle);
         }
     }
 }

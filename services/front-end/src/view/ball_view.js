@@ -23,5 +23,9 @@ export function setBallColor(ball, color) {
 }
 
 export function setBallAnimation(ball, animation) {
+	ball.ballHtml.style.animation = animation;
+}
 
+export function removeBallProperty(ball, property) {
+	ball.ballHtml.style.removeProperty(property);
 }

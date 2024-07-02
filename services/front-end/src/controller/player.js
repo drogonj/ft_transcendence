@@ -22,6 +22,7 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.paddleHtml = paddleHtml;
 	this.paddleHeader = paddleHeader;
 	this.moveSpeed = moveSpeed;
+	this.moveStep = 1;
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
 	this.playerSpells = getRandomSpells();
@@ -55,6 +56,8 @@ function tick() {
 		getLeftPaddle().playerSpells[0].executor(getLeftPaddle());
 	} else if (keyDown.has('2')) {
 		getLeftPaddle().playerSpells[1].executor(getLeftPaddle());
+	} else if (keyDown.has('3')) {
+		getLeftPaddle().playerSpells[2].executor(getLeftPaddle());
 	}
 
 	if (keyDown.has('ArrowUp')) {
@@ -85,4 +88,10 @@ export function getLeftPlayerHeader() {
 
 export function getRightPlayerHeader() {
 	return players[1].paddleHeader;
+}
+
+export function getOpponentPaddle(paddle) {
+	if (paddle.paddleDirection === -1)
+		return getRightPaddle();
+	return getLeftPaddle();
 }
