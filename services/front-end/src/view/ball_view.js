@@ -29,3 +29,7 @@ export function setBallAnimation(ball, animation) {
 export function removeBallProperty(ball, property) {
 	ball.ballHtml.style.removeProperty(property);
 }
+
+export function setBallStyleProperty(ball, property, value) {
+	ball.ballHtml.style.setProperty(property, value);
+}

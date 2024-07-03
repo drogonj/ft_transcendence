@@ -45,6 +45,10 @@ Player.prototype.triggerKey = function() {
 	setTimeout(this.triggerKey, this.moveSpeed);
 }
 
+Player.prototype.getPaddleHeight = function () {
+	return parseInt(this.paddleHtml.style.height);
+}
+
 function tick() {
 	if (keyDown.has('w')) {
 		if (getLeftPaddle().paddleCanMoveUp())

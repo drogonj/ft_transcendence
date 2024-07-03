@@ -1,0 +1,32 @@
+@keyframes changeColorWithOpacity {
+	0% {
+		background-color: var(--change-color1);
+		opacity: 1;
+	}
+
+	100% {
+		background-color: var(--change-color2);
+		opacity: 0;
+	}
+}
+
+@keyframes changeColor {
+	0% {
+		background-color: var(--change-color1);
+	}
+
+	100% {
+		background-color: var(--change-color2);
+	}
+}
+
+@keyframes makeInvisible {
+	0% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+
+	}
+}
