@@ -38,3 +38,25 @@
         background-color: #660000;
     }
 }
+
+@keyframes changeColorTmp2 {
+    0% {
+        background-color: #483D8B;
+    }
+
+    100% {
+        background-color: #FF00FF;
+    }
+}
+
+@keyframes makeInvisible {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+
+    }
+}
+

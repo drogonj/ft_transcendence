@@ -20,8 +20,20 @@ export default function loadBall() {
     tick();
 }
 
-function createNewBall() {
-    balls.push(new Ball());
+export function createNewBall() {
+    const newBall = new Ball();
+    balls.push(newBall);
+    return newBall;
+}
+
+export function copyBall(ball) {
+    const newBall = createNewBall();
+    newBall.ballVx = ball.ballVx;
+    newBall.ballVy = ball.ballVy;
+    newBall.ballTopPosition = ball.ballTopPosition;
+    newBall.ballLeftPosition = ball.ballLeftPosition;
+    newBall.ballActiveSpell = ball.ballActiveSpell;
+    return newBall;
 }
 
 Ball.prototype.deleteBall = function () {
