@@ -2,6 +2,8 @@ import BallSlayer from "./spells/ball_slayer.js";
 import BallFreeze from "./spells/ball_freeze.js";
 import PaddleStun from "./spells/paddle_stun.js";
 import BallPush from "./spells/ball_push.js";
+import BallInvisible from "./spells/ball_invisible.js";
+import BallClone from "./spells/ball_clone.js";
 
 const spells = [];
 
@@ -9,6 +11,8 @@ export default function loadSpell() {
 	spells.push(new BallSlayer());
 	spells.push(new BallFreeze());
 	spells.push(new BallPush());
+	spells.push(new BallClone());
+	spells.push(new BallInvisible());
 	spells.push(new PaddleStun());
 }
 
