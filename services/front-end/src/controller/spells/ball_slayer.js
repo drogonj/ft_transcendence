@@ -1,9 +1,10 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
+import {setBallAnimation} from "../../view/ball_view.js";
 
 
 export default function BallSlayer() {
-	Spell.call(this, 5, "Ball Slayer", "TEXT DESCRIPTION");
+	Spell.call(this, 1, "Ball Slayer", "TEXT DESCRIPTION");
 }
 
 BallSlayer.prototype.executor = function (playerPaddle) {
@@ -22,7 +23,7 @@ BallSlayer.prototype.executor = function (playerPaddle) {
 
 BallSlayer.prototype.animation = function(ball) {
 	const animationTime = 1;
-	ball.ballHtml.style.animation = "changeColor " + animationTime + "s";
+	setBallAnimation(ball, "changeColor " + animationTime + "s forwards")
 	return new Promise((resolve) => {
 		setTimeout(() => {
 			resolve("success")
