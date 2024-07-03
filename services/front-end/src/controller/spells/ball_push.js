@@ -1,6 +1,7 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
-import {removeBallProperty, setBallAnimation, setBallColor} from "../../view/ball_view.js";
+import {removeBallProperty, setBallAnimation, setBallColor, setBallStyleProperty} from "../../view/ball_view.js";
+import {getPropertyColor, setPropertyColor} from "../../view/global_style_view.js";
 
 
 export default function BallPush() {
@@ -13,8 +14,10 @@ BallPush.prototype.executor = function(playerPaddle) {
 	const side = playerPaddle.paddleDirection === 1 ? 1 : 0;
 	let ballInSide = getAllBallInSide(side)
 	ballInSide.forEach((ball) => {
+		setBallStyleProperty(ball, "--change-color1", "#FF0800");
+		setBallStyleProperty(ball, "--change-color2", "#660000");
 		ball.ballActiveSpell = this;
-		setBallAnimation(ball, "changeColorTmp 0.3s linear infinite");
+		setBallAnimation(ball, "changeColor 0.3s linear infinite");
 	});
 }
 
