@@ -1,7 +1,7 @@
 import {setSpellDelay, Spell, spellLaunchController} from "../spell.js";
 import {getOpponentPaddle} from "../player.js";
 import {setPaddleSize} from "../../view/player_view.js";
-import {newImage} from "../utils.js";
+import {newImage} from "../utils/utils.js";
 
 export default function PaddleSize() {
 	Spell.call(this, 4, "Paddle Size", "DESCRIPTION", newImage("../../assets/images/paddle_size.png"));

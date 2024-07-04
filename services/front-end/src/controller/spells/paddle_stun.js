@@ -1,7 +1,7 @@
 import {setSpellDelay, Spell, spellLaunchController} from "../spell.js";
 import {getOpponentPaddle} from "../player.js";
 import {setCssProperty} from "../../view/style_view.js";
-import {newImage} from "../utils.js";
+import {newImage} from "../utils/utils.js";
 
 export default function PaddleStun() {
 	Spell.call(this, 15, "Paddle Stun", "DESCRIPTION", newImage("../../assets/images/paddle_stun.png"));

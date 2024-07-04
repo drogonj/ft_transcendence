@@ -1,23 +1,22 @@
 import {displayBall, moveBall, removeBall, setBallSize} from "../view/ball_view.js";
-import {ballSize, ballSpeed, maxBall, maxBallAngle, respawnIfAllBallsGone} from "./settings.js";
-import {getAllPaddles, getLeftPaddle, getLeftPlayerHeader, getRightPaddle, getRightPlayerHeader} from "./player.js";
+import {ballSize, ballSpeed, maxBallAngle, respawnIfAllBallsGone} from "./settings.js";
+import {getAllPaddles, getLeftPlayerHeader, getRightPlayerHeader} from "./player.js";
 import {
     addBallToMap,
     getMapHeight,
     getMapLeft,
     getMapRight, getMapTop,
     isBottomPartOfMap, isMapContainMaxBall, isMapContainNoBall,
-    isTopPartOfMap,
-    markPoint
+    isTopPartOfMap
 } from "./map.js";
-import {getRandomNumberBetweenOne, getRandomNumberWithDecimal} from "./math_utils.js";
+import {getRandomNumberBetweenOne, getRandomNumberWithDecimal} from "./utils/math_utils.js";
+import {endGame, isGameEnd, markPoint} from "./game.js";
 
 const balls = [];
 
 export default function loadBall() {
     while(!isMapContainMaxBall())
         createNewBall();
-    tick();
 }
 
 export function createNewBall() {
@@ -125,7 +124,13 @@ Ball.prototype.removeActiveSpell = function() {
     this.ballActiveSpell = null;
 }
 
-function tick() {
+export function startBallLoop() {
+    if (isGameEnd()) {
+        removeAllBalls();
+        endGame();
+        return;
+    }
+
     balls.forEach((ball) => {
         //todo dont do all trigger
         ball.triggerBallInsidePlayer();
@@ -134,7 +139,7 @@ function tick() {
         moveBall(ball);
     });
     ballsSpawnTrigger();
-	setTimeout(tick, ballSpeed);
+    setTimeout(startBallLoop, ballSpeed);
 }
 
 export function getBallNumber() {
@@ -160,4 +165,10 @@ export function getAllBallInSide(side) {
         else
             return ball.getBallDirection() <= 0;
     })
+}
+
+function removeAllBalls() {
+    while(balls.length) {
+       balls[0].deleteBall();
+    }
 }

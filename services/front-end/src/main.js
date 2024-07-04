@@ -5,6 +5,7 @@ import loadMap from "./controller/map.js";
 import {loadHeader} from "./controller/header.js";
 import loadSettings from "./controller/settings.js";
 import loadSpell from "./controller/spell.js";
+import {launchGame} from "./controller/game.js";
 
 //Delete all the coming balls (don't give point) **
 //Slow all the comings balls for X seconds **
@@ -27,6 +28,7 @@ function launchLocal() {
 		document.getElementById("main").style.display = "block"
 		launch();
 		document.getElementById("menuStart").remove();
+		launchGame();
 	});
 }
 

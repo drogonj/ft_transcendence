@@ -5,7 +5,7 @@ import BallPush from "./spells/ball_push.js";
 import BallInvisible from "./spells/ball_invisible.js";
 import BallClone from "./spells/ball_clone.js";
 import PaddleSize from "./spells/paddle_size.js";
-import {shuffle} from "./utils.js";
+import {shuffle} from "./utils/utils.js";
 import {createSpellDiv} from "../view/spell_view.js";
 import {coolDownRun} from "./header.js";
 

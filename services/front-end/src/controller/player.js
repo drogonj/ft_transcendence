@@ -6,7 +6,7 @@ import {
 	displayPlayerPaddle, setPaddleSize
 } from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
-import {getRandomNumber} from "./math_utils.js";
+import {getRandomNumber} from "./utils/math_utils.js";
 import {getSpells} from "./spell.js";
 import {addSpellsToHeader} from "../view/header_view.js";
 
@@ -15,8 +15,6 @@ const players = [];
 export default function loadPlayers() {
 	players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1, document.getElementById("headerLeft")));
 	players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1, document.getElementById("headerRight")));
-
-	tick();
 }
 
 function Player(paddleHtml, paddleDirection, paddleHeader) {
@@ -55,7 +53,11 @@ Player.prototype.getPaddleStyle = function () {
 	return this.paddleHtml.style;
 }
 
-function tick() {
+Player.prototype.getScore = function () {
+	return parseInt(this.paddleHeader.querySelector(".scorePlayer").textContent);
+}
+
+export function startPlayersLoop() {
 	if (keyDown.has('KeyW')) {
 		if (getLeftPaddle().paddleCanMoveUp())
 			movePlayerPaddleUp(getLeftPaddle())
@@ -87,7 +89,7 @@ function tick() {
 	} else if (keyDown.has('Numpad4')) {
 		getRightPaddle().playerSpells[3].executor(getRightPaddle());
 	}
-	setTimeout(tick, moveSpeed);
+	setTimeout(startPlayersLoop, moveSpeed);
 }
 
 export function getLeftPaddle() {
