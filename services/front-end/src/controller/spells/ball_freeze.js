@@ -1,6 +1,6 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
-import {setBallColor} from "../../view/ball_view.js";
+import {setCssProperty} from "../../view/style_view.js";
 
 
 export default function BallFreeze() {
@@ -16,11 +16,11 @@ BallFreeze.prototype.executor = function(playerPaddle) {
 		ball.ballActiveSpell = this;
 		ball.ballVx /= 3;
 		ball.ballVy /= 3;
-		setBallColor(ball, "#72A0C1");
+		setCssProperty(ball.getBallStyle(), "background-color", "#72A0C1");
 	});
 }
 
 BallFreeze.prototype.onHit = function(ball) {
-	setBallColor(ball, "#DAE1E7");
+	setCssProperty(ball.getBallStyle(), "background-color", "#DAE1E7");
 	ball.ballActiveSpell = null;
 }

@@ -49,6 +49,10 @@ Player.prototype.getPaddleHeight = function () {
 	return parseInt(this.paddleHtml.style.height);
 }
 
+Player.prototype.getPaddleStyle = function () {
+	return this.paddleHtml.style;
+}
+
 function tick() {
 	if (keyDown.has('w')) {
 		if (getLeftPaddle().paddleCanMoveUp())

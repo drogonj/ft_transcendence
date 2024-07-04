@@ -107,12 +107,12 @@ Ball.prototype.calculBallBorderTraj = function() {
     this.ballVy = -this.ballVy;
 }
 
-Ball.prototype.getBallSide = function() {
-    return this.ballLeftPosition > 50;
-}
-
 Ball.prototype.getBallDirection = function () {
     return this.ballVx;
+}
+
+Ball.prototype.getBallStyle = function () {
+    return this.ballHtml.style;
 }
 
 function tick() {
