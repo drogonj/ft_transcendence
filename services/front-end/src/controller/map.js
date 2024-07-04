@@ -51,12 +51,6 @@ export function isTopPartOfMap(y) {
 	return y < getMapHeight() / 2;
 }
 
-export function markPoint(ball, header) {
-	ball.deleteBall();
-	const scoreHtml = header.querySelector(".scorePlayer");
-	displayPlayerPoint(scoreHtml, parseInt(scoreHtml.textContent) + 1)
-}
-
 export function isMapContainMaxBall() {
 	return maxBall <= getBallNumber();
 }

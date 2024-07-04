@@ -1,7 +1,7 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
 import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
-import {newImage} from "../utils.js";
+import {newImage} from "../utils/utils.js";
 
 
 export default function BallPush() {
