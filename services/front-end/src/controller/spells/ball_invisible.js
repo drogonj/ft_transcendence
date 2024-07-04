@@ -1,6 +1,6 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
-import {removeBallProperty, setBallAnimation} from "../../view/ball_view.js";
+import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
 
 
 export default function BallInvisible() {
@@ -14,12 +14,12 @@ BallInvisible.prototype.executor = function(playerPaddle) {
 	let ballInSide = getAllBallInSide(side)
 	ballInSide.forEach((ball) => {
 		ball.ballActiveSpell = this;
-		setBallAnimation(ball, "makeInvisible 0.2s forwards");
+		setCssProperty(ball.getBallStyle(), "animation", "makeInvisible 0.2s forwards");
 	});
 }
 
 BallInvisible.prototype.onHit = function(ball) {
 	ball.ballHtml.style.opacity = "1";
 	ball.ballActiveSpell = null;
-	removeBallProperty(ball, "animation");
+	removeCssProperty(ball.style, "animation");
 }

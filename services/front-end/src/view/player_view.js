@@ -19,7 +19,3 @@ export function displayPlayerPaddle(playerPaddle) {
 export function setPaddleSize(playerPaddle, size) {
 	playerPaddle.paddleHtml.style.height = size + "%";
 }
-
-export function setPaddleColor(paddle, color) {
-	paddle.paddleHtml.style.backgroundColor = color;
-}

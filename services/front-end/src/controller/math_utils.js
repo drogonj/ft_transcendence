@@ -9,3 +9,7 @@ export function getRandomNumberWithDecimal(min, max) {
 export function getRandomNumberBetweenOne() {
 	return Math.random() < 0.5 ? -1 : 1;
 }
+
+export function shuffle(array) {
+
+}
