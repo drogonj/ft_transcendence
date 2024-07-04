@@ -17,7 +17,7 @@ BallPush.prototype.executor = function(playerPaddle) {
 		setCssProperty(ball.ballHtml.style, "--change-color1", "#FF0800");
 		setCssProperty(ball.ballHtml.style, "--change-color2", "#660000");
 		setCssProperty(ball.getBallStyle(), "animation", "changeColor 0.3s linear infinite");
-		ball.ballActiveSpell = this;
+		ball.setActiveSpell(this);
 	});
 }
 
@@ -25,9 +25,15 @@ BallPush.prototype.onHit = function(ball) {
 	if (!ball.ballHtml.style.animation.length) {
 		ball.ballVx /= 2;
 		ball.ballVy /= 2;
-		ball.ballActiveSpell = null;
+		ball.removeActiveSpell();
 		return;
 	}
+	ball.ballVx *= 2;
+	ball.ballVy *= 2;
+	removeCssProperty(ball.getBallStyle(), "animation");
+}
+
+BallPush.prototype.destructor = function (ball) {
 	ball.ballVx *= 2;
 	ball.ballVy *= 2;
 	removeCssProperty(ball.getBallStyle(), "animation");

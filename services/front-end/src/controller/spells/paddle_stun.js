@@ -4,7 +4,7 @@ import {setCssProperty} from "../../view/style_view.js";
 import {newImage} from "../utils.js";
 
 export default function PaddleStun() {
-	Spell.call(this, 5, "Paddle Stun", "DESCRIPTION", newImage("../../assets/images/paddle_stun.png"));
+	Spell.call(this, 15, "Paddle Stun", "DESCRIPTION", newImage("../../assets/images/paddle_stun.png"));
 }
 
 PaddleStun.prototype.executor = function (playerPaddle) {

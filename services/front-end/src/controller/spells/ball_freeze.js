@@ -14,7 +14,7 @@ BallFreeze.prototype.executor = function(playerPaddle) {
 	const side = playerPaddle.paddleDirection === 1 ? 1 : 0;
 	let ballInSide = getAllBallInSide(side)
 	ballInSide.forEach((ball) => {
-		ball.ballActiveSpell = this;
+		ball.setActiveSpell(this);
 		ball.ballVx /= 3;
 		ball.ballVy /= 3;
 		setCssProperty(ball.getBallStyle(), "background-color", "#72A0C1");
@@ -23,5 +23,11 @@ BallFreeze.prototype.executor = function(playerPaddle) {
 
 BallFreeze.prototype.onHit = function(ball) {
 	setCssProperty(ball.getBallStyle(), "background-color", "#DAE1E7");
-	ball.ballActiveSpell = null;
+	ball.removeActiveSpell();
+}
+
+BallFreeze.prototype.destructor = function(ball) {
+	setCssProperty(ball.getBallStyle(), "background-color", "#DAE1E7");
+	ball.ballVx *= 3;
+	ball.ballVy *= 3;
 }

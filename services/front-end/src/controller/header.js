@@ -1,5 +1,6 @@
 import {maxTime} from "./settings.js";
-import {timerDisplay} from "../view/header_view.js";
+import {coolDownDisplay, timerDisplay} from "../view/header_view.js";
+import {setCssProperty} from "../view/style_view.js";
 
 let seconds = 0;
 let minutes;
@@ -21,4 +22,22 @@ function timerRun() {
 		return;
 	timerDisplay(minutes, seconds, timeHtml);
 	setTimeout(timerRun, 1000);
+}
+
+export function coolDownRun(spell) {
+	spell.isOnCooldown = true;
+	let remindTime = spell.cooldown;
+	setCssProperty(spell.spellCoolDownHtml.style, "display", "flex");
+	coolDownDisplay(remindTime, spell.spellCoolDownHtml);
+
+	const interval = setInterval(function () {
+		if (remindTime <= 0) {
+			spell.isOnCooldown = false;
+			setCssProperty(spell.spellCoolDownHtml.style, "display", "none");
+			clearInterval(interval);
+			return;
+		}
+		remindTime--;
+		coolDownDisplay(remindTime, spell.spellCoolDownHtml);
+	}, 1000)
 }
