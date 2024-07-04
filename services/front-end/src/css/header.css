@@ -58,11 +58,10 @@
 
 .spellCd {
     position: absolute;
-    font-size: 32%;
+    font-size: 40%;
     background-color: rgba(128, 128, 128, 0.5);
     height: 100%;
     width: 100%;
-    display: flex;
     justify-content: center;
     align-items: center;
     color: #fff;

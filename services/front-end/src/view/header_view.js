@@ -6,13 +6,12 @@ export function timerDisplay(minutes, seconds, timeHtml) {
 	timeHtml.textContent = minutes + ":" + seconds
 }
 
-export function addSpellsToHeader(playerHeader, spells) {
-	const div = document.createElement("div");
-	div.classList.add("spell")
+export function coolDownDisplay(seconds, spellHtml) {
+	spellHtml.textContent = seconds;
+}
 
+export function addSpellsToHeader(playerHeader, spells) {
 	spells.forEach((spell) => {
-		const newDiv = div.cloneNode(true);
-		newDiv.appendChild(spell.icon);
-		playerHeader.getElementsByClassName("spellContainer")[0].appendChild(newDiv);
+		playerHeader.getElementsByClassName("spellContainer")[0].appendChild(spell.spellHtml);
 	});
 }

@@ -18,13 +18,17 @@ BallClone.prototype.executor = function (playerPaddle) {
 		setCssProperty(ball.ballHtml.style, "--change-color1", "#483D8B");
 		setCssProperty(ball.ballHtml.style, "--change-color2", "#FF00FF");
 		setCssProperty(ball.getBallStyle(), "animation", "changeColor 0.2s linear infinite");
-		ball.ballActiveSpell = this;
+		ball.setActiveSpell(this);
 	});
 }
 
 BallClone.prototype.onHit = function(ball) {
 	removeCssProperty(ball.getBallStyle(), "animation");
-	ball.ballActiveSpell = null;
+	ball.removeActiveSpell();
 	const cloneBall = copyBall(ball);
 	cloneBall.ballVy = getRandomNumberWithDecimal(0.1, 0.7);
+}
+
+BallClone.prototype.destructor = function(ball) {
+	removeCssProperty(ball.getBallStyle(), "animation");
 }

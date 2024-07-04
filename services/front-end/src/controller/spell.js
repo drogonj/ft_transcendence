@@ -6,6 +6,8 @@ import BallInvisible from "./spells/ball_invisible.js";
 import BallClone from "./spells/ball_clone.js";
 import PaddleSize from "./spells/paddle_size.js";
 import {shuffle} from "./utils.js";
+import {createSpellDiv} from "../view/spell_view.js";
+import {coolDownRun} from "./header.js";
 
 const spells = [];
 
@@ -27,6 +29,8 @@ export function Spell(cooldown, spellName, description, icon) {
 	this.description = description;
 	this.icon = icon;
 	this.isOnCooldown = false;
+	this.spellHtml = createSpellDiv(this);
+	this.spellCoolDownHtml = this.spellHtml.getElementsByClassName("spellCd")[0];
 }
 
 export function getSpellWithName(spellName) {
@@ -39,17 +43,10 @@ export function getSpells(paddleDirection) {
 	return spells.slice(4, spells.length);
 }
 
-export function setCooldown(spell) {
-	spell.isOnCooldown = true;
-	setTimeout(() => {
-		spell.isOnCooldown = false;
-	}, spell.cooldown * 1000);
-}
-
 export function spellLaunchController(spell) {
 	if (spell.isOnCooldown)
 		return false;
-	setCooldown(spell);
+	coolDownRun(spell);
 	return true;
 }
 

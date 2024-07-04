@@ -24,3 +24,8 @@ BallInvisible.prototype.onHit = function(ball) {
 	ball.ballActiveSpell = null;
 	removeCssProperty(ball.getBallStyle(), "animation");
 }
+
+BallInvisible.prototype.destructor = function(ball) {
+	ball.ballHtml.style.opacity = "1";
+	removeCssProperty(ball.getBallStyle(), "animation");
+}

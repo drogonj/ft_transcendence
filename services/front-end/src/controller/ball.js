@@ -115,6 +115,16 @@ Ball.prototype.getBallStyle = function () {
     return this.ballHtml.style;
 }
 
+Ball.prototype.setActiveSpell = function (spell) {
+    if (this.ballActiveSpell)
+        this.ballActiveSpell.destructor(this);
+    this.ballActiveSpell = spell;
+}
+
+Ball.prototype.removeActiveSpell = function() {
+    this.ballActiveSpell = null;
+}
+
 function tick() {
     balls.forEach((ball) => {
         //todo dont do all trigger
