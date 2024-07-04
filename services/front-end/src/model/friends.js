@@ -1,4 +1,63 @@
 import { getCsrfToken, csrfToken } from "./auth.js";
+import { navigateTo } from "./contentLoader.js";
+
+let friendSocket;
+let friendSocketRunning = false;
+
+export async function connectFriendsWebsocket() {
+    friendSocket = new WebSocket('wss://localhost:8080/ws/friend-requests/');
+
+    friendSocket.onopen = function(e) {
+        friendSocketRunning = true;
+        console.log("WebSocket connection established.");
+    };
+
+    friendSocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const type = data.type
+        console.log(data)
+
+        const user_id = data.id;
+        const from_user = data.username;
+
+        const route =  window.location.pathname + window.location.search;
+        if (route === '/home' || route === '/home/') {
+            if (type === 'friend_request_notification') {
+                const avatar = data.avatar
+                addFriendshipRequestToMenu(user_id, from_user, avatar)
+            } else if (type === 'accepted_friendship_request_notification') {
+                const avatar = data.avatar
+                const is_connected = data.is_connected
+                addFriendToMenu(user_id, from_user, avatar, is_connected)
+            } else if (type === 'canceled_friendship_notification') {
+                const divId = "friend-" + user_id;
+                const element = document.getElementById(divId);
+                element.remove();
+            } else if (type === 'friend_connected_notification') {
+                changeFriendStatus(user_id, true);
+            } else if (type === 'friend_disconnected_notification') {
+                changeFriendStatus(user_id, false)
+            }
+        }
+    };
+
+    friendSocket.onclose = function(event) {
+        friendSocketRunning = false;
+        if (event.wasClean) {
+            console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+        } else {
+            console.log('[close] Connection died');
+        }
+    };
+
+    friendSocket.onerror = function(error) {
+        console.error(`[error] ${error.message}`);
+    };
+}
+
+export async function disconnectFriendsWebsocket() {
+    friendSocket.close();
+}
 
 export function changeFriendStatus(userId, is_connected) {
     let friendElement = document.getElementById(`friend-${userId}`);
@@ -40,9 +99,6 @@ export async function addFriend(event) {
     } else if (data.message && data.message === 'friendship request accepted') {
         addFriendToMenu(data.id, username, data.avatar, data.is_connected);
     }
-    const elementId = "user-" + userId;
-    const element = document.getElementById(elementId);
-    element.remove();
 }
 
 export async function removeFriend(event) {
@@ -62,7 +118,7 @@ export async function removeFriend(event) {
 
     const responseData = await response.json();
     if (response.ok) {
-        const divId = "friend-" + friendId
+        const divId = "friend-" + friendId;
         const element = document.getElementById(divId);
         element.remove();
     }
@@ -132,11 +188,17 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
         <div class="avatar-container">
             <img class="avatar" src="${avatar}" alt="${username}'s Avatar">
         </div>
-        <p>${username}</p>
+        <span class="profile-link" data-user-id="${user}">
+            <p>${username}</p>
+        </span>
         <button class="delete-friend-button" data-friend-id="${user}">
             <img src="/src/images/red_cross.png" alt="delete">
         </button>
     `;
+
+    const divId = "friendship-request-" + user;
+    if (document.getElementById(divId))
+        document.getElementById(divId).remove();
 
     // Add the new element to the existing list
     friendsContainer.insertAdjacentElement('beforeend', newFriend);
@@ -146,6 +208,13 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
     // Add event listener for the delete button
     newFriend.querySelector('.delete-friend-button').addEventListener('click', async (event) => {
         await removeFriend(event);
+    });
+
+    // Profile link
+    newFriend.querySelector('.profile-link').addEventListener('click', async function (event) {
+        const userId = this.getAttribute('data-user-id');
+        const uri = '/profile/' + userId + '/';
+        navigateTo(uri, true);
     });
 }
 
@@ -177,7 +246,9 @@ export function addFriendshipRequestToMenu(user, username, avatar) {
         <div class="avatar-container">
             <img class="avatar" src="${avatar}" alt="${username}'s Avatar">
         </div>
-        <p>${username}</p>
+        <span class="profile-link" data-user-id="${user}">
+            <p>${username}</p>
+        </span>
         <button class="accept-friendship-request-button" data-friend-id="${user}" data-friend-avatar="${avatar}">
             <img src="/src/images/green_check.png" alt="accept">
         </button>
@@ -195,6 +266,12 @@ export function addFriendshipRequestToMenu(user, username, avatar) {
     });
     newFriendshipRequest.querySelector('.decline-friendship-request-button').addEventListener('click', async (event) => {
         await declineFriendshipRequest(event);
+    });
+    // Profile link
+    newFriendshipRequest.querySelector('.profile-link').addEventListener('click', async function (event) {
+        const userId = this.getAttribute('data-user-id');
+        const uri = '/profile/' + userId + '/';
+        navigateTo(uri, true);
     });
 }
 
@@ -231,16 +308,43 @@ export async function handleUserSearch(event) {
                 <div class="avatar-container">
                     <img class="avatar" src="${user.avatar}" alt="${user.username}'s Avatar">
                 </div>
-                <a href="/profile/${user.id}/"><p>${user.username}</p></a>
+                <span class="profile-link" data-user-id="${user.id}">
+                    <p>${user.username}</p>
+                </span>
+            `;
+
+            if (user.pending_request === false) {
+                userField.innerHTML += `
                 <button class="add-friend-button" data-user-username="${user.username}" data-user-id="${user.id}">
                     <img src="/src/images/green_cross.png" alt="add">
                 </button>
-            `;
+                `;
+                userField.querySelector('.add-friend-button').addEventListener('click', async (event) => {
+                    await addFriend(event);
+                    userField.innerHTML = `
+                        <div class="avatar-container">
+                            <img class="avatar" src="${user.avatar}" alt="${user.username}'s Avatar">
+                        </div>
+                        <span class="profile-link" data-user-id="${user.id}">
+                            <p>${user.username}</p>
+                        </span>
+                        <img id="invitation-sent-img" src="/src/images/invitation_sent.png" alt="invitation-sent">
+                        `;
+                });
+            } else {
+                userField.innerHTML += `
+                <img id="invitation-sent-img" src="/src/images/invitation_sent.png" alt="invitation-sent">
+                `;
+            }
 
             resultsContainer.insertAdjacentElement('beforeend', userField);
-
-            userField.querySelector('.add-friend-button').addEventListener('click', async (event) => {
-                await addFriend(event);
+        });
+        // Profile link
+        document.querySelectorAll('.profile-link').forEach(element => {
+            element.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                const uri = '/profile/' + userId + '/';
+                navigateTo(uri, true);
             });
         });
     } else {

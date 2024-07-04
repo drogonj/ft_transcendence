@@ -76,12 +76,10 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
             )
 
     async def friend_request_notification(self, event):
-        # Accéder aux données envoyées
         from_user = event['from_user']
         avatar = event['avatar']
         id = event['id']
 
-        # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'friend_request_notification',
             'id': id,
@@ -90,13 +88,11 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         }))
 
     async def accepted_friendship_request_notification(self, event):
-        # Accéder aux données envoyées
         from_user = event['from_user']
         avatar = event['avatar']
         is_connected = event['is_connected']
         id = event['id']
 
-        # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'accepted_friendship_request_notification',
             'id': id,
@@ -106,12 +102,10 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         }))
 
     async def canceled_friendship_notification(self, event):
-        # Accéder aux données envoyées
         from_user = event['from_user']
         avatar = event['avatar']
         id = event['id']
 
-        # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'canceled_friendship_notification',
             'id': id,
@@ -123,7 +117,6 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         user_id = event['id']
         username = event['username']
 
-        # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'friend_connected_notification',
             'id': user_id,
@@ -134,7 +127,6 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
         user_id = event['id']
         username = event['username']
 
-        # Envoyer les données au WebSocket
         await self.send(text_data=json.dumps({
             'type': 'friend_disconnected_notification',
             'id': user_id,

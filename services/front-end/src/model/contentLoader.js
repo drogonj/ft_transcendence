@@ -7,6 +7,8 @@ import {
     renderGame,
     renderUserProfile
 } from './render.js';
+import { getCurrentUserInfo } from "./auth.js";
+import { connectFriendsWebsocket } from "./friends.js";
 
 export const app = document.getElementById('app');
 
@@ -16,6 +18,9 @@ export function cleanUrl() {
     history.replaceState({ route: newUrl }, 'SPA Application', newUrl);
 }
 
+const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
+const profileRegex = /\/profile\/(\d+)/;
+
 export function navigateTo(route, pushState, data) {
     if (pushState)
         history.pushState({route: route}, 'SPA Application', route);
@@ -23,8 +28,6 @@ export function navigateTo(route, pushState, data) {
         history.replaceState({route: route}, 'SPA Application', route);
 
     const url = window.location.href;
-    const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
-    const profileRegex = /\/profile\/(\d+)/;
 
     if (route === '/login' || route === '/login/') {
         renderLogin();
@@ -54,7 +57,28 @@ window.addEventListener('popstate', function (event) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('js-error').remove();
-    navigateTo(window.location.pathname + window.location.search, false);
+document.addEventListener('DOMContentLoaded', async function() {
+    const jsError = document.getElementById('js-error');
+    if (jsError) {
+        jsError.remove();
+    }
+
+    try {
+        const response = await fetch('/api/user/is_authenticated/');
+        const data = await response.json();
+
+        const route = window.location.pathname + window.location.search;
+
+        if (data.is_authenticated || confirmRegistrationUrlRegex.test(route)) {
+            if (data.is_authenticated) {
+                await getCurrentUserInfo();
+                await connectFriendsWebsocket();
+            }
+            navigateTo(route, false);
+        } else {
+            navigateTo('/login', false);
+        }
+    } catch (error) {
+        console.error('Error fetching authentication status:', error);
+    }
 });

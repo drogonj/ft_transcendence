@@ -135,6 +135,9 @@ def oauth_callback(request):
                 tmp_token = user.generate_tmp_token()
                 user.save()
                 return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
+            if user.is_connected:
+                #TODO NO CONNECTION IF USER ALREADY CONNECTED
+                return redirect(f"{os.getenv('WEBSITE_URL')}/already-connected/")
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(os.getenv('WEBSITE_URL'))
         else:  # Else register user
@@ -205,19 +208,11 @@ class UserInfoView(View):
         else:
             user = request.user
         profil_image_url = user.profil_image.url
-        if user_id:
-            data = {
-                'username': user.username,
-                'email': user.email,
-                'avatar': profil_image_url,
-                'user_id': user.id,
-            }
-        else:
-            data = {
-                'username': user.username,
-                'email': user.email,
-                'avatar': profil_image_url,
-            }
+        data = {
+            'username': user.username,
+            'avatar': profil_image_url,
+            'user_id': user.id,
+        }
         return JsonResponse(data)
 
 @method_decorator(login_required, name='dispatch')

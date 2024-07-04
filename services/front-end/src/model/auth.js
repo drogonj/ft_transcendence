@@ -1,6 +1,13 @@
 import { navigateTo, cleanUrl } from "./contentLoader.js";
+import { connectFriendsWebsocket } from "./friends.js";
 
+export var currentUser = {};
 export let csrfToken = '';
+
+export async function getCurrentUserInfo(){
+    const userData = await fetch('/api/user/info/');
+    currentUser = await userData.json();
+}
 
 export async function getCsrfToken() {
     const response = await fetch('/api/user/get_csrf_token/');
@@ -25,6 +32,8 @@ export async function handleLogin(event) {
     });
     const data = await response.json();
     if (data.success) {
+        await getCurrentUserInfo();
+        await connectFriendsWebsocket();
         navigateTo('/home', true);
     } else {
         alert('Login failed: ' + data.message);
@@ -54,6 +63,8 @@ export async function handleSignup(event) {
     });
     const data = await response.json();
     if (data.message) {
+        await getCurrentUserInfo();
+        await connectFriendsWebsocket();
         navigateTo('/home', true);
     } else {
         alert(data.error);
@@ -71,6 +82,7 @@ export async function handleLogout() {
     });
     const data = await response.json();
     if (data.success) {
+        currentUser = {};
         navigateTo('/login', false);
     } else {
         alert('Logout failed: ' + data.message);
@@ -131,6 +143,8 @@ export async function handleConfirmRegistration(event) {
     });
     const data = await response.json();
     if (data.message) {
+        await getCurrentUserInfo();
+        await connectFriendsWebsocket();
         cleanUrl()
         navigateTo('/home', false);
     } else {

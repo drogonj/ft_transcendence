@@ -166,9 +166,15 @@ def search_users(request):
     query = request.GET.get('q')
     if query:
         users = User.objects.filter(Q(username__icontains=query))
-        user_data = [{'username': user.username, 'id': user.id, 'avatar': user.profil_image.url} for user in users
-                     if user.username != request.user.username
-                     and not Friendship.objects.filter(from_user=user, to_user=request.user).exists()]
+        user_data = [{
+            'username': user.username,
+            'id': user.id,
+            'avatar': user.profil_image.url,
+            'pending_request': True if FriendshipRequest.objects.filter(from_user=request.user).exists() else False
+             }
+            for user in users
+            if user.username != request.user.username
+            and not Friendship.objects.filter(from_user=user, to_user=request.user).exists()]
     else:
         user_data = []
     return JsonResponse({'users': user_data})
