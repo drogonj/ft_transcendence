@@ -1,10 +1,11 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
 import {setCssProperty} from "../../view/style_view.js";
+import {newImage} from "../utils.js";
 
 
 export default function BallSlayer() {
-	Spell.call(this, 1, "Ball Slayer", "TEXT DESCRIPTION");
+	Spell.call(this, 1, "Ball Slayer", "DESCRIPTION", newImage("../../assets/images/ball_slayer.png"));
 }
 
 BallSlayer.prototype.executor = function (playerPaddle) {
