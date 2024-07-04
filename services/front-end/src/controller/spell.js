@@ -5,6 +5,7 @@ import BallPush from "./spells/ball_push.js";
 import BallInvisible from "./spells/ball_invisible.js";
 import BallClone from "./spells/ball_clone.js";
 import PaddleSize from "./spells/paddle_size.js";
+import {shuffle} from "./utils.js";
 
 const spells = [];
 
@@ -16,13 +17,15 @@ export default function loadSpell() {
 	spells.push(new PaddleSize());
 	spells.push(new BallInvisible());
 	spells.push(new PaddleStun());
+	spells.push(new PaddleStun());
+	shuffle(spells);
 }
 
-export function Spell(cooldown = 30, spellName, icon, description) {
+export function Spell(cooldown, spellName, description, icon) {
 	this.cooldown = cooldown;
 	this.spellName = spellName;
 	this.description = description;
-	this.icon = icon
+	this.icon = icon;
 	this.isOnCooldown = false;
 }
 
@@ -30,8 +33,10 @@ export function getSpellWithName(spellName) {
 	return spells.get(spellName);
 }
 
-export function getRandomSpells() {
-	return spells
+export function getSpells(paddleDirection) {
+	if (paddleDirection === -1)
+		return spells.slice(0, 4);
+	return spells.slice(4, spells.length);
 }
 
 export function setCooldown(spell) {

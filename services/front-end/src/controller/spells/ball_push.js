@@ -1,10 +1,11 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
 import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
+import {newImage} from "../utils.js";
 
 
 export default function BallPush() {
-	Spell.call(this, 5, "Ball Push", "TEXT DESCRIPTION");
+	Spell.call(this, 5, "Ball Push", "DESCRIPTION", newImage("../../assets/images/ball_push.png"));
 }
 
 BallPush.prototype.executor = function(playerPaddle) {

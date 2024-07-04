@@ -1,5 +1,5 @@
 export function getRandomNumber(min, max) {
-	return (Math.random() * (max - min) + min);
+	return Math.floor(Math.random() * (max - min) + min);
 }
 
 export function getRandomNumberWithDecimal(min, max) {
@@ -8,8 +8,4 @@ export function getRandomNumberWithDecimal(min, max) {
 
 export function getRandomNumberBetweenOne() {
 	return Math.random() < 0.5 ? -1 : 1;
-}
-
-export function shuffle(array) {
-
 }

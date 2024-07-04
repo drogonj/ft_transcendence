@@ -7,7 +7,8 @@ import {
 } from "../view/player_view.js";
 import {getMapHeight} from "./map.js";
 import {getRandomNumber} from "./math_utils.js";
-import {getRandomSpells} from "./spell.js";
+import {getSpells} from "./spell.js";
+import {addSpellsToHeader} from "../view/header_view.js";
 
 const players = [];
 
@@ -25,9 +26,10 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.moveStep = 1;
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
-	this.playerSpells = getRandomSpells();
+	this.playerSpells = getSpells(paddleDirection);
 	setPaddleSize(this, paddleSize);
 	displayPlayerPaddle(this);
+	addSpellsToHeader(this.paddleHeader, this.playerSpells);
 }
 
 Player.prototype.paddleCanMoveUp = function() {
@@ -54,19 +56,19 @@ Player.prototype.getPaddleStyle = function () {
 }
 
 function tick() {
-	if (keyDown.has('w')) {
+	if (keyDown.has('KeyW')) {
 		if (getLeftPaddle().paddleCanMoveUp())
 			movePlayerPaddleUp(getLeftPaddle())
-	} else if (keyDown.has('s')) {
+	} else if (keyDown.has('KeyS')) {
 		if (getLeftPaddle().paddleCanMoveDown())
 			movePlayerPaddleDown(getLeftPaddle());
-	} else if (keyDown.has('1')) {
+	} else if (keyDown.has('Digit1')) {
 		getLeftPaddle().playerSpells[0].executor(getLeftPaddle());
-	} else if (keyDown.has('2')) {
+	} else if (keyDown.has('Digit2')) {
 		getLeftPaddle().playerSpells[1].executor(getLeftPaddle());
-	} else if (keyDown.has('3')) {
+	} else if (keyDown.has('Digit3')) {
 		getLeftPaddle().playerSpells[2].executor(getLeftPaddle());
-	} else if (keyDown.has('4')) {
+	} else if (keyDown.has('Digit4')) {
 		getLeftPaddle().playerSpells[3].executor(getLeftPaddle());
 	}
 
@@ -76,6 +78,14 @@ function tick() {
 	} else if (keyDown.has('ArrowDown')) {
 		if (getRightPaddle().paddleCanMoveDown())
 			movePlayerPaddleDown(getRightPaddle());
+	} else if (keyDown.has('Numpad1')) {
+		getRightPaddle().playerSpells[0].executor(getRightPaddle());
+	} else if (keyDown.has('Numpad2')) {
+		getRightPaddle().playerSpells[1].executor(getRightPaddle());
+	} else if (keyDown.has('Numpad3')) {
+		getRightPaddle().playerSpells[2].executor(getRightPaddle());
+	} else if (keyDown.has('Numpad4')) {
+		getRightPaddle().playerSpells[3].executor(getRightPaddle());
 	}
 	setTimeout(tick, moveSpeed);
 }
