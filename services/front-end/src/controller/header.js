@@ -9,10 +9,9 @@ let timeHtml;
 export function loadHeader() {
 	minutes = maxTime;
 	timeHtml = document.getElementById("headerTimer");
-	timerRun();
 }
 
-function timerRun() {
+export function startHeaderLoop() {
 	if (seconds <= 0) {
 		minutes--;
 		seconds = 59;
@@ -21,7 +20,7 @@ function timerRun() {
 	if (minutes <= 0 && seconds <= 0)
 		return;
 	timerDisplay(minutes, seconds, timeHtml);
-	setTimeout(timerRun, 1000);
+	setTimeout(startHeaderLoop, 1000);
 }
 
 export function coolDownRun(spell) {

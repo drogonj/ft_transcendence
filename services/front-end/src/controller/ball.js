@@ -124,6 +124,10 @@ Ball.prototype.removeActiveSpell = function() {
     this.ballActiveSpell = null;
 }
 
+Ball.prototype.getBallPosition = function() {
+    return [this.ballLeftPosition, this.ballTopPosition];
+}
+
 export function startBallLoop() {
     if (isGameEnd()) {
         removeAllBalls();

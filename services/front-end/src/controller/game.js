@@ -2,10 +2,12 @@ import {maxScore} from "./settings.js";
 import {getLeftPaddle, getRightPaddle, startPlayersLoop} from "./player.js";
 import {startBallLoop} from "./ball.js";
 import {displayPlayerPoint} from "../view/player_view.js";
+import {startHeaderLoop} from "./header.js";
 
 export function launchGame() {
 	startBallLoop();
 	startPlayersLoop();
+	startHeaderLoop();
 }
 
 export function isGameEnd() {
