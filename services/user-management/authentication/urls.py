@@ -16,5 +16,4 @@ urlpatterns = [
     path('api/user/oauth/callback/', views.oauth_callback, name='oauth_callback'),
     path('api/user/oauth/confirm_registration/', views.oauth_confirm_registration, name='oauth_confirm_registration'),
     path('api/user/profile/<int:user_id>/', views.UserInfoView.as_view(), name='profile'),
-    path('api/user/search/', views.search_users, name='search_users'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

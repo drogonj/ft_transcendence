@@ -1,7 +1,13 @@
 import { navigateTo, cleanUrl } from "./contentLoader.js";
-import { renderUserProfile } from "./render.js";
+import { connectFriendsWebsocket } from "./friends.js";
 
+export var currentUser = {};
 export let csrfToken = '';
+
+export async function getCurrentUserInfo(){
+    const userData = await fetch('/api/user/info/');
+    currentUser = await userData.json();
+}
 
 export async function getCsrfToken() {
     const response = await fetch('/api/user/get_csrf_token/');
@@ -26,6 +32,8 @@ export async function handleLogin(event) {
     });
     const data = await response.json();
     if (data.success) {
+        await getCurrentUserInfo();
+        await connectFriendsWebsocket();
         navigateTo('/home', true);
     } else {
         alert('Login failed: ' + data.message);
@@ -55,6 +63,8 @@ export async function handleSignup(event) {
     });
     const data = await response.json();
     if (data.message) {
+        await getCurrentUserInfo();
+        await connectFriendsWebsocket();
         navigateTo('/home', true);
     } else {
         alert(data.error);
@@ -72,6 +82,7 @@ export async function handleLogout() {
     });
     const data = await response.json();
     if (data.success) {
+        currentUser = {};
         navigateTo('/login', false);
     } else {
         alert('Logout failed: ' + data.message);
@@ -110,11 +121,14 @@ export async function handleConfirmRegistration(event) {
     const token = params.get('token')
     if (!token)
         navigateTo('/home', false)
+
+    const takeIntraPic = document.getElementById('intra-pic-checkbox').checked;
     const signupData = {
         token: token,
         username: formData.get('username'),
         password: formData.get('password'),
         confirm_password: formData.get('confirm_password'),
+        take_intra_pic: takeIntraPic,
     };
 
     await getCsrfToken();
@@ -129,36 +143,11 @@ export async function handleConfirmRegistration(event) {
     });
     const data = await response.json();
     if (data.message) {
+        await getCurrentUserInfo();
+        await connectFriendsWebsocket();
         cleanUrl()
         navigateTo('/home', false);
     } else {
         alert(data.error);
-    }
-}
-
-export async function handleUserSearch(event) {
-    event.preventDefault();
-    const query = document.getElementById('search-query').value;
-    const response = await fetch(`/api/user/search/?q=${query}`);
-    const data = await response.json();
-    const resultsContainer = document.getElementById('search-results');
-    resultsContainer.innerHTML = '<h2>Search Results</h2>';
-    if (data.users.length > 0) {
-        const resultsList = document.createElement('ul');
-        data.users.forEach(user => {
-            const listItem = document.createElement('li');
-            const profileLink = document.createElement('a');
-            profileLink.href = '#';
-            profileLink.textContent = `${user.username} - ${user.email}`;
-            profileLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                navigateTo(`/profile/${user.id}/`, true);
-            });
-            listItem.appendChild(profileLink);
-            resultsList.appendChild(listItem);
-        });
-        resultsContainer.appendChild(resultsList);
-    } else {
-        resultsContainer.innerHTML += '<p>No users found.</p>';
     }
 }

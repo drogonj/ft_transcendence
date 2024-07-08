@@ -78,6 +78,7 @@
     justify-content: space-between; /* Distribute space evenly */
     height: 50px;
     padding: 10px;
+    margin-top: 5px;
     border-bottom: 1px solid #ccc;
     text-align: left; /* Align text to the left */
     border-radius: 5px;
@@ -107,10 +108,19 @@
     object-position: center; /* Center the image */
 }
 
-.friend-menu li p {
+.friend-menu li span {
     margin: 0;
     flex-grow: 1; /* Allow text to grow */
     padding-left: 10px; /* Space between avatar and text */
+}
+
+.friend-menu li span p {
+
+    max-width: 100px;
+    overflow: hidden;
+    background: linear-gradient(to right,  rgba(0,0,0,1) 0%,rgba(0,0,0,1) 80%,rgba(0,0,0,0) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent
 }
 
 .friend-menu li button {
@@ -148,8 +158,78 @@
 }
 
 .status-indicator-text {
+    margin-right: 10px;
     font-size: 0.75em;
     display: inline-block; /* Ensure text and indicator are inline */
     vertical-align: middle; /* Align text vertically with the indicator */
     margin-left: 5px; /* Add some margin for spacing */
+}
+
+#search-user-form {
+    width: 100%;
+}
+
+#search-user-form #search-query {
+    width: 95%;
+    background: #e6e6e6;
+    border: none;
+    outline: none;
+    padding: 15px 10px 10px;
+    border-radius: 4px;
+    color: black;
+    font-weight: 500;
+    font-size: 1em;
+    transition: 0.3s;
+}
+
+#search-user-form input:focus,
+#search-bar form input:hover,
+#search-bar form input:valid {
+    background: #ebebeb
+}
+
+#search-user-form i
+{
+    position: absolute;
+    transform: translateY(-45px);
+    padding: 15px;
+    font-style: normal;
+    color: black;
+    transition: 0.5s;
+    pointer-events: none;
+    font-size: 1em;
+}
+#search-user-form input:focus ~ i,
+#search-user-form input:valid ~ i
+{
+    display: none;
+}
+
+#search-user-form input[type="submit"]
+{
+    position: absolute;
+    border-radius: 10px;
+    transform: translateY(-35px);
+    right: 20px;
+    padding: 7px;
+    border-width: 1px;
+    outline: none;
+    background: #ececec;
+    color: #343434;
+    cursor: pointer;
+    transition-duration: 0.5s;
+}
+
+#search-user-form input[type="submit"]:hover {
+    background: #8803fc;
+    color: whitesmoke;
+}
+
+#invitation-sent-img {
+    width: 25px;
+    height: 25px;
+}
+
+.profile-link {
+    cursor: pointer;
 }

@@ -11,7 +11,6 @@ from django.utils import timezone
 from datetime import timedelta
 import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q
 
 User = get_user_model()
 
@@ -136,6 +135,9 @@ def oauth_callback(request):
                 tmp_token = user.generate_tmp_token()
                 user.save()
                 return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
+            if user.is_connected:
+                #TODO NO CONNECTION IF USER ALREADY CONNECTED
+                return redirect(f"{os.getenv('WEBSITE_URL')}/already-connected/")
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(os.getenv('WEBSITE_URL'))
         else:  # Else register user
@@ -186,6 +188,9 @@ def oauth_confirm_registration(request):
     if not username or User.objects.filter(username=username).exists():
         return JsonResponse({'error': 'Username already exists'})
 
+    intra_pic = data.get('take_intra_pic')
+    if not intra_pic:
+        user.profil_image = "avatars/default.png"
     user.username = username
     user.password = make_password(password)
     user.tmp_token = ''
@@ -203,19 +208,11 @@ class UserInfoView(View):
         else:
             user = request.user
         profil_image_url = user.profil_image.url
-        if user_id:
-            data = {
-                'username': user.username,
-                'email': user.email,
-                'avatar': profil_image_url,
-                'user_id': user.id,
-            }
-        else:
-            data = {
-                'username': user.username,
-                'email': user.email,
-                'avatar': profil_image_url,
-            }
+        data = {
+            'username': user.username,
+            'avatar': profil_image_url,
+            'user_id': user.id,
+        }
         return JsonResponse(data)
 
 @method_decorator(login_required, name='dispatch')
@@ -239,13 +236,3 @@ class UserUpdateView(LoginRequiredMixin, FormView):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'success': False, 'message': 'Invalid request method'})
-
-@login_required
-def search_users(request):
-    query = request.GET.get('q')
-    if query:
-        users = User.objects.filter(Q(username__icontains=query) | Q(email__icontains=query))
-        user_data = [{'username': user.username, 'email': user.email, 'id': user.id} for user in users]
-    else:
-        user_data = []
-    return JsonResponse({'users': user_data})

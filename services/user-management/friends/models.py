@@ -23,6 +23,8 @@ class FriendshipManager(models.Manager):
         return False
 
     def cancel_friendship(self, user, friend):
+        if not self.filter(from_user=user, to_user=friend).exists():
+            raise Exception('Friendship not found')
         self.filter(from_user=user, to_user=friend).delete()
         self.filter(from_user=friend, to_user=user).delete()
 
