@@ -63,4 +63,7 @@ async function loadPages() {
 
     await new Page("pong-game.html")
         .build();
+
+    await new Page("menu-end.html")
+        .build();
 }

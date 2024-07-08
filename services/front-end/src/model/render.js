@@ -214,14 +214,3 @@ export function renderGame() {
                      </div>
                 `;
 }
-
-function loadPage(page) {
-    fetch(page)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('app').innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error loading page:', error);
-        });
-}

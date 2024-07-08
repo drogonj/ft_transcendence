@@ -3,6 +3,7 @@ import {getLeftPaddle, getRightPaddle, startPlayersLoop} from "./player.js";
 import {startBallLoop} from "./ball.js";
 import {displayPlayerPoint} from "../view/player_view.js";
 import {startHeaderLoop} from "./header.js";
+import {renderPageWithName} from "../model/page.js";
 
 export function launchGame() {
 	startBallLoop();
@@ -15,7 +16,7 @@ export function isGameEnd() {
 }
 
 export function endGame() {
-
+	renderPageWithName("menu-end.html");
 }
 
 export function markPoint(ball, header) {

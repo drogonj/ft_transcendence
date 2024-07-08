@@ -7,14 +7,12 @@ import loadSettings from "./controller/settings.js";
 import loadSpell from "./controller/spell.js";
 import {launchGame} from "./controller/game.js";
 
-//Delete all the coming balls (don't give point) **
-//Slow all the comings balls for X seconds **
-//Increase the speed of the next hit ball **
-//The next hit ball will be clone. **
-//ball invisible **
-//ball revers point
-//Slow the enwemy paddle by 50% for X seconds
-//Enemy paddle cant move for X seconds **
+//End score
+//Number of touched ball
+//Number of used spell
+//Time without taking any goals
+//Number of goals in a row.
+
 
 launchLocal();
 
