@@ -134,20 +134,3 @@
 .button:focus {
 	color: var(--secondary);
 }
-
-.buttonClose {
-	content: "sadasdas";
-	position: absolute;
-	top: 3px;
-	right: 10px;
-}
-
-.buttonClose:after {
-	content: "\2716";
-	color: var(--secondary);
-	font-size: 15px;
-}
-
-.buttonClose:hover:after {
-	color: var(--bg-secondary);
-}

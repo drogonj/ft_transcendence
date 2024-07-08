@@ -3,16 +3,51 @@
 <head>
     <title>404 Not Found</title>
     <style>
+		:root {
+    --primary: #DAE1E7;
+    --secondary: #83B4FF;
+    --bg-primary: #1A2130;
+    --bg-secondary: #DAE1E7;
+    --bg-three: #5A72A0;
+}
+
+		.button {
+	border-radius: 8px;
+	border-style: none;
+	box-sizing: border-box;
+	color: var(--primary);
+	cursor: pointer;
+	font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	height: 40px;
+	line-height: 20px;
+	list-style: none;
+	outline: none;
+	padding: 10px 16px;
+	background-color: var(--bg-three);
+	text-align: center;
+	text-decoration: none;
+	transition: color 100ms;
+	vertical-align: baseline;
+	touch-action: manipulation;
+}
+
+.button:hover,
+.button:focus {
+	color: var(--secondary);
+}
+
         #menuEnd {
-			width: 40vw;
-			height: 60vh;
+			width: 33vw;
 			position: absolute;
 			top: 50%;
 			left: 50%;
 			transform: translate(-50%,-50%);
-			background-color: #83B4FF;
-			color: white;
+			background-color: var(--bg-primary);
+			color: var(--primary);
 			font-size: 3vmin;
+			border-radius: 3%;
         }
 
 		#statistics {
@@ -20,27 +55,29 @@
 		}
 
 		img {
-			height: 55%;
-			width: 35%;
+			height: 75%;
+			width: 45%;
+		}
+
+		#buttonContinue {
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			margin: 2%;
 		}
 
 		#gameEndHeader {
 			width: 50%;
 			display: flex;
-			background-color: #ffcc00;
 			margin-left: auto;
 			font-size: 50%;
-		}
-
-		#RightPlayerHeader {
-			background-color: #8803fc;
 		}
 
 		.playerHeader {
 			width: 50%;
 			display: flex;
-			text-align: center;
 			flex-direction: column;
+			align-items: center;
 		}
 
 		#statsName {
@@ -53,6 +90,11 @@
 			text-align: center;
 		}
 
+		#statsName :nth-child(2n),
+		#rightPlayer :nth-child(2n),
+		#leftPlayer :nth-child(2n) {
+  			background-color: var(--bg-three);
+		}
     </style>
 </head>
 <body>
@@ -74,6 +116,7 @@
 				<div>Used spells</div>
 				<div>Time without taking goals</div>
 				<div>Goals in a row</div>
+				<div>Spells efficiency</div>
 			</div>
 			<div id="leftPlayer" class="statsValues">
 				<div>14</div>
@@ -81,6 +124,7 @@
 				<div>577</div>
 				<div>2424</div>
 				<div>424</div>
+				<div>1</div>
 			</div>
 			<div id="rightPlayer" class="statsValues">
 				<div>14</div>
@@ -88,9 +132,12 @@
 				<div>577</div>
 				<div>2424</div>
 				<div>424</div>
+				<div>28</div>
 			</div>
 		</section>
-		<button id="buttonContinue" class="button">Continue</button>
+		<div id="buttonContinue">
+			<button class="button">Continue</button>
+		</div>
 	</div>
 </body>
 </html>
