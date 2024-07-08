@@ -1,5 +1,96 @@
-<div id="menuEnd">
-	<div>
-		Lorem ipsuis
+<!DOCTYPE html>
+<html>
+<head>
+    <title>404 Not Found</title>
+    <style>
+        #menuEnd {
+			width: 40vw;
+			height: 60vh;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			background-color: #83B4FF;
+			color: white;
+			font-size: 3vmin;
+        }
+
+		#statistics {
+			display: flex;
+		}
+
+		img {
+			height: 55%;
+			width: 35%;
+		}
+
+		#gameEndHeader {
+			width: 50%;
+			display: flex;
+			background-color: #ffcc00;
+			margin-left: auto;
+			font-size: 50%;
+		}
+
+		#RightPlayerHeader {
+			background-color: #8803fc;
+		}
+
+		.playerHeader {
+			width: 50%;
+			display: flex;
+			text-align: center;
+			flex-direction: column;
+		}
+
+		#statsName {
+			width: 50%;
+		}
+
+		.statsValues {
+			background-color: #1A2130;
+			width: 25%;
+			text-align: center;
+		}
+
+    </style>
+</head>
+<body>
+	<div id="menuEnd">
+		<section id="gameEndHeader">
+			<div id="leftPlayerHeader" class="playerHeader">
+				<div>LeftPlayer</div>
+				<img src="../../assets/images/iconleft.jpg">
+			</div>
+			<div id="RightPlayerHeader" class="playerHeader">
+				<div>RightPlayer</div>
+				<img src="../../assets/images/righticon.jpg">
+			</div>
+		</section>
+		<section id="statistics">
+			<div id="statsName">
+				<div>Final score</div>
+				<div>Touched balls</div>
+				<div>Used spells</div>
+				<div>Time without taking goals</div>
+				<div>Goals in a row</div>
+			</div>
+			<div id="leftPlayer" class="statsValues">
+				<div>14</div>
+				<div>14</div>
+				<div>577</div>
+				<div>2424</div>
+				<div>424</div>
+			</div>
+			<div id="rightPlayer" class="statsValues">
+				<div>14</div>
+				<div>14</div>
+				<div>577</div>
+				<div>2424</div>
+				<div>424</div>
+			</div>
+		</section>
+		<button id="buttonContinue" class="button">Continue</button>
 	</div>
-</div>
+</body>
+</html>
