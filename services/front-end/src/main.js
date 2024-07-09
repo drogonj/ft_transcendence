@@ -6,21 +6,15 @@ import {loadHeader} from "./controller/header.js";
 import loadSettings from "./controller/settings.js";
 import loadSpell from "./controller/spell.js";
 import {launchGame} from "./controller/game.js";
+import {renderPageWithName} from "./model/page.js";
 
-//End score
-//Number of touched ball
-//Number of used spell
-//Time without taking any goals
-//Number of goals in a row.
+//launchLocal();
 
+document.getElementById("b").addEventListener("click", function (e) {
+	renderPageWithName("menu-start-settings.html");
+});
 
-launchLocal();
-
-/*document.addEventListener("keydown", function (e) {
-	const s = getSpellWithName("test").executor();
-});*/
-
-function launchLocal() {
+/* launchLocal() {
 	loadSpell();
 	document.getElementById("buttonPlay").addEventListener("click", (event) => {
 		document.getElementById("main").style.display = "block"
@@ -28,13 +22,16 @@ function launchLocal() {
 		document.getElementById("menuStart").remove();
 		launchGame();
 	});
-}
+}*/
 
 export default function launch() {
-	loadSettings(document.getElementsByTagName("input"))
+	loadSettings(document.getElementsByTagName("input"));
+	renderPageWithName("pong-game.html");
+	loadSpell();
 	loadMap();
 	loadListeners();
 	loadPlayers();
 	loadBall();
 	loadHeader();
+	launchGame();
 }

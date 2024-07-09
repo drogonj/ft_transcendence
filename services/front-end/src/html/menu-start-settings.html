@@ -2,10 +2,16 @@
     <h1>Game settings</h1>
 
     <output class="menuItem">Paddle Move Speed</output>
-    <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="10">
+    <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="15">
+
+    <output class="menuItem">Paddle Size</output>
+    <input id="inputPaddleSize" class="menuItem slider" type="range" min="5" max="40" value="20">
 
     <output class="menuItem">Ball Move Speed</output>
-    <input id="inputBallSpeed" class="menuItem slider" type="range" min="3" max="25" value="20">
+    <input id="inputBallSpeed" class="menuItem slider" type="range" min="6" max="20" value="12">
+
+    <output class="menuItem">Ball Size</output>
+    <input id="inputBallSize" class="menuItem slider" type="range" min="1" max="3" value="1.5" step="0.1">
 
     <output class="menuItem">Number of ball</output>
     <input id="inputNumberBall" class="menuItem slider" type="range" min="1" max="20" value="1">
@@ -15,6 +21,9 @@
 
     <output class="menuItem">Max game time</output>
     <input id="inputMaxGameTime" class="menuItem slider" type="range" min="1" max="15" value="5">
+
+    <output class="menuItem">Max score</output>
+    <input id="inputMaxScore" class="menuItem slider" type="range" min="10" max="100" value="25">
 
     <output class="menuItem">Respawn only if all balls gone</output>
 
