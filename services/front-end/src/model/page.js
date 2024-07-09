@@ -1,7 +1,7 @@
 import {navigateTo} from "./contentLoader.js";
 
 export const pages = new Map;
-export const htmlFolderPath = "./src/html/"
+export const htmlFolderPath = "./"
 
 export default class Page {
 	constructor(htmlFileName) {
@@ -13,7 +13,7 @@ export default class Page {
 	}
 
 	render() {
-		document.getElementById("app").innerHTML = this.htmlContent;
+		document.body.innerHTML = this.htmlContent;
 		this.#loadNavigations();
 		this.#loadListeners();
 	}

@@ -1,4 +1,3 @@
-import {displayPlayerPoint} from "../view/player_view.js";
 import {maxBall} from "./settings.js";
 import {getBallNumber} from "./ball.js";
 
