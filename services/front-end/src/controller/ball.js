@@ -1,6 +1,6 @@
 import {displayBall, moveBall, removeBall, setBallSize} from "../view/ball_view.js";
 import {ballSize, ballSpeed, maxBallAngle, respawnIfAllBallsGone} from "./settings.js";
-import {getAllPaddles, getLeftPlayerHeader, getRightPlayerHeader} from "./player.js";
+import {getAllPaddles, getLeftPaddle, getRightPaddle} from "./player.js";
 import {
     addBallToMap,
     getMapHeight,
@@ -10,7 +10,7 @@ import {
     isTopPartOfMap
 } from "./map.js";
 import {getRandomNumberBetweenOne, getRandomNumberWithDecimal} from "./utils/math_utils.js";
-import {endGame, isGameEnd, markPoint} from "./game.js";
+import {markPoint} from "./game.js";
 
 const balls = [];
 
@@ -53,7 +53,7 @@ function Ball() {
     addBallToMap(this.ballHtml)
 }
 
-Ball.prototype.triggerBallInsidePlayer = function () {
+Ball.prototype.triggerBallInsidePaddle = function () {
     const ballRect = this.ballHtml.getBoundingClientRect();
 
     for (const paddle of getAllPaddles()) {
@@ -64,6 +64,7 @@ Ball.prototype.triggerBallInsidePlayer = function () {
             this.calculBallTraj(paddle);
             if (this.ballActiveSpell)
                 this.ballActiveSpell.onHit(this);
+            paddle.statistics.increaseTouchedBall();
         }
     }
 }
@@ -78,9 +79,9 @@ Ball.prototype.triggerBallInsideBorder = function () {
 Ball.prototype.triggerBallInGoal = function () {
     const ballRect = this.ballHtml.getBoundingClientRect();
     if (ballRect.right >= getMapRight())
-        markPoint(this, getLeftPlayerHeader());
+        markPoint(this, getLeftPaddle());
     else if (ballRect.left <= getMapLeft())
-        markPoint(this, getRightPlayerHeader());
+        markPoint(this, getRightPaddle());
 }
 
 Ball.prototype.calculBallTraj = function(paddle) {
@@ -129,15 +130,9 @@ Ball.prototype.getBallPosition = function() {
 }
 
 export function startBallLoop() {
-    if (isGameEnd()) {
-        removeAllBalls();
-        endGame();
-        return;
-    }
-
     balls.forEach((ball) => {
         //todo dont do all trigger
-        ball.triggerBallInsidePlayer();
+        ball.triggerBallInsidePaddle();
         ball.triggerBallInsideBorder();
         ball.triggerBallInGoal()
         moveBall(ball);
@@ -169,10 +164,4 @@ export function getAllBallInSide(side) {
         else
             return ball.getBallDirection() <= 0;
     })
-}
-
-function removeAllBalls() {
-    while(balls.length) {
-       balls[0].deleteBall();
-    }
 }

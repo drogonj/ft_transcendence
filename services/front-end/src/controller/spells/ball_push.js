@@ -34,7 +34,7 @@ BallPush.prototype.onHit = function(ball) {
 }
 
 BallPush.prototype.destructor = function (ball) {
-	ball.ballVx *= 2;
-	ball.ballVy *= 2;
+	ball.ballVx /= 2;
+	ball.ballVy /= 2;
 	removeCssProperty(ball.getBallStyle(), "animation");
 }

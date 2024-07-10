@@ -33,11 +33,12 @@
 
 @keyframes heightGrow {
 	0% {
-		opacity: 1;
+		height: var(--var1);
+
 	}
 
 	100% {
-		opacity: 0;
+		height: var(--var2);
 
 	}
 }
