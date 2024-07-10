@@ -9,6 +9,7 @@ import {getMapHeight} from "./map.js";
 import {getRandomNumber} from "./utils/math_utils.js";
 import {getSpells} from "./spell.js";
 import {addSpellsToHeader} from "../view/header_view.js";
+import Statistics from "./statistics.js";
 
 const players = [];
 
@@ -25,6 +26,7 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
 	this.playerSpells = getSpells(paddleDirection);
+	this.statistics = new Statistics();
 	setPaddleSize(this, paddleSize);
 	displayPlayerPaddle(this);
 	addSpellsToHeader(this.paddleHeader, this.playerSpells);
@@ -51,10 +53,6 @@ Player.prototype.getPaddleHeight = function () {
 
 Player.prototype.getPaddleStyle = function () {
 	return this.paddleHtml.style;
-}
-
-Player.prototype.getScore = function () {
-	return parseInt(this.paddleHeader.querySelector(".scorePlayer").textContent);
 }
 
 export function startPlayersLoop() {
@@ -102,14 +100,6 @@ export function getRightPaddle() {
 
 export function getAllPaddles() {
 	return players;
-}
-
-export function getLeftPlayerHeader() {
-	return players[0].paddleHeader;
-}
-
-export function getRightPlayerHeader() {
-	return players[1].paddleHeader;
 }
 
 export function getOpponentPaddle(paddle) {

@@ -2,27 +2,39 @@ import {maxScore} from "./settings.js";
 import {getLeftPaddle, getRightPaddle, startPlayersLoop} from "./player.js";
 import {startBallLoop} from "./ball.js";
 import {displayPlayerPoint} from "../view/player_view.js";
-import {startHeaderLoop} from "./header.js";
+import {timerDecrease} from "./header.js";
 import {renderPageWithName} from "../model/page.js";
+import {displayStatistics} from "../view/statistics_view.js";
 
 export function launchGame() {
 	startBallLoop();
 	startPlayersLoop();
-	startHeaderLoop();
+	startGlobalGameLoop();
 }
 
 export function isGameEnd() {
-	return getRightPaddle().getScore() >= maxScore || getLeftPaddle().getScore() >= maxScore;
+	return getRightPaddle().statistics.getScore() >= maxScore || getLeftPaddle().statistics.getScore() >= maxScore;
 }
 
 export function endGame() {
 	renderPageWithName("menu-end.html");
+	displayStatistics(getLeftPaddle().statistics, getRightPaddle().statistics);
 }
 
-export function markPoint(ball, header) {
+export function markPoint(ball, paddle) {
 	ball.deleteBall();
-	const scoreHtml = header.querySelector(".scorePlayer");
-	displayPlayerPoint(scoreHtml, parseInt(scoreHtml.textContent) + 1);
-	if (isGameEnd())
+	if (getRightPaddle().statistics.getScore() >= maxScore)
+		return;
+	const scoreHtml = paddle.paddleHeader.querySelector(".scorePlayer");
+	paddle.statistics.increaseScore();
+	displayPlayerPoint(scoreHtml, paddle.statistics.getScore());
+}
+
+function startGlobalGameLoop() {
+	if (isGameEnd()) {
 		endGame();
+		return;
+	}
+	timerDecrease();
+	setTimeout(startGlobalGameLoop, 1000);
 }

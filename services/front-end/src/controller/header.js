@@ -11,7 +11,7 @@ export function loadHeader() {
 	timeHtml = document.getElementById("headerTimer");
 }
 
-export function startHeaderLoop() {
+export function timerDecrease() {
 	if (seconds <= 0) {
 		minutes--;
 		seconds = 59;
@@ -20,7 +20,6 @@ export function startHeaderLoop() {
 	if (minutes <= 0 && seconds <= 0)
 		return;
 	timerDisplay(minutes, seconds, timeHtml);
-	setTimeout(startHeaderLoop, 1000);
 }
 
 export function coolDownRun(spell) {
