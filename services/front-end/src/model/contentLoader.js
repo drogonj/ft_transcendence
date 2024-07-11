@@ -1,7 +1,16 @@
+import {
+    renderLogin,
+    renderHome,
+    renderSignup,
+    renderUserUpdateForm,
+    renderConfirmRegistration,
+    renderGame,
+    renderUserProfile
+} from './render.js';
+import {getCurrentUserInfo, handleLogin} from "./auth.js";
+import { connectFriendsWebsocket } from "./friends.js";
 import Page from "./page.js";
-import {handleLogin} from "./auth.js";
 import launch from "../main.js";
-import { renderLogin, renderHome, renderSignup, renderUserUpdateForm, renderConfirmRegistration, renderGame } from './render.js';
 
 export const app = document.getElementById('app');
 
@@ -11,13 +20,16 @@ export function cleanUrl() {
     history.replaceState({ route: newUrl }, 'SPA Application', newUrl);
 }
 
-export function navigateTo(route, pushState) {
+const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
+const profileRegex = /\/profile\/(\d+)/;
+
+export function navigateTo(route, pushState, data) {
     if (pushState)
         history.pushState({route: route}, 'SPA Application', route);
     else
         history.replaceState({route: route}, 'SPA Application', route);
 
-    const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
+    const url = window.location.href;
 
     if (route === '/login' || route === '/login/') {
         renderLogin();
@@ -31,8 +43,11 @@ export function navigateTo(route, pushState) {
         renderConfirmRegistration();
     } else if (route === '/game' || route === '/game/') {
         renderGame();
+    } else if (profileRegex.test(route)) {
+        const userId = url.match(/\/profile\/(\d+)\//)[1];
+        renderUserProfile(userId);
     } else {
-        navigateTo('/home', false)
+        navigateTo('/home', false);
     }
 }
 
@@ -44,12 +59,32 @@ window.addEventListener('popstate', function (event) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadPages();
-    document.getElementById('js-error').remove();
-    navigateTo(window.location.pathname + window.location.search, false);
-});
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadPages();
+    const jsError = document.getElementById('js-error');
+    if (jsError) {
+        jsError.remove();
+    }
 
+    try {
+        const response = await fetch('/api/user/is_authenticated/');
+        const data = await response.json();
+
+        const route = window.location.pathname + window.location.search;
+
+        if (data.is_authenticated || confirmRegistrationUrlRegex.test(route)) {
+            if (data.is_authenticated) {
+                await getCurrentUserInfo();
+                await connectFriendsWebsocket();
+            }
+            navigateTo(route, false);
+        } else {
+            navigateTo('/login', false);
+        }
+    } catch (error) {
+        console.error('Error fetching authentication status:', error);
+    }
+});
 
 async function loadPages() {
     await new Page("example.html")
