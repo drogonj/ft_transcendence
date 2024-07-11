@@ -1,5 +1,5 @@
 import {keyDown} from "./listeners.js"
-import {moveStep, moveSpeed, paddleSize} from "./settings.js";
+import {moveStep, moveSpeed, paddleSize, maxScore} from "./settings.js";
 import {
 	movePlayerPaddleUp,
 	movePlayerPaddleDown,
@@ -106,4 +106,8 @@ export function getOpponentPaddle(paddle) {
 	if (paddle.paddleDirection === -1)
 		return getRightPaddle();
 	return getLeftPaddle();
+}
+
+export function havePlayersMaxScore() {
+	return getRightPaddle().statistics.getScore() >= maxScore || getLeftPaddle().statistics.getScore() >= maxScore;
 }

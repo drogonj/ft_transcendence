@@ -14,6 +14,7 @@ import {
     changeFriendStatus,
     handleUserSearch,
 } from './friends.js';
+import {renderPageWithName} from "./page.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -143,8 +144,7 @@ export async function renderHome() {
         disconnectFriendsWebsocket();
     });
     document.getElementById('launch-game').addEventListener('click', (event) => {
-        event.preventDefault();
-        navigateTo('/game', true);
+        renderPageWithName("menu-start-settings.html");
     });
 
     document.getElementById('friend-menu-button').addEventListener('click', function() {
@@ -257,18 +257,6 @@ export async function renderConfirmRegistration() {
         event.preventDefault();
         navigateTo('/login', true);
     });
-}
-
-export function renderGame() {
-    app.innerHTML = `
-                     <div id="main">
-                        <div id="header"> </div>
-                        <div id="map">
-                            <div class="playerPaddle"></div>
-                            <div class="ball"></div>
-                        </div>
-                     </div>
-                `;
 }
 
 export async function renderUserProfile(userId) {

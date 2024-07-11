@@ -4,7 +4,6 @@ import {
     renderSignup,
     renderUserUpdateForm,
     renderConfirmRegistration,
-    renderGame,
     renderUserProfile
 } from './render.js';
 import {getCurrentUserInfo, handleLogin} from "./auth.js";
@@ -41,8 +40,6 @@ export function navigateTo(route, pushState, data) {
         renderUserUpdateForm();
     } else if (confirmRegistrationUrlRegex.test(route)) {
         renderConfirmRegistration();
-    } else if (route === '/game' || route === '/game/') {
-        renderGame();
     } else if (profileRegex.test(route)) {
         const userId = url.match(/\/profile\/(\d+)\//)[1];
         renderUserProfile(userId);

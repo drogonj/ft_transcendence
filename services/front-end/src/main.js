@@ -10,9 +10,9 @@ import {renderPageWithName} from "./model/page.js";
 
 //launchLocal();
 
-document.getElementById("b").addEventListener("click", function (e) {
+/*document.getElementById("b").addEventListener("click", function (e) {
 	renderPageWithName("menu-start-settings.html");
-});
+});*/
 
 /* launchLocal() {
 	loadSpell();

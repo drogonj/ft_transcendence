@@ -1,5 +1,4 @@
-import {maxScore} from "./settings.js";
-import {getLeftPaddle, getRightPaddle, startPlayersLoop} from "./player.js";
+import {getLeftPaddle, getRightPaddle, havePlayersMaxScore, startPlayersLoop} from "./player.js";
 import {startBallLoop} from "./ball.js";
 import {displayPlayerPoint} from "../view/player_view.js";
 import {timerDecrease} from "./header.js";
@@ -13,7 +12,7 @@ export function launchGame() {
 }
 
 export function isGameEnd() {
-	return getRightPaddle().statistics.getScore() >= maxScore || getLeftPaddle().statistics.getScore() >= maxScore;
+	return havePlayersMaxScore();
 }
 
 export function endGame() {
@@ -23,7 +22,7 @@ export function endGame() {
 
 export function markPoint(ball, paddle) {
 	ball.deleteBall();
-	if (getRightPaddle().statistics.getScore() >= maxScore)
+	if (havePlayersMaxScore())
 		return;
 	const scoreHtml = paddle.paddleHeader.querySelector(".scorePlayer");
 	paddle.statistics.increaseScore();
