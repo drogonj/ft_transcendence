@@ -14,7 +14,6 @@ import {
     changeFriendStatus,
     handleUserSearch,
 } from './friends.js';
-import {renderPageWithName} from "./page.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -144,7 +143,7 @@ export async function renderHome() {
         disconnectFriendsWebsocket();
     });
     document.getElementById('launch-game').addEventListener('click', (event) => {
-        renderPageWithName("menu-start-settings.html");
+        navigateTo('/game', true);
     });
 
     document.getElementById('friend-menu-button').addEventListener('click', function() {

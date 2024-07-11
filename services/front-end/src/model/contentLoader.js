@@ -8,7 +8,7 @@ import {
 } from './render.js';
 import {getCurrentUserInfo, handleLogin} from "./auth.js";
 import { connectFriendsWebsocket } from "./friends.js";
-import Page from "./page.js";
+import Page, {renderPageWithName} from "./page.js";
 import launch from "../main.js";
 
 export const app = document.getElementById('app');
@@ -43,6 +43,8 @@ export function navigateTo(route, pushState, data) {
     } else if (profileRegex.test(route)) {
         const userId = url.match(/\/profile\/(\d+)\//)[1];
         renderUserProfile(userId);
+    } else if (route === '/game' || route === '/game/') {
+        renderPageWithName("menu-start-settings.html");
     } else {
         navigateTo('/home', false);
     }

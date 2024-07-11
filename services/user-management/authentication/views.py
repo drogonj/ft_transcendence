@@ -94,8 +94,8 @@ def get_profile_picture(request):
     return HttpResponse(image.read(), content_type=content_type)
 
 def oauth_redirect(request):
-    uri = os.getenv("42OAUTH_URI")
-    uri += "&state=" + os.getenv("42OAUTH_STATE")
+    uri = os.getenv("OAUTH_URI")
+    uri += "&state=" + os.getenv("OAUTH_STATE")
     return redirect(uri)
 
 @csrf_exempt
@@ -106,11 +106,11 @@ def oauth_callback(request):
         return redirect(f"{os.getenv('WEBSITE_URL')}/")
     data = {
         'grant_type': 'authorization_code',
-        'client_id': os.getenv("42OAUTH_UID"),
-        'client_secret': os.getenv("42OAUTH_SECRET"),
+        'client_id': os.getenv("OAUTH_UID"),
+        'client_secret': os.getenv("OAUTH_SECRET"),
         'code': code,
         'redirect_uri': 'https://localhost:8080/api/user/oauth/callback/',
-        'state': os.getenv('42OAUTH_STATE'),
+        'state': os.getenv('OAUTH_STATE'),
     }
 
     try:

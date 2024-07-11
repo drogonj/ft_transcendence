@@ -14,13 +14,13 @@ body {
     -moz-user-select: none; /* Disable text selection in Firefox */
     -ms-user-select: none; /* Disable text selection in Internet Explorer/Edge */
     -webkit-touch-callout: none; /* Disable the callout that appears when long-pressing a link */
-    color: #282828;
+    color: rgba(255, 255, 255, 0.82);
     background-color: var(--bg-primary);
 }
 
 a {
     text-decoration: none;
-    color: #282828;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 #avatar-container {
