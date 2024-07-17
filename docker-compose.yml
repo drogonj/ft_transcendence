@@ -45,6 +45,15 @@ services:
     networks:
      - network
 
+  back-game:
+    container_name: back-game
+    build: ./services/back-game/
+    # volumes:
+    #   - ./services/volumes/postgres:/var/lib/postgresql/data/
+    env_file: .env
+    networks:
+     - network
+
 networks:
   network:
     driver: bridge
