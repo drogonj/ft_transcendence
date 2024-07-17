@@ -135,9 +135,6 @@ def oauth_callback(request):
                 tmp_token = user.generate_tmp_token()
                 user.save()
                 return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
-            if user.is_connected:
-                #TODO NO CONNECTION IF USER ALREADY CONNECTED
-                return redirect(f"{os.getenv('WEBSITE_URL')}/already-connected/")
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(os.getenv('WEBSITE_URL'))
         else:  # Else register user

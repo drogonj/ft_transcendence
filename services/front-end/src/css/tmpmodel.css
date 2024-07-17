@@ -57,7 +57,7 @@ section .auth-box
 	padding: 50px;
 	border-color: red;
 	border-radius: 4px;
-	box-shadow: 0 0 15px #8803fc;
+	box-shadow: 0 0 15px #493782;
 }
 section .auth-box .content
 {

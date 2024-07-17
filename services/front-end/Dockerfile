@@ -51,5 +51,3 @@ COPY ./conf/transcendence.conf /etc/nginx/conf.d/transcendence.conf
 COPY ./src /singlepageapp/src/
 COPY ./assets /singlepageapp/assets/
 COPY ./src/html/* /singlepageapp/
-
-ENTRYPOINT ["/entrypoint.sh"]
