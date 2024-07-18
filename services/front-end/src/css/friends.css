@@ -6,7 +6,7 @@
 }
 
 .friend-menu-button {
-    background-color: #8b66b2;
+    background-color: #ff0266;
     color: white;
     border: none;
     margin: 0;
@@ -16,10 +16,11 @@
     cursor: pointer;
     text-align: center;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    transition: ease-in 0.1s;
 }
 
 .friend-menu-button:hover {
-    background-color: #b386e3;
+    background-color: #c70652;
 }
 
 .friend-menu {
@@ -27,7 +28,7 @@
     padding: 0;
     position: absolute;
     bottom: 35px; /* Adjust based on your button height */
-    background-color: white;
+    background-color: #c5c8de;
     box-shadow: 0 0 10px rgba(129, 66, 199, 0.69);
     border-radius: 5px 5px 0 0;
     overflow: hidden;
@@ -43,21 +44,22 @@
     display: flex;
     justify-content: space-around;
     padding: 10px;
-    background-color: #f0f0f0;
+    background-color: #d3d5e3;
     border-bottom: 1px solid #ccc;
 }
 
 .friend-menu-header button {
-    background-color: #8b66b2;
+    background-color: #ff0266;
     color: white;
     border: none;
     padding: 10px 10px;
     cursor: pointer;
     border-radius: 5px;
+    transition: ease-in 0.1s;
 }
 
 .friend-menu-header button:hover {
-    background-color: #b386e3;
+    background-color: #c70652;
 }
 
 
@@ -82,7 +84,8 @@
     border-bottom: 1px solid #ccc;
     text-align: left; /* Align text to the left */
     border-radius: 5px;
-    background: #f0f0f0;
+    background: #e1e2eb;
+    transition: ease-in 0.1s;
 }
 
 .friend-menu li:last-child {
@@ -90,7 +93,7 @@
 }
 
 .friend-menu li:hover {
-    background-color: #d4d4d4;
+    background-color: #cecfdb;
 }
 
 .avatar-container {
@@ -115,10 +118,9 @@
 }
 
 .friend-menu li span p {
-
     max-width: 100px;
     overflow: hidden;
-    background: linear-gradient(to right,  rgba(0,0,0,1) 0%,rgba(0,0,0,1) 80%,rgba(0,0,0,0) 100%);
+    background: linear-gradient(to right,  #ff0266 0%,rgba(0,0,0,1) 80%,rgba(0,0,0,0) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent
 }
@@ -134,6 +136,7 @@
 .friend-menu li button img {
     width: 15px;
     height: 15px;
+    transition: ease-in 0.1s;
 }
 
 .friend-menu li button img:hover {
@@ -160,6 +163,7 @@
 .status-indicator-text {
     margin-right: 10px;
     font-size: 0.75em;
+    color: #1e1f26;
     display: inline-block; /* Ensure text and indicator are inline */
     vertical-align: middle; /* Align text vertically with the indicator */
     margin-left: 5px; /* Add some margin for spacing */
@@ -171,7 +175,7 @@
 
 #search-user-form #search-query {
     width: 95%;
-    background: #e6e6e6;
+    background: #e1e2eb;
     border: none;
     outline: none;
     padding: 15px 10px 10px;
@@ -180,6 +184,8 @@
     font-weight: 500;
     font-size: 1em;
     transition: 0.3s;
+    border: 1px solid #dbd8cf;
+    box-shadow: 0 0 10px #e1e2eb
 }
 
 #search-user-form input:focus,
@@ -214,14 +220,14 @@
     padding: 7px;
     border-width: 1px;
     outline: none;
-    background: #ececec;
     color: #343434;
     cursor: pointer;
+    border: none;
     transition-duration: 0.5s;
 }
 
 #search-user-form input[type="submit"]:hover {
-    background: #8803fc;
+    background: #ff0266;
     color: whitesmoke;
 }
 
