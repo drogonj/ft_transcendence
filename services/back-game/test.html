@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <script>
+        let ws = new WebSocket("ws://localhost:8000/back-api");
+        ws.onopen = function(event) {
+            console.log("WebSocket is open now.");
+            ws.send("Hello, server!");
+        };
+
+        ws.onmessage = function (event) {
+            console.log(event.data);
+        };
+
+        document.addEventListener("click", () => {
+            ws.send("Clicked");
+        })
+    </script>
+</body>
+</html>

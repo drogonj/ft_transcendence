@@ -6,12 +6,25 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, RequestHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado import gen
+from tornado.websocket import WebSocketHandler
 
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backgame.settings')
 django.setup()
 
-print("DJANGO_SETTINGS_MODULE:", os.getenv('DJANGO_SETTINGS_MODULE'))
+class EchoWebSocket(WebSocketHandler):
+    def check_origin(self, origin):
+        return True  # Allow all origins
+
+    def open(self):
+        print("WebSocket opened")
+
+    def on_message(self, message):
+        self.write_message(u"You said: " + message)
+        print("Tornado: msg send to client")
+
+    def on_close(self):
+        print("WebSocket closed")
 
 # Define a simple Tornado handler
 i = 0
@@ -29,6 +42,7 @@ django_app = WSGIContainer(get_wsgi_application())
 
 # Tornado application
 tornado_app = Application([
+    (r"/back-api", EchoWebSocket),  # API handler path
     (r"/hello-tornado", HelloHandler),  # Tornado-specific handler
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
