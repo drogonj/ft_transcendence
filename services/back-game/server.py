@@ -42,13 +42,13 @@ django_app = WSGIContainer(get_wsgi_application())
 
 # Tornado application
 tornado_app = Application([
-    (r"/back-api", EchoWebSocket),  # API handler path
+    (r"/api/back", EchoWebSocket),  # API handler path
     (r"/hello-tornado", HelloHandler),  # Tornado-specific handler
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
 if __name__ == "__main__":
     server = HTTPServer(tornado_app)
-    server.listen(8000)
-    print("Starting Tornado server on http://localhost:8000")
+    server.listen(2605)
+    print("Starting Tornado server on http://localhost:2605")
     IOLoop.current().start()

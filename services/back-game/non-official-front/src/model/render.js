@@ -99,7 +99,6 @@ export async function renderHome() {
                     </div>
                     <button id="logout-button">Logout</button>
                     <button id="launch-game">Launch game</button>
-                    <button id="launch-game-online">Launch game online</button>
                     <button id="profile-button">Go to Profile</button>
                     <a href="#" id="update-user-info">User update info</a>
                     <div class="friend-menu-container">
@@ -145,23 +144,6 @@ export async function renderHome() {
     });
     document.getElementById('launch-game').addEventListener('click', (event) => {
         navigateTo('/game', true);
-    });
-
-    document.getElementById('launch-game-online').addEventListener('click', (event) => {
-        navigateTo('/game-online', true);
-        let ws = new WebSocket("ws://localhost:2605/api/back");
-        ws.onopen = function(event) {
-            console.log("WebSocket is open now.");
-            ws.send("Hello, server!");
-        };
-
-        ws.onmessage = function (event) {
-            console.log(event.data);
-        };
-
-        document.addEventListener("click", () => {
-            ws.send("Clicked");
-        })
     });
 
     document.getElementById('friend-menu-button').addEventListener('click', function() {

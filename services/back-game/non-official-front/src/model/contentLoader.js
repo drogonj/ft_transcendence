@@ -45,8 +45,6 @@ export function navigateTo(route, pushState, data) {
         renderUserProfile(userId);
     } else if (route === '/game' || route === '/game/') {
         renderPageWithName("menu-start-settings.html");
-    } else if (route === '/game-online' || route === '/game-online/') {
-        renderPageWithName("pong-game-online.html");
     } else {
         navigateTo('/home', false);
     }
@@ -98,9 +96,6 @@ async function loadPages() {
         .build();
 
     await new Page("pong-game.html")
-        .build();
-
-    await new Page("pong-game-online.html")
         .build();
 
     await new Page("menu-end.html")
