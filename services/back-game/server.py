@@ -12,12 +12,17 @@ from tornado.websocket import WebSocketHandler
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backgame.settings')
 django.setup()
 
+clients = []
+
 class EchoWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
     def open(self):
         print("WebSocket opened")
+        clients.append(self)
+        for client in clients:
+            client.write_message(u"New player connected")
 
     def on_message(self, message):
         self.write_message(u"You said: " + message)
@@ -25,6 +30,7 @@ class EchoWebSocket(WebSocketHandler):
 
     def on_close(self):
         print("WebSocket closed")
+        clients.remove(self)
 
 # Define a simple Tornado handler
 i = 0
