@@ -217,12 +217,10 @@ class UserUpdateView(LoginRequiredMixin, FormView):
     def post(self, request, *args, **kwargs):
         try:
             username = request.POST.get('username')
-            email = request.POST.get('email')
             profile_picture = request.FILES.get('profil_image')
 
             user = request.user
             user.username = username
-            user.email = email
             if profile_picture:
                 user.change_profile_pic(profile_picture)
             user.save()

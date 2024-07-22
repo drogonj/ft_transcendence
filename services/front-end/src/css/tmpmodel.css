@@ -49,16 +49,18 @@ html {
 	position: absolute;
 	width: 80%;
 	max-width: 400px;
-	background: rgb(40, 40, 40);
-	z-index: 1000;
+	background: linear-gradient(-45deg, rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5));
+	background-size: 800% 800%;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	padding: 50px;
 	border-color: red;
 	border-radius: 4px;
-	box-shadow: 0 0 15px #493782;
+	box-shadow: 0 0 5px #ff0266;
+	animation: profile-card-gradient 15s ease infinite;
 }
+
 .auth-section .auth-box .content
 {
 	position: relative;
@@ -91,7 +93,7 @@ html {
 {
 	position: relative;
 	width: 95%;
-	background: #333;
+	background: rgba(200, 20, 20, 0.1);
 	border: none;
 	outline: none;
 	padding: 15px 10px 10px;
@@ -104,7 +106,7 @@ html {
 .auth-box .content .form .inputBox input:focus,
 .auth-box .content .form .inputBox input:hover,
 .auth-box .content .form .inputBox input:valid {
-	background: #464646;
+	background: rgba(100, 25, 50, 0.2);
 }
 
 .auth-section .auth-box .content .form .inputBox i
@@ -113,7 +115,8 @@ html {
 	left: 0;
 	padding: 15px;
 	font-style: normal;
-	color: #aaa;
+	color: whitesmoke;
+	opacity: 0.75;
 	transition: 0.5s;
 	pointer-events: none;
 	font-size: 1em;
@@ -148,10 +151,11 @@ html {
 	letter-spacing: 0.05em;
 	cursor: pointer;
 	transition-duration: 0.5s;
+	opacity: 0.75;
 }
 
 .auth-box .content .form .inputBox input[type="submit"]:hover {
-	background: #8803fc;
+	background: #ff0266;
 	color: whitesmoke;
 }
 

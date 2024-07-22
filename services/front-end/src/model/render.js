@@ -118,14 +118,13 @@ export async function renderHome() {
                         </div>
                         <p>${currentUser.username}</p>
                         <div class="buttons">
-                            <a id="profile-button" href="#">Show profile</a>
+                            <a href="#" id="profile-button">Show profile</a>
                             <a href="#" id="update-user-info">Change profile</a>  
+                            <a href="#" id="logout-button">Logout</a>
                         </div>
                         <span class="left"></span>
                         <span class="bottom"></span>
                     </div>
-
-                    <button id="logout-button">Logout</button>
                     <button id="launch-game">Launch game</button>
                     <div class="friend-menu-container">
                         <button id="friend-menu-button" class="friend-menu-button">Amis</button>
@@ -215,10 +214,6 @@ export async function renderUserUpdateForm() {
             <div>
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" value="${userData.username}" required>
-            </div>
-            <div>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="${userData.email}" required>
             </div>
             <div>
                 <label for="profil_image">Profile Picture:</label>
