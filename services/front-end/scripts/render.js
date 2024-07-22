@@ -17,7 +17,7 @@ import {
 
 export function renderLogin() {
     app.innerHTML = `
-                    <section>
+                    <section class="auth-section">
                        <div class="auth-box">
                         <div class="content">
                          <h2>Login</h2>
@@ -51,7 +51,7 @@ export function renderLogin() {
 
 export function renderSignup() {
     app.innerHTML = `
-                     <section>
+                     <section class="auth-section">
                        <div class="auth-box">
                         <div class="content">
                          <h2>Sign up</h2>
@@ -92,16 +92,41 @@ export function renderSignup() {
 
 export async function renderHome() {
     app.innerHTML = `
-                    <h1>Home Page</h1>
-                    <p>Logged in as ${currentUser.username}</p>
-                    <div id="avatar-container">
-                        <img src="/api/user/get_avatar/" alt="avatar" id="avatar"/>
+                    <h3 id="transcendence-title">
+                        <span class="ltr">F</span>
+                        <span class="ltr">T</span>
+                        <span class="ltr">_</span>
+                        <span class="ltr">T</span>
+                        <span class="ltr">R</span>
+                        <span class="ltr">A</span>
+                        <span class="ltr">N</span>
+                        <span class="ltr">S</span>
+                        <span class="ltr">C</span>
+                        <span class="ltr">E</span>
+                        <span class="ltr">N</span>
+                        <span class="ltr">D</span>
+                        <span class="ltr">E</span>
+                        <span class="ltr">N</span>
+                        <span class="ltr">C</span>
+                        <span class="ltr">E</span>
+                    </h3>
+                    <div class="profile-card">
+                        <div id="avatar-display">
+                            <div id="avatar-container">
+                                <img src="/api/user/get_avatar/" alt="avatar" id="avatar"/>
+                            </div>
+                        </div>
+                        <p>${currentUser.username}</p>
+                        <div class="buttons">
+                            <a href="#" id="profile-button">Show profile</a>
+                            <a href="#" id="update-user-info">Change profile</a>  
+                            <a href="#" id="logout-button">Logout</a>
+                        </div>
+                        <span class="left"></span>
+                        <span class="bottom"></span>
                     </div>
-                    <button id="logout-button">Logout</button>
                     <button id="launch-game">Launch game</button>
                     <button id="launch-game-online">Launch game online</button>
-                    <button id="profile-button">Go to Profile</button>
-                    <a href="#" id="update-user-info">User update info</a>
                     <div class="friend-menu-container">
                         <button id="friend-menu-button" class="friend-menu-button">Amis</button>
                         <div id="friend-menu" class="friend-menu">
@@ -209,10 +234,6 @@ export async function renderUserUpdateForm() {
                 <input type="text" id="username" name="username" value="${userData.username}" required>
             </div>
             <div>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="${userData.email}" required>
-            </div>
-            <div>
                 <label for="profil_image">Profile Picture:</label>
                 <input type="file" id="profil_image" name="profil_image" accept="image/*">
             </div>
@@ -232,7 +253,7 @@ export async function renderUserUpdateForm() {
 
 export async function renderConfirmRegistration() {
     app.innerHTML = `
-                    <section>
+                    <section class="auth-section">
                        <div class="auth-box">
                         <div class="content">
                          <h2>Confirm Registration</h2>
@@ -293,7 +314,6 @@ export async function renderUserProfile(userId) {
             </div>
             <div class="profile-details">
                 <p><strong>Username:</strong> ${userData.username}</p>
-                <p><strong>Email:</strong> ${userData.email}</p>
             </div> 
         </div>
         <button id="home">Home</button>

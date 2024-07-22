@@ -119,8 +119,8 @@ export async function handleConfirmRegistration(event) {
     const url = new URL(window.location.href)
     const params = new URLSearchParams(url.search)
     const token = params.get('token')
-    if (!token)
-        navigateTo('/home', false)
+    if (!token || !params.get('username'))
+        navigateTo('/login', false)
 
     const takeIntraPic = document.getElementById('intra-pic-checkbox').checked;
     const signupData = {
