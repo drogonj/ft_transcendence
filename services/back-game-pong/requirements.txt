@@ -1,2 +1,2 @@
-django==5.0.6
+django==5.0.7
 tornado==6.4.1
