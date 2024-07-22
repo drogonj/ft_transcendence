@@ -9,7 +9,7 @@ import {
 import {getCurrentUserInfo, handleLogin} from "./auth.js";
 import { connectFriendsWebsocket } from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
-import launch from "../main.js";
+import launch from "../local-game-pong/src/main.js";
 
 export const app = document.getElementById('app');
 
@@ -88,11 +88,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function loadPages() {
-    await new Page("example.html")
-        .withNavigation("signup-link")
-        .withListener("auth-form", "submit", handleLogin)
-        .build();
-
     await new Page("menu-start-settings.html")
         .withListener("buttonPlay", "click", launch)
         .build();

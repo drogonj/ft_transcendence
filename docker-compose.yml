@@ -46,8 +46,8 @@ services:
      - network
 
   back-game:
-    container_name: back-game
-    build: ./services/back-game/
+    container_name: back-game-pong
+    build: services/back-game-pong/
     ports:
       - "2605:2605"
     env_file: .env

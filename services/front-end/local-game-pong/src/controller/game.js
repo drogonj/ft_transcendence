@@ -2,8 +2,9 @@ import {getLeftPaddle, getRightPaddle, havePlayersMaxScore, startPlayersLoop} fr
 import {startBallLoop} from "./ball.js";
 import {displayPlayerPoint} from "../view/player_view.js";
 import {timerDecrease} from "./header.js";
-import {renderPageWithName} from "../model/page.js";
 import {displayStatistics} from "../view/statistics_view.js";
+import {renderPageWithName} from "../../../scripts/page.js";
+
 
 export function launchGame() {
 	startBallLoop();
