@@ -53,5 +53,3 @@ COPY ./scripts /singlepageapp/scripts/
 COPY ./assets /singlepageapp/assets/
 COPY ./css /singlepageapp/css/
 COPY ./html/* /singlepageapp/
-
-ENTRYPOINT ["/entrypoint.sh"]

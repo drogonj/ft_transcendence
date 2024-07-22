@@ -20,7 +20,6 @@ RUN mkdir -p /etc/ssl/private/postgresql && \
 RUN chown -R postgres:postgres /etc/postgresql /etc/ssl/private/postgresql /etc/ssl/certs/postgresql.crt && \
     chmod 600 /etc/ssl/private/postgresql/postgresql.key
 
-EXPOSE 5432
 USER postgres
 
 CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
