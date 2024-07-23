@@ -174,19 +174,6 @@ export async function renderHome() {
 
     document.getElementById('launch-game-online').addEventListener('click', (event) => {
         navigateTo('/game-online', true);
-        let ws = new WebSocket("ws://localhost:2605/api/back");
-        ws.onopen = function(event) {
-            console.log("WebSocket is open now.");
-            ws.send("Hello, server!");
-        };
-
-        ws.onmessage = function (event) {
-            console.log(event.data);
-        };
-
-        document.addEventListener("click", () => {
-            ws.send("Clicked");
-        })
     });
 
     document.getElementById('friend-menu-button').addEventListener('click', function() {

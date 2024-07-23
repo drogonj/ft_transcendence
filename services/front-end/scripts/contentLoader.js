@@ -10,6 +10,7 @@ import {getCurrentUserInfo, handleLogin} from "./auth.js";
 import { connectFriendsWebsocket } from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
 import launch from "../local-game-pong/src/main.js";
+import launchClientWebSocket from "../online-game-pong/websocket.js";
 
 export const app = document.getElementById('app');
 
@@ -46,7 +47,7 @@ export function navigateTo(route, pushState, data) {
     } else if (route === '/game' || route === '/game/') {
         renderPageWithName("menu-start-settings.html");
     } else if (route === '/game-online' || route === '/game-online/') {
-        renderPageWithName("pong-game-online.html");
+        renderPageWithName("pong-game-waiting.html");
     } else {
         navigateTo('/home', false);
     }
@@ -96,6 +97,10 @@ async function loadPages() {
         .build();
 
     await new Page("pong-game-online.html")
+        .build();
+
+    await new Page("pong-game-waiting.html")
+        .withListener("test", "click", launchClientWebSocket)
         .build();
 
     await new Page("menu-end.html")
