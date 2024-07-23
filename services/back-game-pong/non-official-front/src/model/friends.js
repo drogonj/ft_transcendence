@@ -191,6 +191,9 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
         <span class="profile-link" data-user-id="${user}">
             <p>${username}</p>
         </span>
+		<button class="chat-friend-button" data-friend-id="${user}">
+            <img src="/src/images/chat_icon.png" alt="chat">
+        </button>
         <button class="delete-friend-button" data-friend-id="${user}">
             <img src="/src/images/red_cross.png" alt="delete">
         </button>

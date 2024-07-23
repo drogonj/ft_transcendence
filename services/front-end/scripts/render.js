@@ -150,6 +150,18 @@ export async function renderHome() {
                         </div>
                     </div>
                 `;
+
+	// const chatServiceStatus = await checkChatService();
+	// if (chatServiceStatus.status === 'ok') {
+    //     // Ajouter le bouton spécifique si le service est actif
+    //     app.innerHTML += `
+    //         <button id="chat-service-button">Service Chat Disponible</button>
+    //     `;
+    // } else {
+    //     // Afficher une notification ou un message alternatif
+    //     console.log("Le service de chat n'est pas disponible.");
+    // }
+
     // Fetch friends list
     await loadFriends();
     // Fetch friendship requests list
@@ -298,6 +310,33 @@ export async function renderConfirmRegistration() {
 }
 
 export async function renderUserProfile(userId) {
+    const response = await fetch(`/api/user/profile/${userId}/`);
+
+    if (!response.ok) {
+        navigateTo('/home');
+    }
+
+    const userData = await response.json();
+
+    app.innerHTML = `
+        <div class="profile-container">
+            <h1>User Profile</h1>
+            <div class="profile-picture">
+                <img src="${userData.avatar}" alt="Profile Picture">
+            </div>
+            <div class="profile-details">
+                <p><strong>Username:</strong> ${userData.username}</p>
+            </div> 
+        </div>
+        <button id="home">Home</button>
+    `;
+    document.getElementById('home').addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo('/', true);
+    });
+}
+
+export async function renderChat(userId) {
     const response = await fetch(`/api/user/profile/${userId}/`);
 
     if (!response.ok) {
