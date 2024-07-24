@@ -8,13 +8,17 @@ import {
 import {getMapHeight} from "./map.js";
 import {getRandomNumber} from "./utils/math_utils.js";
 import {getSpells} from "./spell.js";
-import {addSpellsToHeader} from "../view/header_view.js";
-import Statistics from "./statistics.js";*/
+import {addSpellsToHeader} from "../view/header_view.js";*/
+
+import loadListeners, {keyDown} from "./listeners.js";
+import {sendMessageToServer} from "./websocket.js";
 
 let player;
 
 export default function createPlayer(socketData) {
-	player = new Player(socketData)
+	player = new Player(socketData);
+	loadListeners();
+	player.startPlayersLoop();
 }
 
 function Player(socketData) {
@@ -24,25 +28,11 @@ function Player(socketData) {
 	this.moveStep = 1;
 	this.paddleDirection = socketData.values["paddleDirection"];
 	this.setTopPosition(socketData.values["playerTopPosition"])
+	this.playerKeys = this.definePlayerKeys()
 	//this.playerSpells = getSpells(paddleDirection);
 	//this.statistics = new Statistics();
 	this.setPaddleSize(socketData.values["paddleSize"]);
 	//addSpellsToHeader(this.paddleHeader, this.playerSpells);
-}
-
-Player.prototype.paddleCanMoveUp = function() {
-	return this.paddleHtml.offsetTop - moveStep > 0;
-}
-
-Player.prototype.paddleCanMoveDown = function() {
-		return this.paddleHtml.getBoundingClientRect().bottom + moveStep < getMapHeight();
-}
-
-Player.prototype.triggerKey = function() {
-	keyDown.forEach((key) => {
-
-	})
-	setTimeout(this.triggerKey, this.moveSpeed);
 }
 
 Player.prototype.getPaddleHeight = function () {
@@ -57,53 +47,39 @@ Player.prototype.setTopPosition = function (newValue) {
 	this.getPaddleStyle().top = newValue;
 }
 
-export function displayPlayerPoint(scoreHtml, text) {
-	scoreHtml.textContent = text;
-}
-
 Player.prototype.setPaddleSize = function (size) {
 	this.getPaddleStyle().height = size;
 }
 
-/*
-export function startPlayersLoop() {
-	if (keyDown.has('KeyW')) {
-		if (getLeftPaddle().paddleCanMoveUp())
-			movePlayerPaddleUp(getLeftPaddle())
-	} else if (keyDown.has('KeyS')) {
-		if (getLeftPaddle().paddleCanMoveDown())
-			movePlayerPaddleDown(getLeftPaddle());
-	} else if (keyDown.has('Digit1')) {
-		getLeftPaddle().playerSpells[0].executor(getLeftPaddle());
-	} else if (keyDown.has('Digit2')) {
-		getLeftPaddle().playerSpells[1].executor(getLeftPaddle());
-	} else if (keyDown.has('Digit3')) {
-		getLeftPaddle().playerSpells[2].executor(getLeftPaddle());
-	} else if (keyDown.has('Digit4')) {
-		getLeftPaddle().playerSpells[3].executor(getLeftPaddle());
+
+Player.prototype.startPlayersLoop = function () {
+	for (const [key, value] of Object.entries(this.playerKeys)) {
+		if (keyDown.has(value))
+			sendMessageToServer(key)
 	}
-
-	setTimeout(startPlayersLoop, moveSpeed);
+	setTimeout(this.startPlayersLoop.bind(this), this.moveSpeed);
 }
 
-export function getLeftPaddle() {
-	return players[0];
+Player.prototype.definePlayerKeys = function () {
+	return {
+		"moveUp": "KeyW",
+		"moveDown": "KeyS",
+		"spell1": "Digit1",
+		"spell2": "Digit2",
+		"spell3": "Digit3",
+		"spell4": "Digit4"
+	};
 }
 
-export function getRightPaddle() {
-	return players[1];
-}
+/*
 
-export function getAllPaddles() {
-	return players;
-}
+class Player:
+	def __init__(self, ws):
+		self.__socket = ws
+		self.__top_position = 20
+		self.__paddle_size = 20
+		self.__move_speed = 5
 
-export function getOpponentPaddle(paddle) {
-	if (paddle.paddleDirection === -1)
-		return getRightPaddle();
-	return getLeftPaddle();
-}
-
-export function havePlayersMaxScore() {
-	return getRightPaddle().statistics.getScore() >= maxScore || getLeftPaddle().statistics.getScore() >= maxScore;
-}*/
+	def send_message_to_client(self, message):
+		self.__socket.write_message(message)
+ */

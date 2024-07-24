@@ -7,6 +7,17 @@ from tornado.web import FallbackHandler, RequestHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado import gen
 from tornado.websocket import WebSocketHandler
+import json
+from server.player import Player
+
+
+# Server will send websocket as json with the followed possible key
+# type : Will make easier to the client to know what server want (moveBall, check, createPlayer, renderPage, message)
+# targetHtmlElement : If a htmlElement is implicated, must be indicated here
+# values: The value who need to be set according, send as dictionnary
+# styles :
+# boolean : For all authorizations check, for example if player press the up key, the server will check if
+#     the player can do that then answer through this key.#
 
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backgame.settings')
@@ -19,13 +30,21 @@ class EchoWebSocket(WebSocketHandler):
         return True  # Allow all origins
 
     def open(self):
-        print("WebSocket opened")
-        clients.append(self)
-        for client in clients:
-            client.write_message(u"New player connected")
+        clients.append(Player(self))
+        data = {}
+        data['type'] = 'renderPage'
+        data['values'] = {"pageName": "pong-game-online.html"}
+        clients[0].send_message_to_client(json.dumps(data))
+        data.clear()
+        data['type'] = 'createPlayer'
+        data['values'] = {"paddleHtml": "paddleLeft", "paddleHeader": "headerLeft", "moveSpeed": "5", "playerTopPosition": "20%", "paddleSize": "20%"}
+        clients[0].send_message_to_client(json.dumps(data))
 
     def on_message(self, message):
-        self.write_message(u"You said: " + message)
+        data = {}
+        data['type'] = 'message'
+        data['values'] = {"message": "You said: " + message}
+        self.write_message(data)
         print("Tornado: msg send to client")
 
     def on_close(self):
