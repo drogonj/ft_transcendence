@@ -1,9 +1,9 @@
 let seconds = 0;
-let minutes = 5;
+let minutes = 3;
 let timeHtml;
 
 export function setTextContentToHtmlElement(htmlElement, textContent) {
-	document.getElementById("htmlElement").textContent = textContent
+	htmlElement.textContent = textContent;
 }
 
 export function loadHeader() {
@@ -44,7 +44,7 @@ function timerDisplay(minutes, seconds, timeHtml) {
 		seconds = "0" + seconds
 	if (minutes <= 9)
 		minutes = "0" + minutes
-	timeHtml.textContent = minutes + ":" + seconds
+	setTextContentToHtmlElement(timeHtml, minutes + ":" + seconds);
 }
 
 export function coolDownDisplay(seconds, spellHtml) {

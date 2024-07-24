@@ -3,9 +3,8 @@ import django
 from django.core.wsgi import get_wsgi_application
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.web import FallbackHandler, RequestHandler, Application
+from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
-from tornado import gen
 from tornado.websocket import WebSocketHandler
 import json
 from server.player import Player
@@ -39,8 +38,8 @@ class EchoWebSocket(WebSocketHandler):
         data['type'] = 'launchGame'
         clients[0].send_message_to_client(json.dumps(data))
         data.clear()
-        data['type'] = 'createBall'
-        data['values'] = {"ballId": "0"}
+        data['type'] = 'displayScore'
+        data['values'] = {"score": "1"}
         clients[0].send_message_to_client(json.dumps(data))
 
     def on_message(self, message):

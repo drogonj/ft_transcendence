@@ -8,12 +8,12 @@ export function createPlayer(socketData) {
 	player.startPlayerLoop();
 }
 
-function Player(socketData) {
-	this.paddleHtml = document.getElementById(socketData.values["paddleHtml"]);
-	this.paddleHeader = document.getElementById(socketData.values["paddleHeader"]);
-	this.moveSpeed = socketData.values["moveSpeed"];
-	this.paddleDirection = socketData.values["paddleDirection"];
-	this.setTopPosition(socketData.values["playerTopPosition"])
+function Player(socketValues) {
+	this.paddleHtml = document.getElementById(socketValues["paddleHtml"]);
+	this.paddleHeader = document.getElementById(socketValues["paddleHeader"]);
+	this.moveSpeed = socketValues["moveSpeed"];
+	this.paddleDirection = socketValues["paddleDirection"];
+	this.setTopPosition(socketValues["playerTopPosition"])
 	this.playerKeys = this.definePlayerKeys()
 }
 
@@ -51,6 +51,11 @@ Player.prototype.definePlayerKeys = function () {
 		"spell3": "Digit3",
 		"spell4": "Digit4"
 	};
+}
+
+Player.prototype.displayPoint = function (socketValues) {
+	this.paddleHeader.querySelector(".scorePlayer").textContent = socketValues["score"];
+
 }
 
 export function getPlayer() {

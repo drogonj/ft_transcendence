@@ -1,11 +1,13 @@
 import {loadHeader, timerDecrease} from "./header.js";
 import loadListeners from "./listeners.js";
 import loadMap from "./map.js";
+import {createBall} from "./ball.js";
 
-export function launchGame() {
+export function launchGame(socketValues) {
 	loadListeners();
 	loadMap();
 	loadHeader();
+	createBall(socketValues);
 	startGlobalGameLoop();
 }
 

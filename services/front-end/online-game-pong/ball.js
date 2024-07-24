@@ -8,8 +8,8 @@ export function createBall(socketData) {
     new Ball(socketData);
 }
 
-function Ball(socketData) {
-    this.ballId = socketData.values["ballId"];
+function Ball(socketValues) {
+    this.ballId = balls.length;
     this.ballHtml = document.createElement('div');
     this.ballHtml.classList.add("ball");
     this.ballActiveSpell = null;

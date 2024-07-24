@@ -26,7 +26,7 @@ export function sendMessageToServer(message) {
 
 function onOpen() {
     console.log("WebSocket is open now.");
-            ws.send("Hello, server!");
+    ws.send("Hello, server!");
 }
 
 function onReceive(event) {
@@ -37,17 +37,17 @@ function onReceive(event) {
     else if (data.type === "movePlayer")
         getPlayer().setTopPosition(data.values["topPosition"]);
     else if (data.type === "createPlayer")
-        createPlayer(data);
+        createPlayer(data.values);
     else if (data.type === "createBall")
-        createBall(data);
+        createBall(data.values);
+    else if (data.type === "displayScore")
+        getPlayer().displayPoint(data.values);
     else if (data.type === "renderPage")
         renderPageWithName(data.values["pageName"]);
-    else if (data.type === "setTextContent")
-        console.log("textContent");
     else if (data.type === "message")
         console.log(data.values["message"]);
     else if (data.type === "launchGame")
-        launchGame();
+        launchGame(data.values);
     else
         console.log("Error: Server send a unknown type of data");
 }
