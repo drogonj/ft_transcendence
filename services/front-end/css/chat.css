@@ -1,34 +1,275 @@
 .chat-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+	display: none;
+	position: fixed;
+	z-index: 1000;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: rgba(0,0,0,0.4);
 }
 
 .chat-modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
+	background-color: #fefefe;
+	margin: 15% auto;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 80%;
+	max-width: 600px;
 }
 
 .close-chat {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
 }
 
 .close-chat:hover,
 .close-chat:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.chat-menu-container {
+	position: fixed;
+	left: 0px;
+	bottom: 0;
+}
+
+	.chat-menu-button {
+		background-color: #ff0266;
+		color: white;
+		border: none;
+		margin: 0;
+		padding: 12px;
+		width: min(325px, 54vw); /* Match the width with the button */
+		border-radius: 5px 5px 0 0;
+		cursor: pointer;
+		text-align: center;
+		box-sizing: border-box; /* Include padding and border in the element's total width and height */
+		transition: ease-in 0.1s;
+	}
+
+	.chat-menu-button:hover {
+		background-color: #c70652;
+	}
+
+	.chat-menu {
+		list-style: none;
+		padding: 0;
+		position: absolute;
+		bottom: 35px; /* Adjust based on your button height */
+		background-color: #c5c8de;
+		box-shadow: 0 0 10px rgba(129, 66, 199, 0.69);
+		border-radius: 5px 5px 0 0;
+		overflow: hidden;
+		max-height: 0;
+		transition: max-height 0.3s ease-out;
+		width: min(325px, 54vw); /* Match the width with the button */
+		box-sizing: border-box; /* Include padding and border in the element's total width and height */
+		height: 500px; /* Fixed height for the menu */
+		overflow-y: auto; /* Add vertical scroll if content overflows */
+	}
+
+.chat-menu-header {
+	display: flex;
+	justify-content: space-around;
+	padding: 10px;
+	background-color: #d3d5e3;
+	border-bottom: 1px solid #ccc;
+}
+
+.chat-menu-header button {
+	background-color: #ff0266;
+	color: white;
+	border: none;
+	padding: 10px 10px;
+	cursor: pointer;
+	border-radius: 5px;
+	transition: ease-in 0.1s;
+}
+
+.chat-menu-header button:hover {
+	background-color: #c70652;
+}
+
+
+.chat-menu-content {
+	display: none; /* Hide content by default */
+	list-style-type: none;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.chat-menu-content.active {
+	display: block; /* Show active content */
+}
+
+.chat-menu li {
+	display: flex; /* Use flexbox to align items */
+	align-items: center; /* Center items vertically */
+	justify-content: space-between; /* Distribute space evenly */
+	height: 50px;
+	padding: 10px;
+	margin-top: 5px;
+	border-bottom: 1px solid #ccc;
+	text-align: left; /* Align text to the left */
+	border-radius: 5px;
+	background: #e1e2eb;
+	transition: ease-in 0.1s;
+}
+
+.chat-menu li:last-child {
+	border-bottom: none;
+}
+
+.chat-menu li:hover {
+	background-color: #cecfdb;
+}
+
+.avatar-container {
+	width: 40px; /* Fixed size for avatar container */
+	height: 40px; /* Fixed size for avatar container */
+	border-radius: 50%; /* Make the container circular */
+	overflow: hidden; /* Hide overflow */
+	flex-shrink: 0; /* Prevent shrinking */
+}
+
+.avatar {
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* Cover the container */
+	object-position: center; /* Center the image */
+}
+
+.chat-menu li span {
+	margin: 0;
+	flex-grow: 1; /* Allow text to grow */
+	padding-left: 10px; /* Space between avatar and text */
+}
+
+.chat-menu li span p {
+	max-width: 100px;
+	overflow: hidden;
+	background: linear-gradient(to right,  #ff0266 0%,rgba(0,0,0,1) 80%,rgba(0,0,0,0) 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent
+}
+
+.chat-menu li button {
+	background-color: transparent;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	margin-right: 15px;
+}
+
+.chat-menu li button img {
+	width: 15px;
+	height: 15px;
+	transition: ease-in 0.1s;
+}
+
+.chat-menu li button img:hover {
+	transform: scale(1.2)
+}
+
+.status-indicator {
+	position: relative; /* Change to relative for proper positioning within parent element */
+	width: 10px; /* Increase size for better visibility */
+	height: 10px; /* Increase size for better visibility */
+	border-radius: 50%;
+	display: inline-block; /* Ensure it's inline for proper layout */
+	margin-right: 10px; /* Add some margin for spacing */
+}
+
+.status-indicator.online {
+	background-color: green;
+}
+
+.status-indicator.offline {
+	background-color: red;
+}
+
+.status-indicator-text {
+	margin-right: 10px;
+	font-size: 0.75em;
+	color: #1e1f26;
+	display: inline-block; /* Ensure text and indicator are inline */
+	vertical-align: middle; /* Align text vertically with the indicator */
+	margin-left: 5px; /* Add some margin for spacing */
+}
+
+#search-user-form {
+	width: 100%;
+}
+
+#search-user-form #search-query {
+	width: 95%;
+	background: #e1e2eb;
+	border: none;
+	outline: none;
+	padding: 15px 10px 10px;
+	border-radius: 4px;
+	color: black;
+	font-weight: 500;
+	font-size: 1em;
+	transition: 0.3s;
+	border: 1px solid #dbd8cf;
+	box-shadow: 0 0 10px #e1e2eb
+}
+
+#search-user-form input:focus,
+#search-bar form input:hover,
+#search-bar form input:valid {
+	background: #ebebeb
+}
+
+#search-user-form i
+{
+	position: absolute;
+	transform: translateY(-45px);
+	padding: 15px;
+	font-style: normal;
+	color: black;
+	transition: 0.5s;
+	pointer-events: none;
+	font-size: 1em;
+}
+#search-user-form input:focus ~ i,
+#search-user-form input:valid ~ i
+{
+	display: none;
+}
+
+#search-user-form input[type="submit"]
+{
+	position: absolute;
+	border-radius: 10px;
+	transform: translateY(-35px);
+	right: 20px;
+	padding: 7px;
+	border-width: 1px;
+	outline: none;
+	color: #343434;
+	cursor: pointer;
+	border: none;
+	transition-duration: 0.5s;
+}
+
+#search-user-form input[type="submit"]:hover {
+	background: #ff0266;
+	color: whitesmoke;
+}
+
+#invitation-sent-img {
+	width: 25px;
+	height: 25px;
+}
+
+.profile-link {
+	cursor: pointer;
 }

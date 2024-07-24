@@ -256,6 +256,7 @@ export async function loadFriends() {
         console.error('Error loading friends:', error);
     }
 }
+
 // Function to add a friendship request to the menu
 export function addFriendshipRequestToMenu(user, username, avatar) {
     const friendshipRequestsContainer = document.getElementById('requests-content');

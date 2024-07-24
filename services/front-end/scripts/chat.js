@@ -30,7 +30,7 @@ export async function openChatWindow(friendId, friendName) {
 				<button id="send-chat-message">Send</button>
 			</div>
 			<script>
-				const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/${friendId}/');
+				const socket = new WebSocket('wss://' + window.location.host + '/ws/chat/${friendId}/');
 
 				socket.onmessage = function(e) {
 					const data = JSON.parse(e.data);
@@ -64,3 +64,125 @@ export async function openChatWindow(friendId, friendName) {
 
 	chatWindow.document.close();
 }
+
+
+// Code a tester sur https://codepen.io/
+
+// HTML
+/* <div class="chat-menu-container">
+    <button id="chat-menu-button" class="chat-menu-button">Chat</button>
+    <div id="chat-menu" class="chat-menu">
+        <div class="chat-menu-header">
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages will go here -->
+        </div>
+        <div id="chat-input-container" class="chat-input-container">
+            <input id="chat-input" type="text" placeholder="Type a message...">
+            <button id="send-chat-message" class="send-chat-message">Send</button>
+        </div>
+    </div>
+</div> */
+
+
+// CSS
+// #chat-input-container {
+// 	display: flex;
+// 	padding: 10px;
+// 	background-color: #fff;
+// 	border-top: 1px solid #ccc;
+// 	box-sizing: border-box;
+//   }
+  
+//   #chat-input {
+// 	flex: 1;
+// 	padding: 10px;
+// 	border: 1px solid #ccc;
+// 	border-radius: 4px;
+// 	margin-right: 10px;
+// 	box-sizing: border-box;
+//   }
+  
+//   .send-chat-message {
+// 	background-color: #ff0266;
+// 	color: white;
+// 	border: none;
+// 	padding: 10px 20px;
+// 	border-radius: 4px;
+// 	cursor: pointer;
+// 	transition: background-color 0.1s ease-in;
+//   }
+  
+//   .send-chat-message:hover {
+// 	background-color: #c70652;
+//   }
+  
+//   .chat-menu-container {
+// 	position: fixed;
+// 	left: 0;
+// 	bottom: 0;
+// 	display: flex;
+// 	flex-direction: row;
+// 	align-items: flex-start;
+//   }
+  
+//   .chat-menu-button {
+// 	background-color: #ff0266;
+// 	color: white;
+// 	border: none;
+// 	margin: 0;
+// 	padding: 12px;
+// 	width: 75px;
+// 	height: 50px;
+// 	border-radius: 5px;
+// 	cursor: pointer;
+// 	text-align: center;
+// 	box-sizing: border-box;
+// 	transition: ease-in 0.1s;
+//   }
+  
+//   .chat-menu-button:hover {
+// 	background-color: #c70652;
+//   }
+  
+//   .chat-menu {
+// 	list-style: none;
+// 	padding: 0;
+// 	position: relative;
+// 	left: 0;
+// 	bottom: 0;
+// 	background-color: #c5c8de;
+// 	box-shadow: 0 0 10px rgba(129, 66, 199, 0.69);
+// 	border-radius: 0 5px 5px 0;
+// 	overflow: hidden;
+// 	max-width: 0;
+// 	transition: max-width 0.3s ease-out;
+// 	width: 500px;
+// 	box-sizing: border-box;
+// 	height: 500px;
+// 	display: flex;
+// 	flex-direction: column;
+//   }
+  
+//   .chat-messages {
+// 	flex: 1;
+// 	padding: 10px;
+// 	overflow-y: auto;
+//   }
+  
+//   .chat-menu-container.active .chat-menu {
+// 	max-width: 500px;
+//   }
+  
+  
+
+// JavaScript
+// document.getElementById('chat-menu-button').addEventListener('click', function() {
+//     let container = document.querySelector('.chat-menu-container');
+    
+//     if (container.classList.contains('active')) {
+//         container.classList.remove('active');
+//     } else {
+//         container.classList.add('active');
+//     }
+// });
