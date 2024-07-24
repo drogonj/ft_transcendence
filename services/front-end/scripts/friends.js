@@ -64,6 +64,7 @@ export function changeFriendStatus(userId, is_connected) {
     if (friendElement) {
         const statusIndicator = friendElement.querySelector('.status-indicator');
         const statusIndicatorText = friendElement.querySelector('.status-indicator-text');
+        const ul = friendElement.parentElement;
 
         if (statusIndicator) {
             statusIndicator.classList.remove('offline', 'online');
@@ -72,6 +73,12 @@ export function changeFriendStatus(userId, is_connected) {
 
         if (statusIndicatorText) {
             statusIndicatorText.textContent = is_connected ? 'online' : 'offline';
+        }
+
+        if (is_connected) {
+            ul.prepend(friendElement)
+        } else {
+            ul.appendChild(friendElement)
         }
     }
 }

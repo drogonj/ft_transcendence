@@ -37,7 +37,6 @@ html {
 	margin: 0;
 	color: whitesmoke;
 	text-align: center;
-	font-size: 0.9em;
 }
 
 .auth-section label {
@@ -47,16 +46,16 @@ html {
 .auth-section .auth-box
 {
 	position: absolute;
-	width: 80%;
-	max-width: 400px;
+	width: max(20vw, 30vh);
+	height: max(25vw, 40vh);
 	background: linear-gradient(-45deg, rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5));
 	background-size: 800% 800%;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	padding: 50px;
+	padding: 1% 1% 1% 1%;
 	border-color: red;
-	border-radius: 4px;
+	border-radius: max(0.2vh, 0.2vw);
 	box-shadow: 0 0 5px #ff0266;
 	animation: profile-card-gradient 15s ease infinite;
 }
@@ -69,11 +68,12 @@ html {
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
-	gap: 40px;
+	gap: max(3vh, 1vw);
 }
 .auth-section .auth-box .content h2
 {
-	font-size: 2em;
+	margin: 0;
+	font-size: max(1.85vh, 1.25vw);
 	color: #FAFAFA;
 }
 
@@ -82,7 +82,7 @@ html {
 	width: 100%;
 	display: flex;
 	flex-direction: column;
-	gap: 25px;
+	gap: max(1.5vh, 1.25vw);
 }
 .auth-section .auth-box .content .form .inputBox
 {
@@ -96,11 +96,11 @@ html {
 	background: rgba(200, 20, 20, 0.1);
 	border: none;
 	outline: none;
-	padding: 15px 10px 10px;
+	padding: 3% 2% 4%;
 	border-radius: 4px;
 	color: #FAFAFA;
 	font-weight: 500;
-	font-size: 1em;
+	font-size: max(1vh, 0.75vw);
 	transition: 0.3s;
 }
 .auth-box .content .form .inputBox input:focus,
@@ -113,13 +113,13 @@ html {
 {
 	position: absolute;
 	left: 0;
-	padding: 15px;
+	padding: 4% 2% 4%;
 	font-style: normal;
 	color: whitesmoke;
 	opacity: 0.75;
 	transition: 0.5s;
 	pointer-events: none;
-	font-size: 1em;
+	font-size: max(0.75vw, 1vh);
 }
 .auth-box .content .form .inputBox input:focus ~ i,
 .auth-box .content .form .inputBox input:valid ~ i
@@ -129,6 +129,7 @@ html {
 
 .auth-box .content .form .links
 {
+	font-size: max(0.75vw, 1vh);
 	position: relative;
 	width: 100%;
 	display: flex;
@@ -136,22 +137,23 @@ html {
 }
 .auth-box .content .form .links a
 {
-	padding: 10px 0;
+	padding: 5% 0;
 	color: #fff;
 	text-decoration: none;
 }
 
 .auth-box .content .form .inputBox input[type="submit"]
 {
-	padding: 10px;
+	width: 100%;
+	padding: 3%;
 	background: #ececec;
 	color: #343434;
 	font-weight: 600;
-	font-size: 1.35em;
+	font-size: max(0.85vw, 1.15vh);
 	letter-spacing: 0.05em;
 	cursor: pointer;
 	transition-duration: 0.5s;
-	opacity: 0.75;
+	opacity: 0.75;;
 }
 
 .auth-box .content .form .inputBox input[type="submit"]:hover {

@@ -197,7 +197,7 @@ export async function renderHome() {
             menu.style.maxHeight = null;
         } else {
             menuButton.style.borderRadius = "0";
-            menu.style.maxHeight = "500px";
+            menu.style.maxHeight = "40vh";
         }
     });
 
