@@ -117,6 +117,22 @@ export async function renderHome() {
                             </div>
                         </div>
                         <p>${currentUser.username}</p>
+                        <div id="profile-card-trophy">
+                            <p>2137</p>
+                            <img alt="trophy" src="../assets/images/trophy.png">
+                        </div>
+                        <div class="single-chart">
+                            <svg viewBox="0 0 36 36" class="circular-chart orange">
+                                <path class="circle-bg" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                     a 15.9155 15.9155 0 0 1 0 31.831
+                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <text x="18" y="20.35" class="percentage">30%</text>
+                            </svg>
+                            <p>winrate</p>
+                        </div>
                         <div class="buttons">
                             <a href="#" id="profile-button">Show profile</a>
                             <a href="#" id="update-user-info">Change profile</a>  

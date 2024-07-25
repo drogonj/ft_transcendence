@@ -25,9 +25,9 @@ a {
 
 #avatar-container {
     width: 100%; /* ou une autre taille fixe ou relative */
-    height: 100%; /* assure que le conteneur est carré */
+    height: 100%; /* assure que le conteneur est carrÃ© */
     border-radius: 50%; /* rend le conteneur circulaire */
-    overflow: hidden; /* cache les parties débordantes de l'image */
+    overflow: hidden; /* cache les parties dÃ©bordantes de l'image */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -71,6 +71,7 @@ a {
     color: #faebd7;
     z-index: 4;
 }
+
 #transcendence-title .ltr:hover {
     color: #ff0266;
     filter: drop-shadow(0 0 10px #ff0266);
@@ -192,6 +193,7 @@ a {
 }
 
 .profile-card p {
+    font-size: max(0.6vw, 0.8vh);
     width: 100%;
     text-align: center;
     overflow: hidden;
@@ -304,3 +306,77 @@ a {
     }
 }
 
+#profile-card-trophy {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+    align-content: center;
+    align-self: center;
+}
+
+#profile-card-trophy p {
+    width: auto;
+    flex-grow: 0.05;
+    animation: trophy-anim 1s ease-in-out infinite alternate;
+
+}
+
+@-webkit-keyframes trophy-anim {
+    from {
+        opacity: 0.75;
+    }
+}
+
+#profile-card-trophy img {
+    width: max(1vh, 1vw);
+    height: max(1vh, 1vw);
+    transform: translateY(1.15vh);
+}
+
+.single-chart {
+    margin-top: 15%;
+    margin-left: max(5.5vw, 7.5vh);
+    width: 33%;
+}
+
+.single-chart p {
+    width: 75%;
+    transform: translateY(max(-1.5vh, -1vw));
+}
+
+.circular-chart {
+    margin: 10px auto;
+    max-width: 80%;
+    aspect-ratio: 1 / 1;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: #ff3a34;
+    stroke-width: 1;
+}
+
+.circle {
+    fill: none;
+    stroke-width: 1;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+}
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}
+
+.circular-chart .circle {
+    stroke: #46ffbe;
+}
+
+.percentage {
+    fill: #fff;
+    font-family: sans-serif;
+    font-size: 0.5rem;
+    text-anchor: middle;
+}
