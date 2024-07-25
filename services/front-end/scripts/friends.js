@@ -1,6 +1,5 @@
 import { getCsrfToken, csrfToken } from "./auth.js";
 import { navigateTo } from "./contentLoader.js";
-import { openChatWindow } from "./chat.js";
 
 let friendSocket;
 let friendSocketRunning = false;
@@ -174,17 +173,6 @@ export async function declineFriendshipRequest(event) {
     }
 }
 
-document.body.insertAdjacentHTML('beforeend', `
-    <div id="chat-modal" class="chat-modal">
-        <div class="chat-modal-content">
-            <span class="close-chat">&times;</span>
-            <div id="chat-window">
-                <!-- Chat content will go here -->
-            </div>
-        </div>
-    </div>
-`);
-
 // Function to add a friend to the menu
 export function addFriendToMenu(user, username, avatar, is_connected) {
     const friendsContainer = document.getElementById('friends-content');
@@ -233,11 +221,11 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
     });
 
 	// Chat button
-	newFriend.querySelector('.chat-friend-button').addEventListener('click', async (event) => {
-		const friendId = event.currentTarget.dataset.friendId;
-		const friendName = event.currentTarget.parentElement.querySelector('.profile-link').textContent;
-		openChatWindow(friendId, friendName);
-	});
+	// newFriend.querySelector('.chat-friend-button').addEventListener('click', async (event) => {
+	// 	const friendId = event.currentTarget.dataset.friendId;
+	// 	const friendName = event.currentTarget.parentElement.querySelector('.profile-link').textContent;
+	// 	openChatWindow(friendId, friendName);
+	// });
 
 }
 
@@ -375,3 +363,14 @@ export async function handleUserSearch(event) {
         resultsContainer.innerHTML += '<p>No users found.</p>';
     }
 }
+
+// document.body.insertAdjacentHTML('beforeend', `
+//     <div id="chat-modal" class="chat-modal">
+//         <div class="chat-modal-content">
+//             <span class="close-chat">&times;</span>
+//             <div id="chat-window">
+//                 <!-- Chat content will go here -->
+//             </div>
+//         </div>
+//     </div>
+// `);

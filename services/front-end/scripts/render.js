@@ -15,6 +15,8 @@ import {
     handleUserSearch,
 } from './friends.js';
 
+import { loadUsers, renderChatApp } from './chat.js';
+
 export function renderLogin() {
     app.innerHTML = `
                     <section class="auth-section">
@@ -151,17 +153,10 @@ export async function renderHome() {
                     </div>
                 `;
 
-	// const chatServiceStatus = await checkChatService();
-	// if (chatServiceStatus.status === 'ok') {
-    //     // Ajouter le bouton spécifique si le service est actif
-    //     app.innerHTML += `
-    //         <button id="chat-service-button">Service Chat Disponible</button>
-    //     `;
-    // } else {
-    //     // Afficher une notification ou un message alternatif
-    //     console.log("Le service de chat n'est pas disponible.");
-    // }
+	// Render chat
 	await renderChatApp();
+	// Load users
+	await loadUsers();
     // Fetch friends list
     await loadFriends();
     // Fetch friendship requests list
@@ -333,68 +328,5 @@ export async function renderUserProfile(userId) {
     document.getElementById('home').addEventListener('click', (event) => {
         event.preventDefault();
         navigateTo('/', true);
-    });
-}
-
-export async function renderChat(userId) {
-    const response = await fetch(`/api/user/profile/${userId}/`);
-
-    if (!response.ok) {
-        navigateTo('/home');
-    }
-
-    const userData = await response.json();
-
-    app.innerHTML = `
-        <div class="profile-container">
-            <h1>User Profile</h1>
-            <div class="profile-picture">
-                <img src="${userData.avatar}" alt="Profile Picture">
-            </div>
-            <div class="profile-details">
-                <p><strong>Username:</strong> ${userData.username}</p>
-            </div> 
-        </div>
-        <button id="home">Home</button>
-    `;
-    document.getElementById('home').addEventListener('click', (event) => {
-        event.preventDefault();
-        navigateTo('/', true);
-    });
-}
-
-export async function renderChatApp() {
-	app.innerHTML += `
-    	<div class="chat-menu-container">
-			<button id="chat-menu-button" class="chat-menu-button">Chat</button>
-			<div id="chat-menu" class="chat-menu">
-				<div class="chat-menu-header">
-					<button id="-button">Amis</button>
-				</div>
-				<ul id="friends-content" class="chat-menu-content active"></ul>
-				<ul id="requests-content" class="chat-menu-content"></ul>
-				<ul id="add-chat" class="chat-menu-content">
-				<div id="search-bar">
-					<form id="search-user-form">
-						<input type="text" id="search-query" name="q" required>
-						<i>Username</i>
-						<input type="submit" value="search">
-					</form>
-				</div>
-			<div id="search-results"></div>
-			</ul>
-		</div>
-	`;
-
-	document.getElementById('chat-menu-button').addEventListener('click', function() {
-        let chatMenu = document.getElementById('chat-menu');
-        let chatMenuButton = document.getElementById('chat-menu-button');
-        if (chatMenu.style.maxHeight) {
-            chatMenuButton.style.borderRadius = "5px 5px 0 0";
-            chatMenu.style.maxHeight = null;
-        } else {
-            chatMenuButton.style.borderRadius = "0";
-            chatMenu.style.maxHeight = "500px";
-        }
     });
 }

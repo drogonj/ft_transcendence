@@ -10,6 +10,7 @@ import {getCurrentUserInfo, handleLogin} from "./auth.js";
 import { connectFriendsWebsocket } from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
 import launch from "../local-game-pong/src/main.js";
+import { connectChatWebsocket } from "./chat.js";
 
 export const app = document.getElementById('app');
 
@@ -77,6 +78,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (data.is_authenticated) {
                 await getCurrentUserInfo();
                 await connectFriendsWebsocket();
+				await connectChatWebsocket();
             }
             navigateTo(route, false);
         } else {
