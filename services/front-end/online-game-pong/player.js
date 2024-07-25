@@ -1,5 +1,7 @@
 import {keyDown} from "./listeners.js";
 import {sendMessageToServer} from "./websocket.js";
+import {getSpellWithId} from "./spell.js";
+import {addSpellsToHeader} from "./header.js";
 
 let player;
 
@@ -15,6 +17,8 @@ function Player(socketValues) {
 	this.paddleDirection = socketValues["paddleDirection"];
 	this.setTopPosition(socketValues["playerTopPosition"])
 	this.playerKeys = this.definePlayerKeys()
+	this.playerSpells = this.loadPlayerSpells(socketValues["playerSpells"]);
+	addSpellsToHeader(this.paddleHeader, this.playerSpells);
 }
 
 Player.prototype.getPaddleHeight = function () {
@@ -56,6 +60,23 @@ Player.prototype.definePlayerKeys = function () {
 Player.prototype.displayPoint = function (socketValues) {
 	this.paddleHeader.querySelector(".scorePlayer").textContent = socketValues["score"];
 
+}
+
+Player.prototype.loadPlayerSpells = function (spellIdArray) {
+	const spells = [];
+	spellIdArray.forEach((spellId) => {
+		getSpellWithId(spellId);
+	});
+	return spells;
+}
+
+Player.prototype.launchSpell = function (spellId) {
+	for (const spell of this.playerSpells) {
+		if (spell.id === spellId) {
+			spell.executor(this);
+			break;
+		}
+	}
 }
 
 export function getPlayer() {

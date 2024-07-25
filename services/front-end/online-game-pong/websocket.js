@@ -36,6 +36,8 @@ function onReceive(event) {
         console.log("moveBall");
     else if (data.type === "movePlayer")
         getPlayer().setTopPosition(data.values["topPosition"]);
+    else if (data.type === "launchSpell")
+        getPlayer().launchSpell(data.values["launchSpell"])
     else if (data.type === "createPlayer")
         createPlayer(data.values);
     else if (data.type === "createBall")

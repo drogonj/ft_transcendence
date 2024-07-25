@@ -1,12 +1,13 @@
 import {Spell, spellLaunchController} from "../spell.js";
-import {copyBall, getAllBallInSide} from "../ball.js";
+import {newImage} from "../game.js";
+/*import {copyBall, getAllBallInSide} from "../ball.js";
 import {getRandomNumberWithDecimal} from "../utils/math_utils.js";
 import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
-import {newImage} from "../utils/utils.js";
+import {newImage} from "../utils/utils.js";*/
 
 
 export default function BallClone() {
-	Spell.call(this, 5, "Ball Clone", "DESCRIPTION", newImage("../../assets/images/ball_clone.png"));
+	Spell.call(this, 5, "Ball Clone", "DESCRIPTION", "ballClone", newImage("../../assets/images/ball_clone.png"));
 }
 
 BallClone.prototype.executor = function (playerPaddle) {

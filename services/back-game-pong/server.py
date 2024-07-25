@@ -32,7 +32,8 @@ class EchoWebSocket(WebSocketHandler):
         clients[0].send_message_to_client(json.dumps(data))
         data.clear()
         data['type'] = 'createPlayer'
-        data['values'] = {"paddleHtml": "paddleLeft", "paddleHeader": "headerLeft", "moveSpeed": "5", "playerTopPosition": "20%"}
+        data['values'] = {"paddleHtml": "paddleLeft", "paddleHeader": "headerLeft", "moveSpeed": "5",
+                          "playerTopPosition": "20%", "playerSpell": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]}
         clients[0].send_message_to_client(json.dumps(data))
         data.clear()
         data['type'] = 'launchGame'

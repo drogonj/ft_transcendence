@@ -1,11 +1,12 @@
 import {Spell, spellLaunchController} from "../spell.js";
-import {getOpponentPaddle} from "../player.js";
+import {newImage} from "../game.js";
+/*import {getOpponentPaddle} from "../player.js";
 import {setPaddleSize} from "../../view/player_view.js";
 import {newImage} from "../utils/utils.js";
-import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
+import {removeCssProperty, setCssProperty} from "../../view/style_view.js";*/
 
 export default function PaddleSize() {
-	Spell.call(this, 17, "Paddle Size", "DESCRIPTION", newImage("../../assets/images/paddle_size.png"));
+	Spell.call(this, 17, "Paddle Size", "DESCRIPTION", "paddleSize", newImage("../../assets/images/paddle_size.png"));
 }
 
 PaddleSize.prototype.executor = function (playerPaddle) {
