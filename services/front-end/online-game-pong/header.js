@@ -1,3 +1,5 @@
+import {setCssProperty} from "./game";
+
 let seconds = 0;
 let minutes = 3;
 let timeHtml;
@@ -11,13 +13,13 @@ export function loadHeader() {
 }
 
 export function timerDecrease() {
+	if (minutes <= 0 && seconds <= 0)
+		return;
 	if (seconds <= 0) {
 		minutes--;
 		seconds = 59;
 	} else
 		seconds--;
-	if (minutes <= 0 && seconds <= 0)
-		return;
 	timerDisplay(minutes, seconds, timeHtml);
 }
 

@@ -41,3 +41,11 @@ Ball.prototype.displayBall = function (topPosition, leftPosition) {
     this.ballHtml.style.top = topPosition;
 	this.ballHtml.style.left = leftPosition;
 }
+
+export function getBallsWithId(ballIdArray) {
+    const targetBalls = [];
+    ballIdArray.forEach((ballId) => {
+        targetBalls.push(balls.find((ball) => ball.id === ballId));
+    });
+    return targetBalls;
+}
