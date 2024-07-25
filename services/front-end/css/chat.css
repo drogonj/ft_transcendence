@@ -83,6 +83,7 @@
 .users-list li button img {
     width: 15px;
     height: 15px;
+	padding: 5px;
     transition: ease-in 0.1s;
 }
 
