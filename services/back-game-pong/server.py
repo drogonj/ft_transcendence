@@ -33,7 +33,7 @@ class EchoWebSocket(WebSocketHandler):
         data.clear()
         data['type'] = 'createPlayer'
         data['values'] = {"paddleHtml": "paddleLeft", "paddleHeader": "headerLeft", "moveSpeed": "5",
-                          "playerTopPosition": "20%", "playerSpell": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]}
+                          "playerTopPosition": "20%", "playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]}
         clients[0].send_message_to_client(json.dumps(data))
         data.clear()
         data['type'] = 'launchGame'
@@ -45,9 +45,9 @@ class EchoWebSocket(WebSocketHandler):
 
     def on_message(self, message):
         data = {}
-        data['type'] = 'message'
-        data['values'] = {"message": "You said: " + message}
-        self.write_message(data)
+        data['type'] = 'launchSpell'
+        data['values'] = {"launchSpell": "ballClone"}
+        clients[0].send_message_to_client(json.dumps(data))
         print("Tornado: msg send to client")
 
     def on_close(self):

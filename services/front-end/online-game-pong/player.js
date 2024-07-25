@@ -59,20 +59,19 @@ Player.prototype.definePlayerKeys = function () {
 
 Player.prototype.displayPoint = function (socketValues) {
 	this.paddleHeader.querySelector(".scorePlayer").textContent = socketValues["score"];
-
 }
 
 Player.prototype.loadPlayerSpells = function (spellIdArray) {
 	const spells = [];
-	spellIdArray.forEach((spellId) => {
-		getSpellWithId(spellId);
-	});
+	spellIdArray.forEach((spell => {
+		spells.push(getSpellWithId(spell));
+	}));
 	return spells;
 }
 
 Player.prototype.launchSpell = function (spellId) {
 	for (const spell of this.playerSpells) {
-		if (spell.id === spellId) {
+		if (spell.spellId === spellId) {
 			spell.executor(this);
 			break;
 		}
