@@ -1,11 +1,10 @@
 import {Spell, spellLaunchController} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
-import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
-import {newImage} from "../utils/utils.js";
+import {newImage, removeCssProperty, setCssProperty} from "../game.js";
 
 
 export default function BallInvisible() {
-	Spell.call(this, 5, "Ball Freeze", "DESCRIPTION", newImage("../../assets/images/ball_invisible.png"));
+	Spell.call(this, 5, "Ball Invisible", "DESCRIPTION", newImage("../../assets/images/ball_invisible.png"));
 }
 
 BallInvisible.prototype.executor = function(playerPaddle) {

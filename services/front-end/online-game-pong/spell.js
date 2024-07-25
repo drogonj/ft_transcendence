@@ -5,9 +5,8 @@ import BallPush from "./spells/ball_push.js";
 import BallInvisible from "./spells/ball_invisible.js";
 import BallClone from "./spells/ball_clone.js";
 import PaddleSize from "./spells/paddle_size.js";
-import {shuffle} from "./utils/utils.js";
-import {createSpellDiv} from "../view/spell_view.js";
 import {coolDownRun} from "./header.js";
+import {setCssProperty} from "./game.js";
 
 const spells = [];
 
@@ -20,7 +19,6 @@ export default function loadSpell() {
 	spells.push(new BallInvisible());
 	spells.push(new PaddleStun());
 	spells.push(new PaddleStun());
-	shuffle(spells);
 }
 
 export function Spell(cooldown, spellName, description, icon) {
@@ -37,12 +35,6 @@ export function getSpellWithName(spellName) {
 	return spells.get(spellName);
 }
 
-export function getSpells(paddleDirection) {
-	if (paddleDirection === -1)
-		return spells.slice(0, 4);
-	return spells.slice(4, spells.length);
-}
-
 export function spellLaunchController(spell) {
 	if (spell.isOnCooldown)
 		return false;
@@ -56,4 +48,15 @@ export function setSpellDelay(delay) {
 			resolve("success")
 		}, delay * 1000);
 	})
+}
+
+function createSpellDiv(spell) {
+	const newDiv = document.createElement("div");
+	const coolDownDiv = document.createElement("div");
+	coolDownDiv.classList.add("spellCd");
+	setCssProperty(coolDownDiv.style, "display", "none")
+	newDiv.classList.add("spell")
+	newDiv.appendChild(spell.icon);
+	newDiv.appendChild(coolDownDiv);
+	return newDiv;
 }
