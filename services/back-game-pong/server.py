@@ -6,13 +6,12 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-import json
-from server.player import Player
+from server.game import setup_game
 
 
 # Server will send websocket as json with the followed possible key
-# type : Type of data: moveBall, movePlayer, createPlayer, renderPage, message, setTextContent
-# values: The value who need to be set according, send as dictionary
+# type : Type of data: such as moveBall, movePlayer, createPlayer ...
+# values: The values, need to be sent according to the type, send as dictionary
 
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backgame.settings')
@@ -25,29 +24,11 @@ class EchoWebSocket(WebSocketHandler):
         return True  # Allow all origins
 
     def open(self):
-        clients.append(Player(self))
-        data = {}
-        data['type'] = 'renderPage'
-        data['values'] = {"pageName": "pong-game-online.html"}
-        clients[0].send_message_to_client(json.dumps(data))
-        data.clear()
-        data['type'] = 'createPlayer'
-        data['values'] = {"paddleHtml": "paddleLeft", "paddleHeader": "headerLeft", "moveSpeed": "5",
-                          "playerTopPosition": "20%", "playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]}
-        clients[0].send_message_to_client(json.dumps(data))
-        data.clear()
-        data['type'] = 'launchGame'
-        clients[0].send_message_to_client(json.dumps(data))
-        data.clear()
-        data['type'] = 'displayScore'
-        data['values'] = {"score": "1"}
-        clients[0].send_message_to_client(json.dumps(data))
+        clients.append(self)
+        setup_game(clients)
 
     def on_message(self, message):
         data = {}
-        data['type'] = 'launchSpell'
-        data['values'] = {"launchSpell": "ballClone"}
-        clients[0].send_message_to_client(json.dumps(data))
         print("Tornado: msg send to client")
 
     def on_close(self):
