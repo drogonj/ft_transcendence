@@ -14,6 +14,7 @@ export async function connectChatWebsocket() {
 		const data = JSON.parse(e.data);
 		const chatMessages = document.getElementById('chat-messages');
 		const newMessage = document.createElement('div');
+
 		newMessage.classList.add('chat-message');
 		newMessage.textContent = data.message;
 		chatMessages.appendChild(newMessage);
@@ -34,11 +35,7 @@ export async function loadUsers() {
 		const response = await fetch('/api/user/get_users/');
 		const usersData = await response.json();
 
-		// a supprimer : check de la response
-		console.log(usersData);
-
 		for (const user of usersData.users) {
-			console.log(user);
 			if (user.is_connected === false && user.id === 1) {
 				continue;
 			}
@@ -85,7 +82,8 @@ export function addUserToMenu(user, username, avatar, is_connected) {
 	});
 }
 
-export async function renderChatApp() {
+export async function renderChatApp(user_id) {
+	console.log("test user id : " + user_id);
 	const app = document.getElementById('app');
 	app.innerHTML += `
 		<div id="users-list" class="users-list">
@@ -113,7 +111,7 @@ export async function renderChatApp() {
 		const message = messageInputDom.value;
 		chatSocket.send(JSON.stringify({
 			'message': message,
-			'user_id': user_id
+			'user_id': user_id,
 		}));
 		messageInputDom.value = '';
 	};
