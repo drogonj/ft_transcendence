@@ -1,3 +1,4 @@
+import json
 import os
 import django
 from django.core.wsgi import get_wsgi_application
@@ -6,7 +7,8 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from server.game import setup_game
+from server.game import Game
+from server.player import try_to_move
 
 
 # Server will send websocket as json with the followed possible key
@@ -26,15 +28,19 @@ class EchoWebSocket(WebSocketHandler):
 
     def open(self):
         clients.append(self)
-        setup_game(clients)
+        Game(0, clients, None)
 
-    def on_message(self, message):
-        data = {}
+    def on_message(self, socket):
+        data = json.loads(socket)
+        print("New socket from client of type: " + data["type"])
+        if data["type"] == "movePlayer":
+            try_to_move(socket["values"])
         print("Tornado: msg send to client")
 
     def on_close(self):
         print("WebSocket closed")
         clients.remove(self)
+
 
 
 # WSGI container for Django

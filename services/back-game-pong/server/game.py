@@ -1,37 +1,40 @@
 import asyncio
-from .player import Player
+from .player import Player, create_players
 
 
-players = []
+game = []
 
 
-def setup_game(clients):
-	side = "Left"
-	for client in clients:
-		players.append(Player(client, side))
-		side = "Right"
-	launch_game()
+class Game:
+	def __init__(self, game_id, clients, balls):
+		self.__game_id = game_id
+		self.__players = create_players(clients)
+		self.__balls = balls
+		self.__game_time = 180
+		self.launch_time()
+		game.append(self)
+		launch_game()
+
+	async def launch_time(self):
+		while self.__game_time > 0:
+			self.__game_time -= 1
+			await asyncio.sleep(1)
+		self.game_end()
+
+	def game_end(self):
+		print("game end")
 
 
 def launch_game():
-	for player in players:
+	for player in game[0].__players:
 		player.send_message_to_client("renderPage", {"pageName": "pong-game-online.html"})
 		player.send_message_to_client("createPlayer", player.dumps_player_for_socket())
 		player.send_message_to_client("launchGame", {})
-	launch_time()
-
-
-def game_end():
-	print("game end")
 
 
 def is_game_end():
-	return players[0].has_max_score() or players[1].has_max_score()
+	return game[0].__players[0].has_max_score() or game[0].__players[1].has_max_score()
 
 
-async def launch_time():
-	max_time = 180
-	while max_time > 0:
-		max_time -= 1
-		await asyncio.sleep(1)
-	game_end()
+def getp():
+	return game[0].__players[0]
