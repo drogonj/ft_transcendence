@@ -19,6 +19,7 @@ django.setup()
 
 clients = []
 
+
 class EchoWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
@@ -34,6 +35,7 @@ class EchoWebSocket(WebSocketHandler):
     def on_close(self):
         print("WebSocket closed")
         clients.remove(self)
+
 
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())
