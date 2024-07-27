@@ -24,6 +24,10 @@ class Game:
 	def game_end(self):
 		print("game end")
 
+	def move_player(self, player_id):
+		self.__players[0].__top_position -= 1
+		self.__players[0].send_message_to_client("movePlayer", {"topPosition": self.__players[0].__top_position})
+
 
 def launch_game():
 	for player in game[0].__players:
@@ -37,4 +41,5 @@ def is_game_end():
 
 
 def getp():
-	return game[0].__players[0]
+	return game[0]
+

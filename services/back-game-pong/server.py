@@ -7,8 +7,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from server.game import Game
-from server.player import try_to_move
+from server.game import Game, getp
 
 
 # Server will send websocket as json with the followed possible key
@@ -34,7 +33,7 @@ class EchoWebSocket(WebSocketHandler):
         data = json.loads(socket)
         print("New socket from client of type: " + data["type"])
         if data["type"] == "movePlayer":
-            try_to_move(socket["values"])
+            getp().move_player(None)
         print("Tornado: msg send to client")
 
     def on_close(self):

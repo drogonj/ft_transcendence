@@ -1,5 +1,4 @@
 import json
-from .game import getp
 
 
 class Player:
@@ -34,12 +33,6 @@ class Player:
 
 	def move_paddle(self, step):
 		self.__top_position += step
-
-
-def try_to_move(socket_values):
-	player = getp()
-	player.__top_position -= 1
-	player.send_message_to_client("movePlayer", {"topPosition": player.__top_position})
 
 
 def create_players(clients):
