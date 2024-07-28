@@ -18,9 +18,9 @@ class Player:
 	def dumps_player_for_socket(self):
 		return {
 				"paddleHtml": "paddle" + self.__paddle_side,
-				"paddleHeader": "header" + self.__paddle_side,
+				"playerHeader": "header" + self.__paddle_side,
 				"moveSpeed": self.__move_speed,
-				"playerTopPosition": str(self.__top_position) + "%",
+				"paddleTopPosition": str(self.__top_position) + "%",
 				"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
 		}
 

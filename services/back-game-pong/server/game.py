@@ -7,8 +7,10 @@ games = []
 
 def launch_game():
 		games[0].get_player("Left").send_message_to_client("renderPage", {"pageName": "pong-game-online.html"})
-		games[0].get_player("Left").send_message_to_client("createPlayer", games[0].get_player("Left").dumps_player_for_socket())
-		games[0].get_player("Left").send_message_to_client("launchGame", {"gameId": games[0].get_id()})
+		socket_values = games[0].get_player("Left").dumps_player_for_socket()
+		socket_values["gameId"] = games[0].get_id()
+		socket_values["clientSide"] = "Left"
+		games[0].get_player("Left").send_message_to_client("launchGame", socket_values)
 
 
 class Game:
