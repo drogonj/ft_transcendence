@@ -1,7 +1,7 @@
 import {setCssProperty} from "./game.js";
 
 let seconds = 0;
-let minutes = 3;
+let minutes = 2;
 let timeHtml;
 
 export function setTextContentToHtmlElement(htmlElement, textContent) {

@@ -3,7 +3,10 @@ import loadListeners from "./listeners.js";
 import loadMap from "./map.js";
 import {createBall} from "./ball.js";
 
+let gameId;
+
 export function launchGame(socketValues) {
+	gameId = socketValues["gameId"]
 	loadListeners();
 	loadMap();
 	loadHeader();

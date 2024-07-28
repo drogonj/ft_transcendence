@@ -23,7 +23,7 @@ export default function launchClientWebSocket() {
 export function sendMessageToServer(type, values) {
     const message = {
         "type": type,
-        "values": values
+        "values": [values]
     }
     ws.send(JSON.stringify(message));
 }
