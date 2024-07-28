@@ -41,7 +41,7 @@ Player.prototype.setPaddleSize = function (size) {
 Player.prototype.startPlayerLoop = function () {
 	for (const [key, value] of Object.entries(this.playerKeys)) {
 		if (keyDown.has(value))
-			sendMessageToServer(key)
+			sendMessageToServer("movePlayer", [{"direction": "key"}])
 	}
 	setTimeout(this.startPlayerLoop.bind(this), this.moveSpeed);
 }

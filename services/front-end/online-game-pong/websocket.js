@@ -16,17 +16,20 @@ export default function launchClientWebSocket() {
         ws.onmessage = onReceive;
 
         document.addEventListener("click", () => {
-            sendMessageToServer("Hello from client")
+            //sendMessageToServer("Hello from client")
         })
 }
 
-export function sendMessageToServer(message) {
-    ws.send(message);
+export function sendMessageToServer(type, values) {
+    const message = {
+        "type": type,
+        "values": values
+    }
+    ws.send(JSON.stringify(message));
 }
 
 function onOpen() {
     console.log("WebSocket is open now.");
-    ws.send("Hello, server!");
 }
 
 function onReceive(event) {

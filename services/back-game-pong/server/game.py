@@ -5,13 +5,20 @@ from .player import Player, create_players
 game = []
 
 
+def launch_game():
+		game[0].get_player("Left").send_message_to_client("renderPage", {"pageName": "pong-game-online.html"})
+		game[0].get_player("Left").send_message_to_client("createPlayer", game[0].get_player("Left").dumps_player_for_socket())
+		game[0].get_player("Left").send_message_to_client("launchGame", {})
+
+
 class Game:
 	def __init__(self, game_id, clients, balls):
 		self.__game_id = game_id
 		self.__players = create_players(clients)
 		self.__balls = balls
 		self.__game_time = 180
-		self.launch_time()
+		time_loop = asyncio.get_event_loop()
+		#self.launch_time()
 		game.append(self)
 		launch_game()
 
@@ -25,15 +32,11 @@ class Game:
 		print("game end")
 
 	def move_player(self, player_id):
-		self.__players[0].__top_position -= 1
-		self.__players[0].send_message_to_client("movePlayer", {"topPosition": self.__players[0].__top_position})
+		self.__players[0].move_paddle(-1)
+		self.__players[0].send_message_to_client("movePlayer", {"topPosition": f"{self.__players[0].get_top_position()}%"})
 
-
-def launch_game():
-	for player in game[0].__players:
-		player.send_message_to_client("renderPage", {"pageName": "pong-game-online.html"})
-		player.send_message_to_client("createPlayer", player.dumps_player_for_socket())
-		player.send_message_to_client("launchGame", {})
+	def get_player(self, side):
+		return self.__players[0] if side == "Left" else self.__players[1]
 
 
 def is_game_end():

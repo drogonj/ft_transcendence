@@ -5,7 +5,7 @@ class Player:
 	def __init__(self, ws, side):
 		self.__socket = ws
 		self.__score = 0
-		self.__paddleSide = side
+		self.__paddle_side = side
 		self.__top_position = 20
 		self.__paddle_size = 20
 		self.__move_speed = 5
@@ -17,8 +17,8 @@ class Player:
 
 	def dumps_player_for_socket(self):
 		return {
-				"paddleHtml": "paddle" + self.__paddleSide,
-				"paddleHeader": "header" + self.__paddleSide,
+				"paddleHtml": "paddle" + self.__paddle_side,
+				"paddleHeader": "header" + self.__paddle_side,
 				"moveSpeed": self.__move_speed,
 				"playerTopPosition": str(self.__top_position) + "%",
 				"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
@@ -33,6 +33,9 @@ class Player:
 
 	def move_paddle(self, step):
 		self.__top_position += step
+
+	def get_top_position(self):
+		return self.__top_position
 
 
 def create_players(clients):

@@ -15,4 +15,4 @@ build-essential \
 		pip install -r requirements.txt
 
 RUN chmod +x server.py
-ENTRYPOINT ["python", "server.py"]
+ENTRYPOINT ["python", "-u","server.py"]

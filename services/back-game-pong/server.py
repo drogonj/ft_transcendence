@@ -29,9 +29,9 @@ class EchoWebSocket(WebSocketHandler):
         clients.append(self)
         Game(0, clients, None)
 
-    def on_message(self, socket):
-        data = json.loads(socket)
-        print("New socket from client of type: " + data["type"])
+    def on_message(self, message):
+        data = json.loads(message)
+        print(f"New socket from client of type: {data['type']}  {data['values']}")
         if data["type"] == "movePlayer":
             getp().move_player(None)
         print("Tornado: msg send to client")
@@ -39,7 +39,6 @@ class EchoWebSocket(WebSocketHandler):
     def on_close(self):
         print("WebSocket closed")
         clients.remove(self)
-
 
 
 # WSGI container for Django
