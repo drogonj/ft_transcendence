@@ -1,53 +1,7 @@
 #!/bin/bash
 
-wait_for_postgres() {
-    echo "Waiting for PostgreSQL to start..."
-    until PGPASSWORD=$SQL_PASSWORD psql -h postgres -U $SQL_USER -d postgres -c '\q' 2>/dev/null; do
-        echo "PostgreSQL is unavailable - sleeping"
-        sleep 1
-    done
-    echo "PostgreSQL is up and running"
-}
-
-create_vault_user() {
-    echo "Creating Vault user in PostgreSQL..."
-    PGPASSWORD=$SQL_PASSWORD psql -h postgres -U $SQL_USER -d postgres <<-EOSQL
-    DO
-    \$do\$
-    BEGIN
-        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$VAULT_DB_USER') THEN
-            CREATE USER $VAULT_DB_USER WITH PASSWORD '$VAULT_DB_PASSWORD';
-        END IF;
-    END
-    \$do\$;
-    ALTER USER $VAULT_DB_USER CREATEDB;
-EOSQL
-    echo "Vault user created or updated."
-}
-
-init_vault_db() {
-    echo "Initializing Vault database..."
-    PGPASSWORD=$VAULT_DB_PASSWORD psql -h postgres -U $VAULT_DB_USER -d postgres <<-EOSQL
-    CREATE DATABASE $VAULT_DB_NAME;
-EOSQL
-    PGPASSWORD=$VAULT_DB_PASSWORD psql -h postgres -U $VAULT_DB_USER -d $VAULT_DB_NAME -f /vault/config/init-vault-db.sql
-    echo "Vault database initialized."
-}
-
-wait_for_postgres
-
-create_vault_user
-
-if ! PGPASSWORD=$VAULT_DB_PASSWORD psql -h postgres -U $VAULT_DB_USER -d postgres -lqt | cut -d \| -f 1 | grep -qw $VAULT_DB_NAME; then
-    echo "Vault database does not exist. Creating it..."
-    init_vault_db
-else
-    echo "Vault database already exists."
-fi
-
-sed -i "s/\${VAULT_DB_USER}/$VAULT_DB_USER/g" /vault/config/config.hcl
-sed -i "s/\${VAULT_DB_PASSWORD}/$VAULT_DB_PASSWORD/g" /vault/config/config.hcl
-sed -i "s/\${VAULT_DB_NAME}/$VAULT_DB_NAME/g" /vault/config/config.hcl
+pkill vault
+rm -rf /vault/data/*
 
 vault server -config=/vault/config/config.hcl &
 
@@ -81,9 +35,20 @@ if ! vault secrets list | grep -q '^secret/'; then
 fi
 
 vault kv put secret/myapp/database \
-    database="${SQL_DATABASE}" \
-    username="${SQL_USER}" \
-    password="${SQL_PASSWORD}"
+    DJANGO_KEY="$DJANGO_KEY" \
+    DJANGO_SUPERUSER_USERNAME="$DJANGO_SUPERUSER_USERNAME" \
+    DJANGO_SUPERUSER_PASSWORD="$DJANGO_SUPERUSER_PASSWORD" \
+    DJANGO_SUPERUSER_EMAIL="$DJANGO_SUPERUSER_EMAIL" \
+    SQL_DATABASE="$SQL_DATABASE" \
+    SQL_USER="$SQL_USER" \
+    SQL_PASSWORD="$SQL_PASSWORD" \
+    SQL_HOST="$SQL_HOST" \
+    SQL_PORT="$SQL_PORT" \
+    42OAUTH_UID="$42OAUTH_UID" \
+    42OAUTH_SECRET="$42OAUTH_SECRET" \
+    42OAUTH_URI="$42OAUTH_URI" \
+    42OAUTH_STATE="$42OAUTH_STATE" \
+    WEBSITE_URL="$WEBSITE_URL"
 
 cat <<EOF > /vault/config/django-policy.hcl
 path "secret/data/myapp/*" {
@@ -94,11 +59,10 @@ EOF
 vault kv get secret/myapp/database
 vault policy write django-policy /vault/config/django-policy.hcl
 
-DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
+DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.42Oauth.client_token')
 echo "$DJANGO_TOKEN" > /shared/django_vault_token.env
 vault token capabilities $DJANGO_TOKEN secret/data/myapp/database
 vault token lookup $DJANGO_TOKEN
 vault policy read django-policy
 echo "Vault initialized and configured"
 tail -f /dev/null
-# Stocker les informations de la base de données de l'application dans

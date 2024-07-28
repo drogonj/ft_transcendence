@@ -1,8 +1,5 @@
 #!/bin/bash
 
-export VAULT_TOKEN=$(cat /shared/django_vault_token.env)
-cat /shared/django_vault_token.env
-
 echo "----- Collect static files ------ " 
 python manage.py collectstatic --noinput
 
