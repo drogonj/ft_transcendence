@@ -27,11 +27,14 @@ SECRET_KEY = os.getenv('CHAT_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]']
+#ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]', 'chat']
+ALLOWED_HOSTS = ['*']
+
+AUTH_USER_MODEL = "webchat.Account"
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS = [ 
 	'daphne',
 	'csp',
 	'webchat',
@@ -51,7 +54,8 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'chat.middleware.CSPMiddleware',
+	'csp.middleware.CSPMiddleware',
+	'chat.middleware.InterceptMiddleware',
 ]
 
 ROOT_URLCONF = 'chat.urls'
@@ -107,6 +111,13 @@ DATABASES = {
 	}
 }
 
+# Cache configuration
+CACHES = {
+	'default': {
+		"BACKEND": "django.core.cache.backends.redis.RedisCache",
+		'LOCATION': 'redis://127.0.0.1:6379',
+	}
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -139,11 +150,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -159,6 +165,7 @@ CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True

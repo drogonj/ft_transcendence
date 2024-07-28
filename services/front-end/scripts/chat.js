@@ -32,7 +32,7 @@ export async function connectChatWebsocket() {
 
 export async function loadUsers() {
 	try {
-		const response = await fetch('/api/user/get_users/');
+		const response = await fetch('/api/chat/get_users/');
 		const usersData = await response.json();
 
 		for (const user of usersData.users) {
