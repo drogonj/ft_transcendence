@@ -1,4 +1,4 @@
-import {setCssProperty} from "./game";
+import {setCssProperty} from "./game.js";
 
 let seconds = 0;
 let minutes = 3;
