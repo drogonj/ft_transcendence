@@ -48,8 +48,9 @@ RUN chmod +x ./entrypoint.sh
 
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./conf/transcendence.conf /etc/nginx/conf.d/transcendence.conf
-COPY ./src /singlepageapp/src/
+COPY ./local-game-pong /singlepageapp/local-game-pong/
+COPY ./online-game-pong /singlepageapp/online-game-pong/
+COPY ./scripts /singlepageapp/scripts/
 COPY ./assets /singlepageapp/assets/
-COPY ./src/html/* /singlepageapp/
-
-ENTRYPOINT ["/entrypoint.sh"]
+COPY ./css /singlepageapp/css/
+COPY ./html/* /singlepageapp/

@@ -11,7 +11,6 @@ from django.utils import timezone
 from datetime import timedelta
 import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q
 
 User = get_user_model()
 
@@ -95,8 +94,8 @@ def get_profile_picture(request):
     return HttpResponse(image.read(), content_type=content_type)
 
 def oauth_redirect(request):
-    uri = os.getenv("42OAUTH_URI")
-    uri += "&state=" + os.getenv("42OAUTH_STATE")
+    uri = os.getenv("OAUTH_URI")
+    uri += "&state=" + os.getenv("OAUTH_STATE")
     return redirect(uri)
 
 @csrf_exempt
@@ -107,11 +106,11 @@ def oauth_callback(request):
         return redirect(f"{os.getenv('WEBSITE_URL')}/")
     data = {
         'grant_type': 'authorization_code',
-        'client_id': os.getenv("42OAUTH_UID"),
-        'client_secret': os.getenv("42OAUTH_SECRET"),
+        'client_id': os.getenv("OAUTH_UID"),
+        'client_secret': os.getenv("OAUTH_SECRET"),
         'code': code,
         'redirect_uri': 'https://localhost:8080/api/user/oauth/callback/',
-        'state': os.getenv('42OAUTH_STATE'),
+        'state': os.getenv('OAUTH_STATE'),
     }
 
     try:
@@ -186,6 +185,9 @@ def oauth_confirm_registration(request):
     if not username or User.objects.filter(username=username).exists():
         return JsonResponse({'error': 'Username already exists'})
 
+    intra_pic = data.get('take_intra_pic')
+    if not intra_pic:
+        user.profil_image = "avatars/default.png"
     user.username = username
     user.password = make_password(password)
     user.tmp_token = ''
@@ -203,19 +205,11 @@ class UserInfoView(View):
         else:
             user = request.user
         profil_image_url = user.profil_image.url
-        if user_id:
-            data = {
-                'username': user.username,
-                'email': user.email,
-                'avatar': profil_image_url,
-                'user_id': user.id,
-            }
-        else:
-            data = {
-                'username': user.username,
-                'email': user.email,
-                'avatar': profil_image_url,
-            }
+        data = {
+            'username': user.username,
+            'avatar': profil_image_url,
+            'user_id': user.id,
+        }
         return JsonResponse(data)
 
 @method_decorator(login_required, name='dispatch')
@@ -223,12 +217,10 @@ class UserUpdateView(LoginRequiredMixin, FormView):
     def post(self, request, *args, **kwargs):
         try:
             username = request.POST.get('username')
-            email = request.POST.get('email')
             profile_picture = request.FILES.get('profil_image')
 
             user = request.user
             user.username = username
-            user.email = email
             if profile_picture:
                 user.change_profile_pic(profile_picture)
             user.save()
@@ -239,13 +231,3 @@ class UserUpdateView(LoginRequiredMixin, FormView):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'success': False, 'message': 'Invalid request method'})
-
-@login_required
-def search_users(request):
-    query = request.GET.get('q')
-    if query:
-        users = User.objects.filter(Q(username__icontains=query) | Q(email__icontains=query))
-        user_data = [{'username': user.username, 'email': user.email, 'id': user.id} for user in users]
-    else:
-        user_data = []
-    return JsonResponse({'users': user_data})

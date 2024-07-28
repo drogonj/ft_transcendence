@@ -1,9 +1,0 @@
- /* The alert message box */
-.alert {
-  position: fixed;
-  padding: 20px;
-  background-color: #f44336;
-  color: white;
-  margin-left: 50%;
-  transform: translate(-50%,0)
-}
