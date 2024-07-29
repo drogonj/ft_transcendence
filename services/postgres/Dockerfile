@@ -1,9 +1,5 @@
 FROM postgres:16.3
 
-ENV POSTGRES_USER=${SQL_USER}
-ENV POSTGRES_PASSWORD=${SQL_PASSWORD}
-ENV POSTGRES_DB=${SQL_DATABASE}
-
 HEALTHCHECK --interval=5s --timeout=3s --retries=10 \
   CMD pg_isready -U $POSTGRES_USER -d $POSTGRES_DB || exit 1
 

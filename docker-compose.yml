@@ -21,6 +21,8 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
+      - vault-token:/vault/token:ro
+      - vault-cert:/etc/ssl/certs:ro
     networks:
       - network
     depends_on:
@@ -30,26 +32,17 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      - VAULT_ADDR=https://vault:8200
-      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
-      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
 
   postgres:
     container_name: postgres
     build: ./services/postgres/
     env_file: .env
-    environment:
-      - POSTGRES_USER=${SQL_USER}
-      - POSTGRES_DB=${SQL_DATABASE}
-      - POSTGRES_PASSWORD=${SQL_PASSWORD}
-      - VAULT_ADDR=https://vault:8200
     expose:
       - "5432:5432"
     networks:
      - network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${SQL_USER} -d ${SQL_DATABASE}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,13 +54,6 @@ services:
       - "8200:8200"
     cap_add:
       - IPC_LOCK
-    environment:
-      - 42OAUTH_UID=$${42OAUTH_UID}
-      - 42OAUTH_SECRE=$${42OAUTH_SECRET}
-      - 42OAUTH_URI=$${42OAUTH_URI}
-      - 42OAUTH_STATE=$${42OAUTH_STATE}
-      - VAULT_CACERT=/etc/ssl/certs/vault.crt
-      - VAULT_ADDR=https://0.0.0.0:8200
     env_file:
       - .env
     networks:
@@ -79,7 +65,8 @@ services:
       retries: 5
     volumes:
      - vault-data:/vault/data
-
+     - vault-token:/vault/token
+     - vault-cert:/etc/ssl/certs
 
   back-game:
     container_name: back-game-pong
@@ -109,4 +96,6 @@ volumes:
   nginx:
   django:
   vault-data:
+  vault-token:
+  vault-cert:
   redis:

@@ -39,15 +39,15 @@ vault kv put secret/myapp/database \
     DJANGO_SUPERUSER_USERNAME="$DJANGO_SUPERUSER_USERNAME" \
     DJANGO_SUPERUSER_PASSWORD="$DJANGO_SUPERUSER_PASSWORD" \
     DJANGO_SUPERUSER_EMAIL="$DJANGO_SUPERUSER_EMAIL" \
-    SQL_DATABASE="$SQL_DATABASE" \
-    SQL_USER="$SQL_USER" \
-    SQL_PASSWORD="$SQL_PASSWORD" \
-    SQL_HOST="$SQL_HOST" \
-    SQL_PORT="$SQL_PORT" \
-    42OAUTH_UID="$42OAUTH_UID" \
-    42OAUTH_SECRET="$42OAUTH_SECRET" \
-    42OAUTH_URI="$42OAUTH_URI" \
-    42OAUTH_STATE="$42OAUTH_STATE" \
+    POSTGRES_DB="$POSTGRES_DB" \
+    POSTGRES_USER="$POSTGRES_USER" \
+    POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+    POSTGRES_HOST="$POSTGRES_HOST" \
+    POSTGRES_PORT="$POSTGRES_PORT" \
+    OAUTH_UID="$OAUTH_UID" \
+    OAUTH_SECRET="$OAUTH_SECRET" \
+    OAUTH_URI="$OAUTH_URI" \
+    OAUTH_STATE="$OAUTH_STATE" \
     WEBSITE_URL="$WEBSITE_URL"
 
 cat <<EOF > /vault/config/django-policy.hcl
@@ -56,13 +56,9 @@ path "secret/data/myapp/*" {
 }
 EOF
 
-vault kv get secret/myapp/database
 vault policy write django-policy /vault/config/django-policy.hcl
-
-DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.42Oauth.client_token')
-echo "$DJANGO_TOKEN" > /shared/django_vault_token.env
-vault token capabilities $DJANGO_TOKEN secret/data/myapp/database
-vault token lookup $DJANGO_TOKEN
-vault policy read django-policy
+vault audit enable file file_path=/var/log/vault_audit.log
+DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
+echo "$DJANGO_TOKEN" > /vault/token/token
 echo "Vault initialized and configured"
 tail -f /dev/null

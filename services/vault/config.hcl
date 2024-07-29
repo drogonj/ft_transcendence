@@ -8,7 +8,6 @@ listener "tcp" {
   tls_disable = 0
   tls_cert_file = "/etc/ssl/certs/vault.crt"
   tls_key_file = "/etc/ssl/private/vault/vault.key"
-  tls_disable_client_certs = "true"
 }
 
 api_addr = "https://vault:8200"
