@@ -3,22 +3,35 @@ import {sendMessageToServer} from "./websocket.js";
 import {getSpellWithId} from "./spell.js";
 import {addSpellsToHeader} from "./header.js";
 
-let player;
-
-export function createPlayer(socketData) {
-	player = new Player(socketData);
-	player.startPlayerLoop();
+const players = [];
+let clientSide;
+const playerKeys = {
+		"moveUp": "KeyW",
+		"moveDown": "KeyS",
+		"spell1": "Digit1",
+		"spell2": "Digit2",
+		"spell3": "Digit3",
+		"spell4": "Digit4"
 }
 
-function Player(socketValues) {
-	this.paddleHtml = document.getElementById(socketValues["paddleHtml"]);
-	this.paddleHeader = document.getElementById(socketValues["paddleHeader"]);
+export function createPlayers(socketValues) {
+	clientSide = socketValues["clientSide"];
+	let side = "Left";
+	for (let i = 0; i < 2; i++) {
+		new Player(socketValues, side)
+		side = "Right";
+	}
+	startPlayerLoop();
+}
+
+function Player(socketValues, side) {
+	this.paddleHtml = document.getElementById("paddle" + side);
+	this.paddleHeader = document.getElementById("header" + side);
 	this.moveSpeed = socketValues["moveSpeed"];
-	this.paddleDirection = socketValues["paddleDirection"];
-	this.setTopPosition(socketValues["playerTopPosition"])
-	this.playerKeys = this.definePlayerKeys()
+	this.setTopPosition(socketValues["paddleTopPosition"]);
 	this.playerSpells = this.loadPlayerSpells(socketValues["playerSpells"]);
 	addSpellsToHeader(this.paddleHeader, this.playerSpells);
+	players.push(this);
 }
 
 Player.prototype.getPaddleHeight = function () {
@@ -37,28 +50,8 @@ Player.prototype.setPaddleSize = function (size) {
 	this.getPaddleStyle().height = size;
 }
 
-
-Player.prototype.startPlayerLoop = function () {
-	for (const [key, value] of Object.entries(this.playerKeys)) {
-		if (keyDown.has(value))
-			sendMessageToServer(key)
-	}
-	setTimeout(this.startPlayerLoop.bind(this), this.moveSpeed);
-}
-
-Player.prototype.definePlayerKeys = function () {
-	return {
-		"moveUp": "KeyW",
-		"moveDown": "KeyS",
-		"spell1": "Digit1",
-		"spell2": "Digit2",
-		"spell3": "Digit3",
-		"spell4": "Digit4"
-	};
-}
-
-Player.prototype.displayPoint = function (socketValues) {
-	this.paddleHeader.querySelector(".scorePlayer").textContent = socketValues["score"];
+Player.prototype.displayPoint = function (scoreToDisplay) {
+	this.paddleHeader.querySelector(".scorePlayer").textContent = scoreToDisplay;
 }
 
 Player.prototype.loadPlayerSpells = function (spellIdArray) {
@@ -78,6 +71,30 @@ Player.prototype.launchSpell = function (spellId) {
 	}
 }
 
-export function getPlayer() {
-	return player;
+function startPlayerLoop() {
+	for (const [key, value] of Object.entries(playerKeys)) {
+		if (keyDown.has(value))
+			sendMessageToServer("movePlayer", {"direction": key})
+	}
+	setTimeout(startPlayerLoop, 5);
+}
+
+export function getPlayerWithSide(side) {
+	return side === "Left" ? players[0] : players[1];
+}
+
+export function getClientSide() {
+	return clientSide
+}
+
+export function setTopPositionToPlayer(socketValues) {
+	const targetPlayer = getPlayerWithSide(socketValues["targetPlayer"]);
+
+	targetPlayer.setTopPosition(socketValues["topPosition"]);
+}
+
+export function setDisplayPointToPlayer(socketValues) {
+	const targetPlayer = getPlayerWithSide(socketValues["targetPlayer"]);
+
+	targetPlayer.displayPoint(socketValues["score"]);
 }

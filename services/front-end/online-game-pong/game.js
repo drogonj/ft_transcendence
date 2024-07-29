@@ -2,8 +2,13 @@ import {loadHeader, timerDecrease} from "./header.js";
 import loadListeners from "./listeners.js";
 import loadMap from "./map.js";
 import {createBall} from "./ball.js";
+import {createPlayers} from "./player.js";
+
+let gameId;
 
 export function launchGame(socketValues) {
+	gameId = socketValues["gameId"];
+	createPlayers(socketValues);
 	loadListeners();
 	loadMap();
 	loadHeader();
@@ -43,4 +48,8 @@ export function newImage(imagePath, id, className) {
 	if (className)
 		img.classList.add(className);
 	return img;
+}
+
+export function getGameId() {
+	return gameId;
 }
