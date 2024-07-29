@@ -1,5 +1,5 @@
 import {navigateTo, app, cleanUrl} from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, currentUser, getCsrfToken, csrfToken } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, changeUsername, changePassword, currentUser, getCsrfToken, csrfToken } from './auth.js';
 import {
     connectFriendsWebsocket,
     disconnectFriendsWebsocket,
@@ -113,12 +113,12 @@ export async function renderHome() {
                     <div class="profile-card">
                         <div id="avatar-display">
                             <div id="avatar-container">
-                                <img src="/api/user/get_avatar/" alt="avatar" id="avatar"/>
+                                <img src="${currentUser.avatar}" alt="avatar" id="avatar"/>
                             </div>
                         </div>
                         <p>${currentUser.username}</p>
                         <div id="profile-card-trophy">
-                            <p>2137</p>
+                            <p>${currentUser.trophy}</p>
                             <img alt="trophy" src="../assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -135,7 +135,6 @@ export async function renderHome() {
                         </div>
                         <div class="buttons">
                             <a href="#" id="profile-button">Show profile</a>
-                            <a href="#" id="update-user-info">Change profile</a>  
                             <a href="#" id="logout-button">Logout</a>
                         </div>
                         <span class="left"></span>
@@ -171,13 +170,9 @@ export async function renderHome() {
     // Fetch friendship requests list
     await loadFriendshipRequests();
 
-    document.getElementById('update-user-info').addEventListener('click', (event) => {
-        event.preventDefault();
-        navigateTo('/update/', true);
-    });
     document.getElementById('profile-button').addEventListener('click', (event) => {
         event.preventDefault();
-        navigateTo(`/profile/${currentUser.user_id}/`, true);
+        navigateTo(`/profile/`, true);
     });
     document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
     document.getElementById('logout-button').addEventListener('click', (event) => {
@@ -236,37 +231,6 @@ export async function renderHome() {
     });
 }
 
-export async function renderUserUpdateForm() {
-    const response = await fetch('/api/user/info/');
-
-    try {
-        const userData = await response.json();
-
-        app.innerHTML = `
-        <h2>Update User Information</h2>
-        <form id="user-update-form">
-            <div>
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" value="${userData.username}" required>
-            </div>
-            <div>
-                <label for="profil_image">Profile Picture:</label>
-                <input type="file" id="profil_image" name="profil_image" accept="image/*">
-            </div>
-            <button type="submit">Update</button>
-        </form>
-        <button id="home">Home</button>
-    `;
-        document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
-        document.getElementById('home').addEventListener('click', (event) => {
-            event.preventDefault();
-            navigateTo('/');
-        });
-    } catch (error) {
-        navigateTo('/login');
-    }
-}
-
 export async function renderConfirmRegistration() {
     app.innerHTML = `
                     <section class="auth-section">
@@ -317,6 +281,7 @@ export async function renderUserProfile(userId) {
     const response = await fetch(`/api/user/profile/${userId}/`);
 
     if (!response.ok) {
+        console.error('failed to get user informations');
         navigateTo('/home');
     }
 
@@ -338,4 +303,63 @@ export async function renderUserProfile(userId) {
         event.preventDefault();
         navigateTo('/', true);
     });
+}
+
+export async function renderSelfProfile() {
+    try {
+        app.innerHTML = `
+            <div class="profile-section-container">
+              <section class="profile-section">
+                <div class="profile-box">
+                  <h2>Profile</h2>
+                  <div id="avatar-display">
+                    <div id="avatar-container">
+                      <img src="${currentUser.avatar}" alt="avatar" id="avatar">
+                    </div>
+                  </div>
+                  
+                  <div class="inputBox">
+                    <input type="text" id="username" name="username" value="${currentUser.username}" required>
+                    <input type="submit" value="Change username" id="change-username-btn">
+                  </div>
+                  
+                  <div class="inputBox">
+                    <input type="text" id="email" name="email" value="${currentUser.email}" disabled>
+                  </div>
+                  
+                  <div class="inputBox">
+                    <input type="password" id="password" name="password" required>
+                    <i>Password</i>
+                  </div>
+                  <div class="inputBox">
+                    <input type="password" id="new-password" name="new-password" required>
+                    <i>New Password</i>
+                  </div>
+                  <div class="inputBox">
+                    <input type="password" id="confirm-new-password" name="confirm-new-password" required>
+                    <i>Confirm new Password</i>
+                  </div>
+                  <div class="inputBox">
+                    <input type="submit" value="Change password" id="change-password-btn">
+                  </div>
+                  
+                  <div id="response-message" style="display: none;"></div>
+                </div>
+              </section>
+            </div>
+        `;
+
+        document.getElementById('change-username-btn').addEventListener('click', async function (event) {
+            event.preventDefault();
+            await changeUsername();
+        });
+
+        document.getElementById('change-password-btn').addEventListener('click', async function (event) {
+            event.preventDefault();
+            await changePassword();
+        });
+
+    } catch (error) {
+        navigateTo('/login');
+    }
 }

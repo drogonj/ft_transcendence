@@ -60,6 +60,9 @@ class Account(AbstractBaseUser):
     tmp_token           = models.CharField(max_length=100, unique=True, blank=True, null=True)
     token_creation_date = models.DateTimeField(verbose_name="token_creation_date", default=timezone.now)
 
+    trophy              = models.IntegerField(default=100)
+    winrate             = models.DecimalField(default=50.0, max_digits=3, decimal_places=1)
+
     objects = MyAccountManager()
 
     USERNAME_FIELD = 'username'

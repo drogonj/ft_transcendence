@@ -331,7 +331,7 @@ a {
 #profile-card-trophy img {
     width: max(1vh, 1vw);
     height: max(1vh, 1vw);
-    transform: translateY(1.15vh);
+    transform: translateY(max(0.75vh, 0.5vw));
 }
 
 .single-chart {
@@ -379,4 +379,125 @@ a {
     font-family: sans-serif;
     font-size: 0.5rem;
     text-anchor: middle;
+}
+
+.profile-section-container {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+    overflow: hidden;
+    animation: 0.5s ease-out 0s 1 section-appear;
+}
+
+.profile-section {
+    position: absolute;
+    height: max(35vh, 25vw);
+    width: auto;
+    background: linear-gradient(-45deg, rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5));
+    background-size: 800% 800%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: max(0.5vw, 1vh) 1% max(0.5vw, 1.5vh) 1%;
+    border-color: red;
+    border-radius: max(0.2vh, 0.2vw);
+    box-shadow: 0 0 5px #ff0266;
+    animation: profile-card-gradient 15s ease infinite;
+}
+
+.profile-box {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: max(1vh, 0.5vw);
+}
+
+.profile-box h2 {
+    text-align: center;
+    font-size: max(1.75vh, 0.5vw);
+}
+
+.profile-box #avatar-display {
+    align-self: center;
+    width: max(6vh, 4vw);
+}
+
+.profile-box #profile-card-trophy {
+    padding: 10px;
+    font-size: max(1vh, 0.75vw);
+    > img {
+        transform: translateY(max(1vh, 0.6vw));
+    }
+}
+
+.profile-box .inputBox input {
+
+    position: abso;
+    width: 96%;
+    background: rgba(200, 20, 20, 0.1);
+    border: none;
+    outline: none;
+    padding: 4% 2% 4%;
+    border-radius: 4px;
+    color: #FAFAFA;
+    font-size: max(0.65vw, 0.85vh);
+    transition: 0.3s;
+}
+.profile-box .inputBox input:focus,
+.profile-box .inputBox input:hover,
+.profile-box .inputBox input:valid {
+    background: rgba(100, 25, 50, 0.2);
+}
+
+.profile-box .inputBox i
+{
+    position: absolute;
+    left: max(1.5vw, 1vh);
+    transform: translateY(max(0.8vh, 0.6vw));
+    font-style: normal;
+    color: whitesmoke;
+    opacity: 0.75;
+    transition: 0.5s;
+    pointer-events: none;
+    font-size: max(0.65vw, 0.85vh);
+
+}
+.profile-box .inputBox input:focus ~ i,
+.profile-box .inputBox input:valid ~ i
+{
+    display: none;
+}
+
+#app > div > section > div > div:nth-child(8) > input[type=submit],
+#app > div > section > div > div:nth-child(3) > input[type=submit]:nth-child(2) {
+    padding: max(0.5vh, 0.25vw) 0 max(0.5vh, 0.25vw) 0;
+    margin: 0;
+    width: 100%;
+    border: solid 1px;
+    transition: 0.3s;
+}
+
+#app > div > section > div > div:nth-child(8) > input[type=submit]:hover,
+#app > div > section > div > div:nth-child(3) > input[type=submit]:nth-child(2):hover {
+    cursor: pointer;
+    border-color: crimson;
+}
+
+.profile-box .inputBox #email {
+    cursor: not-allowed;
+}
+
+#response-message {
+    font-size: max(0.65vw, 0.85vh);
 }

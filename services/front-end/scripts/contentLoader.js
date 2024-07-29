@@ -2,12 +2,12 @@ import {
     renderLogin,
     renderHome,
     renderSignup,
-    renderUserUpdateForm,
     renderConfirmRegistration,
-    renderUserProfile
+    renderUserProfile,
+    renderSelfProfile
 } from './render.js';
-import {getCurrentUserInfo, handleLogin} from "./auth.js";
-import { connectFriendsWebsocket } from "./friends.js";
+import {getCsrfToken, getCurrentUserInfo, handleLogin} from "./auth.js";
+import {connectFriendsWebsocket} from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
 import launch from "../local-game-pong/src/main.js";
 
@@ -16,7 +16,7 @@ export const app = document.getElementById('app');
 export function cleanUrl() {
     const currentUrl = new URL(window.location.href);
     const newUrl = currentUrl.origin + currentUrl.pathname; // Conserve uniquement l'origine et le chemin sans les paramètres
-    history.replaceState({ route: newUrl }, 'SPA Application', newUrl);
+    history.replaceState({route: newUrl}, 'SPA Application', newUrl);
 }
 
 const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
@@ -36,13 +36,13 @@ export function navigateTo(route, pushState, data) {
         renderSignup();
     } else if (route === '/home' || route === '/home/') {
         renderHome();
-    } else if (route === '/update' || route === '/update/') {
-        renderUserUpdateForm();
     } else if (confirmRegistrationUrlRegex.test(route)) {
         renderConfirmRegistration();
     } else if (profileRegex.test(route)) {
         const userId = url.match(/\/profile\/(\d+)\//)[1];
         renderUserProfile(userId);
+    } else if (route === '/profile' || route === '/profile/') {
+        renderSelfProfile();
     } else if (route === '/game' || route === '/game/') {
         renderPageWithName("menu-start-settings.html");
     } else if (route === '/game-online' || route === '/game-online/') {
@@ -60,7 +60,7 @@ window.addEventListener('popstate', function (event) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     await loadPages();
     const jsError = document.getElementById('js-error');
     if (jsError) {

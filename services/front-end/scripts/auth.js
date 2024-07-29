@@ -151,3 +151,87 @@ export async function handleConfirmRegistration(event) {
         alert(data.error);
     }
 }
+
+export async function changeUsername(event) {
+    const username = document.getElementById('username').value.trim();
+
+    if (!username) {
+        showResponseMessage('Username cannot be empty.', 'error');
+        return;
+    }
+
+    try {
+
+        await getCsrfToken()
+
+        const response = await fetch('/api/user/change-username/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({username: username})
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            showResponseMessage('Username changed successfully!', 'success');
+            await getCurrentUserInfo()
+        } else {
+            const errorData = await response.json();
+            showResponseMessage(`Failed to change username: ${errorData.message}`, 'error');
+        }
+    } catch (e) {
+        showResponseMessage('An error occured while changing username', 'error');
+    }
+}
+
+export async function changePassword(event) {
+    const password = document.getElementById('password').value.trim();
+    const newPassword = document.getElementById('new-password').value.trim();
+    const confirmNewPassword = document.getElementById('confirm-new-password').value.trim();
+
+    if (!password || !newPassword || !confirmNewPassword) {
+        showResponseMessage('All password fields are required.', 'error');
+        return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        showResponseMessage('New passwords do not match.', 'error');
+        return;
+    }
+
+    try {
+        await getCsrfToken()
+
+        const response = await fetch('/api/user/change-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({password: password, newPassword: newPassword, confirmNewPassword: confirmNewPassword})
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            showResponseMessage('Password changed successfully!', 'success');
+        } else {
+            const errorData = await response.json();
+            showResponseMessage(`Failed to change password: ${errorData.message}`, 'error');
+        }
+    } catch (e) {
+        showResponseMessage('An error occured while changing password', 'error');
+    }
+}
+
+function showResponseMessage(message, type) {
+    const responseMessageElement = document.getElementById('response-message');
+    responseMessageElement.style.display = 'block';
+    responseMessageElement.textContent = message;
+    responseMessageElement.className = type === 'success' ? 'success-message' : 'error-message';
+
+    setTimeout(() => {
+        responseMessageElement.style.display = 'none';
+    }, 5000);
+}
