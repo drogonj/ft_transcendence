@@ -10,3 +10,4 @@ requests
 channels
 channels_redis
 django-csp
+hvac==1.1.0
