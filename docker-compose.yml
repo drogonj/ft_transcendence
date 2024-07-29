@@ -24,8 +24,7 @@ services:
     networks:
       - network
     depends_on:
-        postgres:
-          condition: service_healthy
+      - redis
     env_file:
       - .env
     environment:
@@ -42,8 +41,7 @@ services:
     networks:
       - network
     depends_on:
-      postgres:
-        condition: service_healthy
+      - redis
     env_file:
       - .env
       
@@ -79,6 +77,9 @@ services:
       - "6379"
     volumes:
       - redis:/var/lib/redis
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - network
 

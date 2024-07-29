@@ -30,20 +30,20 @@ DEBUG = True
 #ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]', 'chat']
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = "webchat.Account"
+# AUTH_USER_MODEL = "webchat.Account"
 
 # Application definition
 
-INSTALLED_APPS = [ 
+INSTALLED_APPS = [
 	'daphne',
-	'csp',
-	'webchat',
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
+	'csp',
+	'webchat',
 ]
 
 MIDDLEWARE = [
@@ -115,7 +115,7 @@ DATABASES = {
 CACHES = {
 	'default': {
 		"BACKEND": "django.core.cache.backends.redis.RedisCache",
-		'LOCATION': 'redis://127.0.0.1:6379',
+		'LOCATION': 'redis://redis:6379/1',
 	}
 }
 

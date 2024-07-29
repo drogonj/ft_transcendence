@@ -35,6 +35,7 @@ export async function loadUsers() {
 		const response = await fetch('/api/chat/get_users/');
 		const usersData = await response.json();
 
+		console.log(usersData);
 		for (const user of usersData.users) {
 			if (user.is_connected === false && user.id === 1) {
 				continue;

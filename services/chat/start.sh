@@ -8,7 +8,7 @@ python manage.py collectstatic --noinput
 echo ""
 
 echo "----------- Apply migration ----------- "
-python manage.py makemigrations webchat
+python manage.py makemigrations
 echo ""
 
 python manage.py migrate

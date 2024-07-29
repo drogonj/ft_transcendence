@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 await connectFriendsWebsocket();
 				await connectChatWebsocket();
             }
+			console.log("route : " + route);
             navigateTo(route, false);
         } else {
             navigateTo('/login', false);
