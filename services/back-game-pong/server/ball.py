@@ -1,14 +1,30 @@
-balls = []
+from .utils import get_random_number_with_decimal
 
 
 class Ball:
-    def __init__(self):
-        self.__ball_size = None
-        self.__ball_id = len(balls)
-        #self.__ball_vx = 0.4 * getRandomNumberBetweenOne()
-        #self.__ball_vy = getRandomNumberWithDecimal(0.1, 0.7)
-        self.__ball_size = 1.5
-        self.__ball_top_position = 50
-        self.__ball_left_position = 50
-        self.__ball_active_spell = None
+    ball_index = 0
+    balls = []
 
+    def __init__(self):
+        self.__ball_id = Ball.ball_index
+        Ball.ball_index += 1
+        self.__vx = 0.4 * get_random_number_with_decimal(-100, 100)
+        self.__vy = get_random_number_with_decimal(1, 700)
+        self.__top_position = 50
+        self.__left_position = 50
+        self.__active_spell = None
+
+    def dumps_ball_for_socket(self):
+        return {
+            "ballId": self.__ball_id,
+            "topPosition": str(self.__top_position) + "%",
+            "leftPosition": str(self.__left_position) + "%",
+        }
+
+    def move_ball(self):
+        self.__top_position -= self.__vy
+        self.__left_position -= self.__vx
+
+    def trigger_ball_inside_border(self):
+        if self.__top_position <= 3 or self.__top_position >= 97:
+            self.__vy = -self.__vy

@@ -4,8 +4,8 @@ import {
 
 const balls = [];
 
-export function createBall(socketData) {
-    new Ball(socketData);
+export function createBall(socketValues) {
+    new Ball(socketValues);
 }
 
 function Ball(socketValues) {
