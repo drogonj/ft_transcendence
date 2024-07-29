@@ -1,5 +1,5 @@
 import {navigateTo, app, cleanUrl} from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, changeUsername, changePassword, currentUser, getCsrfToken, csrfToken } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, changeUsername, changePassword, changeAvatar, currentUser, getCsrfToken, csrfToken } from './auth.js';
 import {
     connectFriendsWebsocket,
     disconnectFriendsWebsocket,
@@ -313,6 +313,8 @@ export async function renderSelfProfile() {
                 <div class="profile-box">
                   <h2>Profile</h2>
                   <div id="avatar-display">
+                    <img alt="upload" id="upload-avatar" src="../assets/images/camera.png">
+                    <input type="file" id="file-input" accept="image/*" style="display:none;">
                     <div id="avatar-container">
                       <img src="${currentUser.avatar}" alt="avatar" id="avatar">
                     </div>
@@ -348,6 +350,17 @@ export async function renderSelfProfile() {
               </section>
             </div>
         `;
+
+        const uploadAvatar = document.getElementById('upload-avatar');
+        const fileInput = document.getElementById('file-input');
+
+        uploadAvatar.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (event) => {
+            await changeAvatar(event);
+        });
 
         document.getElementById('change-username-btn').addEventListener('click', async function (event) {
             event.preventDefault();

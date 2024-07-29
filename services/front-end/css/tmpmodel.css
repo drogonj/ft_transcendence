@@ -33,13 +33,22 @@ html {
 }
 
 .auth-section p {
-	padding:0 ;
+	padding:0;
 	margin: 0;
+	font-size: max(0.65vw, 0.85vh);
 	color: whitesmoke;
 	text-align: center;
 }
 
+.auth-section #intra-pic-checkbox {
+	width: max(0.75vw, 0.95vh);
+	height: max(0.75vw, 0.95vh);
+	transform: translateY(max(0.25vh, 0.1vw))
+}
+
 .auth-section label {
+
+	font-size: max(0.65vw, 0.85vh);
 	color: whitesmoke;
 }
 

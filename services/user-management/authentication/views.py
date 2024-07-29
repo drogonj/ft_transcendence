@@ -237,7 +237,7 @@ class UserUpdateView(LoginRequiredMixin, FormView):
 
 
 @method_decorator(login_required, name='dispatch')
-class ChangeUsername(LoginRequiredMixin, FormView):
+class ChangeUsernameView(LoginRequiredMixin, FormView):
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
@@ -253,7 +253,7 @@ class ChangeUsername(LoginRequiredMixin, FormView):
             return HttpResponseBadRequest(f'error: {e}')
 
 @method_decorator(login_required, name='dispatch')
-class ChangePassword(LoginRequiredMixin, FormView):
+class ChangePasswordView(LoginRequiredMixin, FormView):
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
@@ -278,3 +278,19 @@ class ChangePassword(LoginRequiredMixin, FormView):
         except Exception as e:
             return HttpResponseBadRequest(f'error: {e}')
 
+@method_decorator(login_required, name='dispatch')
+class ChangeAvatarView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            profile_picture = request.FILES.get('avatar')
+
+            if not profile_picture:
+                return HttpResponseBadRequest('No image provided')
+
+            user = request.user
+            user.change_profile_pic(profile_picture)
+
+            return JsonResponse({'success': True, 'avatar': user.profil_image.url})
+
+        except Exception as e:
+            return HttpResponseBadRequest('Failed to upload image')

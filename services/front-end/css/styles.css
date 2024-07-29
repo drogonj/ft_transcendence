@@ -431,19 +431,19 @@ a {
 .profile-box #avatar-display {
     align-self: center;
     width: max(6vh, 4vw);
+    height: max(6vh, 4vw);
 }
 
 .profile-box #profile-card-trophy {
     padding: 10px;
-    font-size: max(1vh, 0.75vw);
-    > img {
-        transform: translateY(max(1vh, 0.6vw));
-    }
+    font-size: max(1vh, 0.75vw); /* Responsive font size */
+}
+
+.profile-box #profile-card-trophy > img {
+    transform: translateY(max(1vh, 0.6vw)); /* Responsive vertical positioning */
 }
 
 .profile-box .inputBox input {
-
-    position: abso;
     width: 96%;
     background: rgba(200, 20, 20, 0.1);
     border: none;
@@ -500,4 +500,15 @@ a {
 
 #response-message {
     font-size: max(0.65vw, 0.85vh);
+}
+
+#upload-avatar {
+    height: max(1vh, 1vw);
+    width: auto;
+    position: absolute;
+    background: rgb(204 83 83 / 50%);
+    border: solid 1px black;
+    border-radius: 50%;
+    transform: translateX(max(4.5vh, 3vw));
+    cursor: pointer;
 }

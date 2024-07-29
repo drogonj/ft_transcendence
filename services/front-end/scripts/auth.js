@@ -225,6 +225,57 @@ export async function changePassword(event) {
     }
 }
 
+export async function changeAvatar(event) {
+    const file = event.target.files[0];
+    const avatar = document.getElementById('avatar');
+
+    const SUPPORTED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+    if (file) {
+        const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+
+        if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension)) {
+            showResponseMessage('Invalid file extension.', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            avatar.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            await getCsrfToken();
+
+            const response = await fetch('/api/user/upload-avatar/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                avatar.src = data.avatar;
+                showResponseMessage('Avatar changed successfully !', 'success');
+                await getCurrentUserInfo();
+            } else {
+                const errorData = await response.json();
+                showResponseMessage('Failed to upload avatar.', 'error');
+            }
+
+        } catch (error) {
+            showResponseMessage('Failed to upload avatar.', 'error');
+            console.error(error);
+        }
+    }
+}
+
 function showResponseMessage(message, type) {
     const responseMessageElement = document.getElementById('response-message');
     responseMessageElement.style.display = 'block';
