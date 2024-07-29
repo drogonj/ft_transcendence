@@ -9,11 +9,11 @@ export function createBall(socketData) {
 }
 
 function Ball(socketValues) {
-    this.ballId = balls.length;
+    this.ballId = socketValues["ballId"];
     this.ballHtml = document.createElement('div');
     this.ballHtml.classList.add("ball");
     this.ballActiveSpell = null;
-    this.displayBall("50%", "50%");
+    this.displayBall(socketValues["topPosition"], socketValues["leftPosition"]);
     addBallToMap(this.ballHtml);
     balls.push(this);
 }
@@ -42,10 +42,16 @@ Ball.prototype.displayBall = function (topPosition, leftPosition) {
 	this.ballHtml.style.left = leftPosition;
 }
 
-export function getBallsWithId(ballIdArray) {
-    const targetBalls = [];
-    ballIdArray.forEach((ballId) => {
-        targetBalls.push(balls.find((ball) => ball.id === ballId));
+function getBallWithId(ballId) {
+    for (const ball of balls) {
+        if (ball.ballId === ballId)
+            return ball;
+    }
+}
+
+export function moveBalls(socketValues) {
+    socketValues["targetBalls"].forEach((ball) => {
+        const targetBall = getBallWithId(ball["ballId"]);
+        targetBall.displayBall(ball["topPosition"], ball["leftPosition"]);
     });
-    return targetBalls;
 }

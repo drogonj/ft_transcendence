@@ -1,23 +1,14 @@
 import {renderPageWithName} from "../scripts/page.js";
 import {getClientSide, setDisplayPointToPlayer, setTopPositionToPlayer} from "./player.js";
-import {createBall} from "./ball.js";
+import {createBall, moveBalls} from "./ball.js";
 import {getGameId, launchGame} from "./game.js";
-
-
-//Client will send websocket as string, the string will only correspond to an action according to
-//a pressed key (for example, arrow up will send "MoveUp")
 
 let ws;
 
 export default function launchClientWebSocket() {
 	 ws = new WebSocket("ws://localhost:2605/api/back");
         ws.onopen = onOpen;
-
         ws.onmessage = onReceive;
-
-        document.addEventListener("click", () => {
-            //sendMessageToServer("Hello from client")
-        })
 }
 
 export function sendMessageToServer(type, values) {
@@ -39,7 +30,7 @@ function onReceive(event) {
     console.log("New message from server of type: " + data.type);
 
     if (data.type === "moveBall")
-        console.log("moveBall");
+        moveBalls(data.values);
     else if (data.type === "movePlayer")
         setTopPositionToPlayer(data.values);
     else if (data.type === "launchSpell")
