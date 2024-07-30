@@ -6,8 +6,8 @@ import {addSpellsToHeader} from "./header.js";
 const players = [];
 let clientSide;
 const playerKeys = {
-		"moveUp": "KeyW",
-		"moveDown": "KeyS",
+		"moveUp": "ArrowUp",
+		"moveDown": "ArrowDown",
 		"spell1": "Digit1",
 		"spell2": "Digit2",
 		"spell3": "Digit3",
@@ -30,6 +30,7 @@ function Player(socketValues, side) {
 	this.moveSpeed = socketValues["moveSpeed"];
 	this.setTopPosition(socketValues["paddleTopPosition"]);
 	this.playerSpells = this.loadPlayerSpells(socketValues["playerSpells"]);
+	this.score = 0;
 	addSpellsToHeader(this.paddleHeader, this.playerSpells);
 	players.push(this);
 }
@@ -50,8 +51,8 @@ Player.prototype.setPaddleSize = function (size) {
 	this.getPaddleStyle().height = size;
 }
 
-Player.prototype.displayPoint = function (scoreToDisplay) {
-	this.paddleHeader.querySelector(".scorePlayer").textContent = scoreToDisplay;
+Player.prototype.displayPoint = function () {
+	this.paddleHeader.querySelector(".scorePlayer").textContent = this.score;
 }
 
 Player.prototype.loadPlayerSpells = function (spellIdArray) {
@@ -69,6 +70,10 @@ Player.prototype.launchSpell = function (spellId) {
 			break;
 		}
 	}
+}
+
+Player.prototype.increaseScore = function () {
+	this.score++;
 }
 
 function startPlayerLoop() {
@@ -91,10 +96,4 @@ export function setTopPositionToPlayer(socketValues) {
 	const targetPlayer = getPlayerWithSide(socketValues["targetPlayer"]);
 
 	targetPlayer.setTopPosition(socketValues["topPosition"]);
-}
-
-export function setDisplayPointToPlayer(socketValues) {
-	const targetPlayer = getPlayerWithSide(socketValues["targetPlayer"]);
-
-	targetPlayer.displayPoint(socketValues["score"]);
 }

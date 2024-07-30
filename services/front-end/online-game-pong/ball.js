@@ -42,7 +42,7 @@ Ball.prototype.displayBall = function (topPosition, leftPosition) {
 	this.ballHtml.style.left = leftPosition;
 }
 
-function getBallWithId(ballId) {
+export function getBallWithId(ballId) {
     for (const ball of balls) {
         if (ball.ballId === ballId)
             return ball;

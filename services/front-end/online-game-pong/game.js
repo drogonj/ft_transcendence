@@ -1,8 +1,8 @@
 import {loadHeader, timerDecrease} from "./header.js";
 import loadListeners from "./listeners.js";
 import loadMap from "./map.js";
-import {createBall} from "./ball.js";
-import {createPlayers} from "./player.js";
+import {createBall, getBallWithId} from "./ball.js";
+import {createPlayers, getPlayerWithSide} from "./player.js";
 
 let gameId;
 
@@ -52,4 +52,12 @@ export function newImage(imagePath, id, className) {
 
 export function getGameId() {
 	return gameId;
+}
+
+export function markPoint(socketValues) {
+	const ball = getBallWithId(socketValues["ballId"]);
+	const targetPlayer = getPlayerWithSide(socketValues["targetPlayer"]);
+	ball.deleteBall();
+	targetPlayer.increaseScore();
+	targetPlayer.displayPoint()
 }

@@ -12,7 +12,7 @@ class Player:
 		self.__move_speed = 5
 		self.__spells = 0
 
-	def send_message_to_client(self, data_type, data_values):
+	def send_message_to_player(self, data_type, data_values):
 		data = {'type': data_type, 'values': data_values}
 		self.__socket.write_message(json.dumps(data))
 
@@ -23,9 +23,8 @@ class Player:
 				"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
 		}
 
-	def mark_point(self):
+	def increase_score(self):
 		self.__score += 1
-		self.send_message_to_client("displayScore", {"score": self.__score})
 
 	def has_max_score(self):
 		return self.__score >= 10

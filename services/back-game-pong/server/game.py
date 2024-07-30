@@ -1,6 +1,7 @@
 import asyncio
 from .player import create_players
 from .ball import Ball
+from .utils import reverse_side
 
 
 games = []
@@ -15,12 +16,16 @@ def launch_game():
 	player = games[0].get_player("Left")
 	socket_values.update(player.dumps_player_for_socket())
 	socket_values["clientSide"] = "Left"
-	player.send_message_to_client("launchGame", socket_values)
+	player.send_message_to_player("launchGame", socket_values)
 
-	#player = games[0].get_player("Right")
-	#socket_values = player.dumps_player_for_socket()
-	#socket_values["clientSide"] = "Right"
-	#player.send_message_to_client("launchGame", socket_values)
+	socket_values.clear()
+	socket_values["gameId"] = games[0].get_id()
+	socket_values["ballId"] = 0
+
+	player = games[0].get_player("Right")
+	socket_values.update(player.dumps_player_for_socket())
+	socket_values["clientSide"] = "Right"
+	player.send_message_to_player("launchGame", socket_values)
 	#print(socket_values)
 
 	asyncio.create_task(games[0].main_loop())
@@ -37,7 +42,7 @@ class Game:
 
 	def send_message_to_game(self, data_type, data_values):
 		for player in self.__players:
-			player.send_message_to_client(data_type, data_values)
+			player.send_message_to_player(data_type, data_values)
 
 	async def launch_max_time(self):
 		await asyncio.sleep(120)
@@ -61,16 +66,31 @@ class Game:
 	def get_id(self):
 		return self.__game_id
 
+	def mark_point(self, ball):
+		side = reverse_side(ball.get_ball_side())
+
+		self.get_player(side).increase_score()
+		socket_values = {"targetPlayer": side}
+		socket_values.update(ball.dumps_ball_for_socket())
+		self.delete_ball(ball)
+		self.send_message_to_game("displayScore", socket_values)
+
+	def delete_ball(self, ball):
+		self.__balls.remove(ball)
+
 	async def main_loop(self):
 		balls_to_send = []
 		while True:
 			for ball in self.__balls:
 				ball.trigger_ball_inside_border()
+				if ball.trigger_ball_inside_goal():
+					self.mark_point(ball)
+					continue
 				ball.move_ball()
 				balls_to_send.append(ball.dumps_ball_for_socket())
 			self.send_message_to_game("moveBall", {"targetBalls": balls_to_send})
 			balls_to_send.clear()
-			await asyncio.sleep(0.03)
+			await asyncio.sleep(0.04)
 
 
 def is_game_end():

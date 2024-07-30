@@ -27,8 +27,8 @@ class EchoWebSocket(WebSocketHandler):
 
     def open(self):
         clients.append(self)
-        #if len(clients) == 2:
-        Game(0, clients)
+        if len(clients) == 2:
+            Game(0, clients)
 
     def on_message(self, message):
         socket = json.loads(message)
