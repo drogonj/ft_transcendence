@@ -15,6 +15,8 @@ import {
     handleUserSearch,
 } from './friends.js';
 
+import { loadUsers, renderChatApp } from './chat.js';
+
 export function renderLogin() {
     app.innerHTML = `
                     <section class="auth-section">
@@ -150,6 +152,11 @@ export async function renderHome() {
                         </div>
                     </div>
                 `;
+
+	// Render chat
+	await renderChatApp(currentUser.user_id, currentUser.username);
+	// Load users
+	await loadUsers(currentUser.user_id);
     // Fetch friends list
     await loadFriends();
     // Fetch friendship requests list

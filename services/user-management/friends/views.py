@@ -178,3 +178,17 @@ def search_users(request):
     else:
         user_data = []
     return JsonResponse({'users': user_data})
+
+class ListAllUsersView(View):
+	def get(self, request):
+		users = User.objects.all()
+		user_data = [
+			{
+				'username': user.username,
+				'id': user.id,
+				'avatar': user.profil_image.url if user.profil_image else None,
+				'is_connected': user.is_connected,
+			}
+			for user in users
+		]
+		return JsonResponse({'users': user_data})
