@@ -10,7 +10,6 @@ import {getCurrentUserInfo, handleLogin} from "./auth.js";
 import { connectFriendsWebsocket } from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
 import launch from "../local-game-pong/src/main.js";
-import { connectChatWebsocket } from "./chat.js";
 
 export const app = document.getElementById('app');
 
@@ -97,6 +96,10 @@ async function loadPages() {
         .build();
 
     await new Page("pong-game-online.html")
+        .build();
+
+    await new Page("pong-game-waiting.html")
+        .withListener("test", "click", launchClientWebSocket)
         .build();
 
     await new Page("menu-end.html")
