@@ -1,5 +1,6 @@
 .playerPaddle {
     width: 1%;
+    height: 20%;
     position: absolute;
     margin-left: 1%;
     background-color: var(--bg-secondary);
