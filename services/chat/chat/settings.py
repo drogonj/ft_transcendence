@@ -110,14 +110,14 @@ CSP_CONNECT_SRC = ("'self'", "ws://localhost:8080", "wss://localhost:8080")
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-	"default": {
-		"ENGINE": os.environ.get("SQL_ENGINE"),
-		"NAME": os.environ.get("SQL_DATABASE"),		
-		"USER": os.environ.get("SQL_USER"),
-		"PASSWORD": os.environ.get("SQL_PASSWORD"),
-		"HOST": os.environ.get("SQL_HOST"),
-		"PORT": os.environ.get("SQL_PORT"),
-	}
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": os.environ.get("POSTGRES_DB"),        
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "HOST": os.environ.get("POSTGRES_HOST"),
+        "PORT": os.environ.get("POSTGRES_PORT"),
+    }
 }
 
 # Cache configuration

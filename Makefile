@@ -1,8 +1,10 @@
 clean:
 	@docker compose down
-	@docker system prune -f
-	@docker volume rm $$(docker volume ls -q) || true
-
+	@docker container prune -f
+	@docker image prune -f
+	@docker network prune -f
+	@docker volume prune -f
+	
 fullclean: clean
 	@docker image rm $$(docker image ls -q) || true
 
