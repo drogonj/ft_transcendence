@@ -191,9 +191,6 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
         <span class="profile-link" data-user-id="${user}">
             <p>${username}</p>
         </span>
-		<button class="chat-friend-button" data-friend-id="${user}">
-            <img src="../assets/images/friends/chat_icon.png" alt="chat">
-        </button>
         <button class="delete-friend-button" data-friend-id="${user}">
             <img src="../assets/images/friends/red_cross.png" alt="delete">
         </button>
@@ -219,14 +216,6 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
         const uri = '/profile/' + userId + '/';
         navigateTo(uri, true);
     });
-
-	// Chat button
-	// newFriend.querySelector('.chat-friend-button').addEventListener('click', async (event) => {
-	// 	const friendId = event.currentTarget.dataset.friendId;
-	// 	const friendName = event.currentTarget.parentElement.querySelector('.profile-link').textContent;
-	// 	openChatWindow(friendId, friendName);
-	// });
-
 }
 
 // Function to load friends
@@ -363,14 +352,3 @@ export async function handleUserSearch(event) {
         resultsContainer.innerHTML += '<p>No users found.</p>';
     }
 }
-
-// document.body.insertAdjacentHTML('beforeend', `
-//     <div id="chat-modal" class="chat-modal">
-//         <div class="chat-modal-content">
-//             <span class="close-chat">&times;</span>
-//             <div id="chat-window">
-//                 <!-- Chat content will go here -->
-//             </div>
-//         </div>
-//     </div>
-// `);

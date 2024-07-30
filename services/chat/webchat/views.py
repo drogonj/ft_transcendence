@@ -1,28 +1,18 @@
-from django.contrib.auth import get_user_model
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
+import requests, logging
+from django.http import JsonResponse
 from django.views import View
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
-from django.utils.decorators import method_decorator
-import json, os, secrets, mimetypes, requests
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from .models import Message
-from django.db.models import Q
 
-User = get_user_model()
+logger = logging.getLogger(__name__)
 
-@method_decorator(login_required, name='dispatch')
-class ListAllUsersView(View):
+class FetchUserDataView(View):
     def get(self, request):
-        users = User.objects.all()
-        user_data = [
-            {
-                'username': user.username,
-                'id': user.id,
-                'avatar': user.profil_image.url if user.profil_image else None,
-                'is_connected': user.is_connected,
-            }
-            for user in users
-        ]
-        return JsonResponse({'users': user_data})
+        try:
+            response = requests.get('http://user-management:8000/api/user/get_users/')
+            response.raise_for_status()
+
+            data = response.json()
+            return JsonResponse(data, safe=False)
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching user data: {e}")
+            return JsonResponse({'error': str(e)}, status=500)

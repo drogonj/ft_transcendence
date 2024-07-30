@@ -15,6 +15,9 @@ python manage.py migrate
 echo ""
 
 python manage.py showmigrations
+echo ""
+
+python manage.py showmigrations
 echo "----------- Migration applied ----------- "
 echo ""
 
