@@ -26,10 +26,21 @@ services:
     networks:
       - network
     depends_on:
-      postgres:
-        condition: service_healthy
-      vault:
-        condition: service_healthy
+      - redis
+    env_file:
+      - .env
+
+  chat:
+    container_name: chat
+    build: ./services/chat/
+    expose:
+      - "8001"
+    volumes:
+      - django:/singlepageapp/chat
+    networks:
+      - network
+    depends_on:
+      - redis
     env_file:
       - .env
 
@@ -83,6 +94,11 @@ services:
     env_file: .env
     expose:
       - "6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
     volumes:
       - redis:/var/lib/redis
     networks:
