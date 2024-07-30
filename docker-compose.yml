@@ -21,14 +21,15 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
-      - vault-token:/vault/token:ro
-      - vault-cert:/etc/ssl/certs:ro
     networks:
       - network
     depends_on:
       - redis
     env_file:
       - .env
+    environment:
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
 
   chat:
     container_name: chat
@@ -43,47 +44,27 @@ services:
       - redis
     env_file:
       - .env
-
+      
   postgres:
     container_name: postgres
     build: ./services/postgres/
+    # volumes:
+    #   - ./services/volumes/postgres:/var/lib/postgresql/data/
     env_file: .env
+    environment:
+      - POSTGRES_USER=${SQL_USER}
+      - POSTGRES_DB=${SQL_DATABASE}
+      - POSTGRES_PASSWORD=${SQL_PASSWORD}
     expose:
       - "5432"
     networks:
      - network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  vault:
-    build: ./services/vault/
-    container_name: vault
-    ports:
-      - "8200:8200"
-    cap_add:
-      - IPC_LOCK
-    env_file:
-      - .env
-    networks:
-      - network
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-     - vault-data:/vault/data
-     - vault-token:/vault/token
-     - vault-cert:/etc/ssl/certs
 
   back-game:
     container_name: back-game-pong
     build: services/back-game-pong/
-    ports:
-      - "2605:2605"
+    expose:
+      - "2605"
     env_file: .env
     networks:
      - network
@@ -94,13 +75,11 @@ services:
     env_file: .env
     expose:
       - "6379"
+    volumes:
+      - redis:/var/lib/redis
     depends_on:
       postgres:
         condition: service_healthy
-      vault:
-        condition: service_healthy
-    volumes:
-      - redis:/var/lib/redis
     networks:
       - network
 
@@ -111,7 +90,4 @@ networks:
 volumes:
   nginx:
   django:
-  vault-data:
-  vault-token:
-  vault-cert:
   redis:

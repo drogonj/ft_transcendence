@@ -1,3 +1,6 @@
+import {maxBall} from "./settings.js";
+import {getBallNumber} from "./ball.js";
+
 let map;
 
 export default function loadMap() {
@@ -45,6 +48,14 @@ export function isBottomPartOfMap(y) {
 
 export function isTopPartOfMap(y) {
 	return y < getMapHeight() / 2;
+}
+
+export function isMapContainMaxBall() {
+	return maxBall <= getBallNumber();
+}
+
+export function isMapContainNoBall() {
+	return getBallNumber() === 0;
 }
 
 function getMapBorderHeight() {

@@ -1,6 +1,7 @@
 clean:
 	@docker compose down
 	@docker system prune -f
+	@sudo rm -rf services/volumes/ || true
 	@docker volume rm $$(docker volume ls -q) || true
 
 fullclean: clean
@@ -29,9 +30,6 @@ execuser:
 
 createsuperuser:
 	@python manage.py createsuperuser
-
-execvault:
-	@docker exec -it vault bash
 
 re : clean upb
 

@@ -9,8 +9,7 @@ import {
 import {getCurrentUserInfo, handleLogin} from "./auth.js";
 import { connectFriendsWebsocket } from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
-import launch from "../local-game-pong/src/main.js";
-import { connectChatWebsocket } from "./chat.js";
+import launch from "../main.js";
 
 export const app = document.getElementById('app');
 
@@ -46,8 +45,6 @@ export function navigateTo(route, pushState, data) {
         renderUserProfile(userId);
     } else if (route === '/game' || route === '/game/') {
         renderPageWithName("menu-start-settings.html");
-    } else if (route === '/game-online' || route === '/game-online/') {
-        renderPageWithName("pong-game-online.html");
     } else {
         navigateTo('/home', false);
     }
@@ -89,14 +86,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function loadPages() {
+    await new Page("example.html")
+        .withNavigation("signup-link")
+        .withListener("auth-form", "submit", handleLogin)
+        .build();
+
     await new Page("menu-start-settings.html")
         .withListener("buttonPlay", "click", launch)
         .build();
 
     await new Page("pong-game.html")
-        .build();
-
-    await new Page("pong-game-online.html")
         .build();
 
     await new Page("menu-end.html")

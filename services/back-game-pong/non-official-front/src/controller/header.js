@@ -1,25 +1,24 @@
-import {setCssProperty} from "./game.js";
+import {maxTime} from "./settings.js";
+import {coolDownDisplay, timerDisplay} from "../view/header_view.js";
+import {setCssProperty} from "../view/style_view.js";
 
 let seconds = 0;
-let minutes = 2;
+let minutes;
 let timeHtml;
 
-export function setTextContentToHtmlElement(htmlElement, textContent) {
-	htmlElement.textContent = textContent;
-}
-
 export function loadHeader() {
+	minutes = maxTime;
 	timeHtml = document.getElementById("headerTimer");
 }
 
 export function timerDecrease() {
-	if (minutes <= 0 && seconds <= 0)
-		return;
 	if (seconds <= 0) {
 		minutes--;
 		seconds = 59;
 	} else
 		seconds--;
+	if (minutes <= 0 && seconds <= 0)
+		return;
 	timerDisplay(minutes, seconds, timeHtml);
 }
 
@@ -39,22 +38,4 @@ export function coolDownRun(spell) {
 		remindTime--;
 		coolDownDisplay(remindTime, spell.spellCoolDownHtml);
 	}, 1000)
-}
-
-function timerDisplay(minutes, seconds, timeHtml) {
-	if (seconds <= 9)
-		seconds = "0" + seconds
-	if (minutes <= 9)
-		minutes = "0" + minutes
-	setTextContentToHtmlElement(timeHtml, minutes + ":" + seconds);
-}
-
-export function coolDownDisplay(seconds, spellHtml) {
-	spellHtml.textContent = seconds;
-}
-
-export function addSpellsToHeader(playerHeader, spells) {
-	spells.forEach((spell) => {
-		playerHeader.getElementsByClassName("spellContainer")[0].appendChild(spell.spellHtml);
-	});
 }

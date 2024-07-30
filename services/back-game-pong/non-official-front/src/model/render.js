@@ -15,8 +15,6 @@ import {
     handleUserSearch,
 } from './friends.js';
 
-import { loadUsers, renderChatApp } from './chat.js';
-
 export function renderLogin() {
     app.innerHTML = `
                     <section class="auth-section">
@@ -128,7 +126,6 @@ export async function renderHome() {
                         <span class="bottom"></span>
                     </div>
                     <button id="launch-game">Launch game</button>
-                    <button id="launch-game-online">Launch game online</button>
                     <div class="friend-menu-container">
                         <button id="friend-menu-button" class="friend-menu-button">Amis</button>
                         <div id="friend-menu" class="friend-menu">
@@ -152,11 +149,6 @@ export async function renderHome() {
                         </div>
                     </div>
                 `;
-
-	// Render chat
-	await renderChatApp(currentUser.user_id, currentUser.username);
-	// Load users
-	await loadUsers(currentUser.user_id);
     // Fetch friends list
     await loadFriends();
     // Fetch friendship requests list
@@ -177,23 +169,6 @@ export async function renderHome() {
     });
     document.getElementById('launch-game').addEventListener('click', (event) => {
         navigateTo('/game', true);
-    });
-
-    document.getElementById('launch-game-online').addEventListener('click', (event) => {
-        navigateTo('/game-online', true);
-        let ws = new WebSocket("ws://localhost:2605/api/back");
-        ws.onopen = function(event) {
-            console.log("WebSocket is open now.");
-            ws.send("Hello, server!");
-        };
-
-        ws.onmessage = function (event) {
-            console.log(event.data);
-        };
-
-        document.addEventListener("click", () => {
-            ws.send("Clicked");
-        })
     });
 
     document.getElementById('friend-menu-button').addEventListener('click', function() {
@@ -321,6 +296,7 @@ export async function renderUserProfile(userId) {
             </div>
             <div class="profile-details">
                 <p><strong>Username:</strong> ${userData.username}</p>
+                <p><strong>Email:</strong> ${userData.email}</p>
             </div> 
         </div>
         <button id="home">Home</button>
