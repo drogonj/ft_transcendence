@@ -309,36 +309,38 @@ export async function renderSelfProfile() {
     try {
         app.innerHTML = `
             <div class="profile-section-container">
-              <section class="profile-section">
+              
+
+                 <section class="profile-section">
                 <div class="profile-box">
                   <h2>Profile</h2>
                   <div id="avatar-display">
                     <img alt="upload" id="upload-avatar" src="../assets/images/camera.png">
                     <input type="file" id="file-input" accept="image/*" style="display:none;">
                     <div id="avatar-container">
-                      <img src="${currentUser.avatar}" alt="avatar" id="avatar">
+                      <img src="/media/avatars/default.png" alt="avatar" id="avatar">
                     </div>
                   </div>
                   
                   <div class="inputBox">
-                    <input type="text" id="username" name="username" value="${currentUser.username}" required>
+                    <input type="text" id="username" name="username" value="QUOI" required="">
                     <input type="submit" value="Change username" id="change-username-btn">
                   </div>
                   
                   <div class="inputBox">
-                    <input type="text" id="email" name="email" value="${currentUser.email}" disabled>
+                    <input type="text" id="email" name="email" value="test2@mail.com" disabled="">
                   </div>
                   
                   <div class="inputBox">
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" required="">
                     <i>Password</i>
                   </div>
                   <div class="inputBox">
-                    <input type="password" id="new-password" name="new-password" required>
+                    <input type="password" id="new-password" name="new-password" required="">
                     <i>New Password</i>
                   </div>
                   <div class="inputBox">
-                    <input type="password" id="confirm-new-password" name="confirm-new-password" required>
+                    <input type="password" id="confirm-new-password" name="confirm-new-password" required="">
                     <i>Confirm new Password</i>
                   </div>
                   <div class="inputBox">
@@ -348,7 +350,51 @@ export async function renderSelfProfile() {
                   <div id="response-message" style="display: none;"></div>
                 </div>
               </section>
-            </div>
+                
+              <section class="profile-section">
+                <div class="profile-box">
+                  <h2>Stats</h2>
+                    <div id="profile-card-trophy">
+                            <p>100</p>
+                            <img alt="trophy" src="../assets/images/trophy.png">
+                        </div>
+                        <div class="single-chart">
+                            <svg viewBox="0 0 36 36" class="circular-chart orange">
+                                <path class="circle-bg" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                     a 15.9155 15.9155 0 0 1 0 31.831
+                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <text x="18" y="20.35" class="percentage">30%</text>
+                            </svg>
+                            <p>winrate</p>
+                        </div>
+                    <div id="stats-text-container">
+                        <p><span>Victory: </span>3</p>
+                        <p><span>Defeat: </span>7</p>
+                        <p><span>Goals: </span>37</p>
+                        <p><span>Tournaments Won: </span>1</p>
+                    </div>
+                </div>
+              </section>
+  
+              <section class="profile-section">
+                <div class="profile-box">
+                  <h2>Match History</h2>
+                  <div id="match-history-container">
+                      <span class="match">
+                        <p class="usernames">YOU vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                      <span class="match">
+                        <p class="usernames">YOU vs ADMIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                  </div>
+                </div>
+              </section>
+        </div>
         `;
 
         const uploadAvatar = document.getElementById('upload-avatar');

@@ -32,7 +32,7 @@ class MyAccountManager(BaseUserManager):
 
 def get_profil_image_filepath(self, filename):
     extension = os.path.splitext(filename)[1]
-    return f'profil_images/{self.pk}/profile_image{extension}'
+    return f'profil_images/{self.pk}/{uuid.uuid4().hex}{extension}'
 
 def get_default_profile_image():
     return "avatars/default.png"
@@ -72,9 +72,6 @@ class Account(AbstractBaseUser):
 
     def __str__(self):
         return self.username
-
-    def get_profile_image_filename(self):
-        return str(self.profil_image)[str(self.profil_image).index(f'profile_images/{self.pk}/'):]
 
     def generate_tmp_token(self):
         self.tmp_token = uuid.uuid4().hex
@@ -117,7 +114,7 @@ class Account(AbstractBaseUser):
             except Exception as e:
                 raise Exception('Corrupted file')
 
-            if self.profil_image.path != "avatars/default.png":
+            if self.profil_image.path != "/user-management/media/avatars/default.png":
                 if os.path.isfile(self.profil_image.path):
                     os.remove(self.profil_image.path)
 

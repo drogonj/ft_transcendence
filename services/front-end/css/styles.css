@@ -397,9 +397,10 @@ a {
 }
 
 .profile-section {
-    position: absolute;
+    position: relative;
     height: max(35vh, 25vw);
-    width: auto;
+    margin: 0.5vw;
+    aspect-ratio: 1 / 2;
     background: linear-gradient(-45deg, rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5), rgba(117, 1, 47, 0.1), rgba(117, 1, 47, 0.5));
     background-size: 800% 800%;
     display: flex;
@@ -424,6 +425,7 @@ a {
 }
 
 .profile-box h2 {
+    top: 0;
     text-align: center;
     font-size: max(1.75vh, 0.5vw);
 }
@@ -511,4 +513,79 @@ a {
     border-radius: 50%;
     transform: translateX(max(4.5vh, 3vw));
     cursor: pointer;
+}
+
+.profile-box #profile-card-trophy {
+    padding: 0;
+    margin: 0;
+    top: 0;
+}
+
+#app > div > section:nth-child(2) > div > div.single-chart {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+}
+
+#app > div > section:nth-child(2) > div > div.single-chart > svg {
+    width: 40%;
+    aspect-ratio: 1;
+}
+
+#app > div > section:nth-child(2) > div > div.single-chart > p {
+    width: 100%;
+    font-size: max(1vh, 0.75vw);
+}
+
+#stats-text-container {
+    display: flex;
+    width: 100%;
+    padding: max(1vh, 1vw) 0 max(1vh, 0.75vw) 0;
+    font-size: max(1vh, 0.75vw);
+    flex-flow: row wrap;
+    justify-content: center;
+    border: solid 1px;
+    border-radius: 1rem;
+}
+
+#stats-text-container p {
+    margin: max(0.5vw, 0.9vh);
+}
+
+#stats-text-container p span {
+    font-weight: bold;
+}
+
+#match-history-container {
+    display: flex;
+    flex-direction: column;
+    height: max(28vh, 18vw);
+    background: #dd292947;
+    border-radius: 0.5rem;
+    overflow-y: scroll;
+    font-size: max(1vh, 0.75vw);
+    flex-grow: 1;
+}
+
+#match-history-container .match {
+    display: flex;
+    margin-top: 1vh;
+    text-wrap: nowrap;
+    width: 100%;
+    justify-content: space-between;
+}
+
+#match-history-container .match p.usernames {
+    max-width: 60%;
+    overflow: hidden;
+    margin-left: max(1vw, 1vh);
+}
+
+#match-history-container .match p.scores {
+    margin-right: max(1vw, 1vh);
 }

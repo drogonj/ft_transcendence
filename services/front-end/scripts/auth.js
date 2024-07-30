@@ -240,9 +240,6 @@ export async function changeAvatar(event) {
         }
 
         const reader = new FileReader();
-        reader.onload = function (e) {
-            avatar.src = e.target.result;
-        };
         reader.readAsDataURL(file);
 
         try {
@@ -261,9 +258,9 @@ export async function changeAvatar(event) {
 
             if (response.ok) {
                 const data = await response.json();
+                await getCurrentUserInfo();
                 avatar.src = data.avatar;
                 showResponseMessage('Avatar changed successfully !', 'success');
-                await getCurrentUserInfo();
             } else {
                 const errorData = await response.json();
                 showResponseMessage('Failed to upload avatar.', 'error');
@@ -271,7 +268,6 @@ export async function changeAvatar(event) {
 
         } catch (error) {
             showResponseMessage('Failed to upload avatar.', 'error');
-            console.error(error);
         }
     }
 }
