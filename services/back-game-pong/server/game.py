@@ -40,16 +40,25 @@ class Game:
 		games.append(self)
 		launch_game()
 
+	async def main_loop(self):
+		balls_to_send = []
+		while True:
+			for ball in self.__balls:
+				if ball.trigger_ball_inside_goal():
+					self.mark_point(ball)
+					continue
+				ball.trigger_ball_inside_border()
+				if ball.trigger_ball_inside_player(self.__players):
+					continue
+				ball.move_ball()
+				balls_to_send.append(ball.dumps_ball_for_socket())
+			self.send_message_to_game("moveBall", {"targetBalls": balls_to_send})
+			balls_to_send.clear()
+			await asyncio.sleep(0.04)
+
 	def send_message_to_game(self, data_type, data_values):
 		for player in self.__players:
 			player.send_message_to_player(data_type, data_values)
-
-	async def launch_max_time(self):
-		await asyncio.sleep(120)
-		self.game_end()
-
-	def game_end(self):
-		self.send_message_to_game("renderPage", {"pageName": "menu-end.html"})
 
 	def move_player(self, socket_values):
 		player_side = socket_values["clientSide"]
@@ -60,12 +69,6 @@ class Game:
 		player.move_paddle(step)
 		self.send_message_to_game("movePlayer", {"targetPlayer": player_side, "topPosition": f"{player.get_top_position()}%"})
 
-	def get_player(self, side):
-		return self.__players[0] if side == "Left" else self.__players[1]
-
-	def get_id(self):
-		return self.__game_id
-
 	def mark_point(self, ball):
 		side = reverse_side(ball.get_ball_side())
 
@@ -74,27 +77,31 @@ class Game:
 		socket_values.update(ball.dumps_ball_for_socket())
 		self.delete_ball(ball)
 		self.send_message_to_game("displayScore", socket_values)
+		self.create_ball()
 
 	def delete_ball(self, ball):
 		self.__balls.remove(ball)
 
-	async def main_loop(self):
-		balls_to_send = []
-		while True:
-			for ball in self.__balls:
-				ball.trigger_ball_inside_border()
-				if ball.trigger_ball_inside_goal():
-					self.mark_point(ball)
-					continue
-				ball.move_ball()
-				balls_to_send.append(ball.dumps_ball_for_socket())
-			self.send_message_to_game("moveBall", {"targetBalls": balls_to_send})
-			balls_to_send.clear()
-			await asyncio.sleep(0.04)
+	def create_ball(self):
+		new_ball = Ball()
+		self.__balls.append(new_ball)
+		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 
+	async def launch_max_time(self):
+		await asyncio.sleep(120)
+		self.game_end()
 
-def is_game_end():
-	return games[0].__players[0].has_max_score() or games[0].__players[1].has_max_score()
+	def is_game_end(self):
+		return self.__players[0].has_max_score() or self.__players[1].has_max_score()
+
+	def game_end(self):
+		self.send_message_to_game("renderPage", {"pageName": "menu-end.html"})
+
+	def get_player(self, side):
+		return self.__players[0] if side == "Left" else self.__players[1]
+
+	def get_id(self):
+		return self.__game_id
 
 
 def get_game_with_id(game_id):

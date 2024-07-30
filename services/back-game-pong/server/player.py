@@ -7,7 +7,7 @@ class Player:
 		self.__socket = ws
 		self.__score = 0
 		self.__paddle_side = side
-		self.__top_position = get_random_number_between(0, 50)
+		self.__top_position = 50
 		self.__paddle_size = 20
 		self.__move_speed = 5
 		self.__spells = 0
@@ -23,6 +23,15 @@ class Player:
 				"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
 		}
 
+	def player_can_move(self, step):
+		if step == -1 and self.__top_position <= 1:
+			return False
+
+		if step == 1 and self.__top_position >= (99 - self.__paddle_size):
+			return False
+
+		return True
+
 	def increase_score(self):
 		self.__score += 1
 
@@ -35,14 +44,11 @@ class Player:
 	def get_top_position(self):
 		return self.__top_position
 
-	def player_can_move(self, step):
-		if step == -1 and self.__top_position <= 1:
-			return False
+	def get_bot_position(self):
+		return self.__top_position + 20
 
-		if step == 1 and self.__top_position >= (99 - self.__paddle_size):
-			return False
-
-		return True
+	def get_side(self):
+		return self.__paddle_side
 
 
 def create_players(clients):

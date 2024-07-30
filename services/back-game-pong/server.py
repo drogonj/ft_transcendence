@@ -27,6 +27,7 @@ class EchoWebSocket(WebSocketHandler):
 
     def open(self):
         clients.append(self)
+        print("A new client is connected to the server.")
         if len(clients) == 2:
             Game(0, clients)
 
