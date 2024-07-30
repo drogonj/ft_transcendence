@@ -22,23 +22,23 @@ import { navigateTo, app } from './contentLoader.js';
 // 		const user = document.getElementById(`user-${data.user_id}`);
 
 // 		const route =  window.location.pathname + window.location.search;
-//         if (route === '/home' || route === '/home/') {
-//             if (type === 'friend_request_notification') {
-//                 const avatar = data.avatar
-//                 addFriendshipRequestToMenu(user_id, from_user, avatar)
-//             } else if (type === 'accepted_friendship_request_notification') {
-//                 const avatar = data.avatar
-//                 const is_connected = data.is_connected
-//                 addFriendToMenu(user_id, from_user, avatar, is_connected)
-//             } else if (type === 'canceled_friendship_notification') {
-//                 const divId = "friend-" + user_id;
-//                 const element = document.getElementById(divId);
-//                 element.remove();
-//             } else if (type === 'friend_connected_notification') {
-//                 changeFriendStatus(user_id, true);
-//             } else if (type === 'friend_disconnected_notification') {
-//                 changeFriendStatus(user_id, false)
-//             }
+//		 if (route === '/home' || route === '/home/') {
+//			 if (type === 'friend_request_notification') {
+//				 const avatar = data.avatar
+//				 addFriendshipRequestToMenu(user_id, from_user, avatar)
+//			 } else if (type === 'accepted_friendship_request_notification') {
+//				 const avatar = data.avatar
+//				 const is_connected = data.is_connected
+//				 addFriendToMenu(user_id, from_user, avatar, is_connected)
+//			 } else if (type === 'canceled_friendship_notification') {
+//				 const divId = "friend-" + user_id;
+//				 const element = document.getElementById(divId);
+//				 element.remove();
+//			 } else if (type === 'friend_connected_notification') {
+//				 changeFriendStatus(user_id, true);
+//			 } else if (type === 'friend_disconnected_notification') {
+//				 changeFriendStatus(user_id, false)
+//			 }
 // 		}
 
 // 		newMessage.classList.add('chat-message');
@@ -73,12 +73,13 @@ export async function connectChatWebsocket() {
 	chatSocket.onmessage = function(e) {
 		const data = JSON.parse(e.data);
 		console.log(data);
-		const chatMessages = document.getElementById('chat-messages');
-		const newMessage = document.createElement('div');
+		const messageList = document.getElementById('message-content');
+		const newMessage = document.createElement('li');
 
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = data.message;
-		chatMessages.appendChild(newMessage);
+		newMessage.textContent = data.timestamp + " <" + data.username + "> " + data.message;
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	};
 
@@ -149,14 +150,16 @@ export function addUserToMenu(userID, username, avatar, is_connected) {
 }
 
 export async function renderChatApp(user_id, username) {
-	// const app = document.getElementById('app');
+	await connectChatWebsocket();
 	app.innerHTML += `
 		<div id="users-list" class="users-list">
 		<div class="users-title">Users</div>
 			<ul id="users-content" class="users-content active"></ul>
 		</div>
 		<div id="chat-menu" class="chat-menu">
-			<div id="chat-messages" class="chat-messages"></div>
+			<div id="chat-messages" class="chat-messages">
+				<ul id="message-content" class="message-content active"></ul>
+			</div>
 			<div id="chat-input-container" class="chat-input-container">
 				<input id="chat-input" type="text" placeholder="Type a message...">
 				<button id="send-chat-message" class="send-chat-message">Send</button>

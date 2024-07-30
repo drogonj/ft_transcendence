@@ -78,7 +78,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (data.is_authenticated) {
                 await getCurrentUserInfo();
                 await connectFriendsWebsocket();
-				await connectChatWebsocket();
             }
             navigateTo(route, false);
         } else {
