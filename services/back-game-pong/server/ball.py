@@ -37,10 +37,9 @@ class Ball:
 
     def trigger_ball_inside_player(self, players):
         for player in players:
-            if self.get_top_position() <= player.get_bot_position():
-                if self.get_bot_position() >= player.get_top_position():
-                    if self.get_left_position() < 2 or self.get_right_position() > 98:
-                        return True
+            if self.get_top_position() <= player.get_bot_position() and self.get_bot_position() >= player.get_top_position():
+                if player.get_side() == "Left" and self.get_left_position() < 2 or player.get_side() == "Right" and self.get_right_position() > 98:
+                    return True
         return False
 
     def calcul_ball_traj(self, player):
