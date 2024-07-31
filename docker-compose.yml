@@ -12,6 +12,8 @@ services:
       - django:/tmp_static/
     networks:
       - network
+    env_file:
+      - .env
     entrypoint: sh -c "sh /entrypoint.sh"
 
   user-management:

@@ -6,7 +6,7 @@ let userSocketRunning = false;
 import { navigateTo, app } from './contentLoader.js';
 
 // export async function connectUserWebsocket() {
-// 	userSocket = new WebSocket('wss://localhost:8080/ws/chat/users/');
+// 	userSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/users/`);
 
 // 	userSocket.onopen = function(e) {
 // 		chatSocketRunning = true;
@@ -63,7 +63,7 @@ import { navigateTo, app } from './contentLoader.js';
 
 export async function connectChatWebsocket() {
 	const roomName = 'general';
-	chatSocket = new WebSocket('wss://localhost:8080/ws/chat/' + roomName + '/');
+	chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/` + roomName + '/');
 
 	chatSocket.onopen = function(e) {
 		chatSocketRunning = true;

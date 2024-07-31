@@ -11,6 +11,7 @@ from django.utils import timezone
 from datetime import timedelta
 import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
+from django.db import IntegrityError
 
 User = get_user_model()
 
@@ -100,58 +101,65 @@ def oauth_redirect(request):
 
 @csrf_exempt
 def oauth_callback(request):
-    #Creating POST to get API authorization token
+    # Creating POST to get API authorization token
     code = request.GET.get('code')
     if not code or request.GET.get('error'):
-        return redirect(f"{os.getenv('WEBSITE_URL')}/")
+        return redirect(f"https://{os.getenv('WEBSITE_URL')}/")
+
     data = {
         'grant_type': 'authorization_code',
         'client_id': os.getenv("OAUTH_UID"),
         'client_secret': os.getenv("OAUTH_SECRET"),
         'code': code,
-        'redirect_uri': 'https://localhost:8080/api/user/oauth/callback/',
+        'redirect_uri': f'https://{os.getenv("WEBSITE_URL")}/api/user/oauth/callback/',
         'state': os.getenv('OAUTH_STATE'),
     }
 
     try:
-        #Get API authorization token
+        # Get API authorization token
         response = requests.post('https://api.intra.42.fr/oauth/token', data=data)
         if response.status_code != 200:
             return HttpResponseBadRequest(f'Failed to retrieve token: {response.status_code} {response.text}')
+
         token_data = response.json()
         access_token = token_data.get('access_token')
 
-        #Get user informations
-        response = requests.get("https://api.intra.42.fr/v2/me", headers={'Authorization':f'Bearer {access_token}'})
+        # Get user information
+        response = requests.get("https://api.intra.42.fr/v2/me", headers={'Authorization': f'Bearer {access_token}'})
         if response.status_code != 200:
-            return HttpResponseBadRequest(f'Failed to retrieve user\'s datas: {response.status_code} {response.text}')
+            return HttpResponseBadRequest(f'Failed to retrieve user\'s data: {response.status_code} {response.text}')
+
         user_data = response.json()
 
+        # If user already exists
+        user, created = User.objects.get_or_create(
+            intra_id=user_data.get('id'),
+            defaults={
+                'username': secrets.token_hex(30 // 2),
+                'email': user_data.get('email'),
+                'password': 'none',
+            }
+        )
 
-        #If user already exist
-        if User.objects.filter(intra_id=user_data.get('id')).exists():
-            user = User.objects.get(intra_id=user_data.get('id'))
-            if not user.register_complete:
-                tmp_token = user.generate_tmp_token()
-                user.save()
-                return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect(os.getenv('WEBSITE_URL'))
-        else:  # Else register user
-            user = User.objects.create_user(
-                intra_id=user_data.get('id'),
-                username=secrets.token_hex(30 // 2),
-                email=user_data.get('email'),
-                password='none',
-            )
+        if created:
+            # New user created, perform post-creation actions
             user.get_intra_pic(user_data.get('image', {}).get('versions', {}).get('small'))
             tmp_token = user.generate_tmp_token()
             user.save()
-            return redirect(f"{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
-            #return redirect(f'{os.getenv('WEBSITE_URL')}/change_password/?oauth_registration')
+            return redirect(f"https://{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
+        else:
+            # Existing user
+            if not user.register_complete:
+                tmp_token = user.generate_tmp_token()
+                user.save()
+                return redirect(f"https://{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect(f"https://{os.getenv('WEBSITE_URL')}")
 
     except requests.exceptions.RequestException as e:
         return HttpResponseBadRequest(f'Request failed: {e}')
+    except IntegrityError as e:
+        return HttpResponseBadRequest(f'Integrity error: {e}')
 
 @csrf_protect
 def oauth_confirm_registration(request):
@@ -190,7 +198,6 @@ def oauth_confirm_registration(request):
         user.profil_image = "avatars/default.png"
     user.username = username
     user.password = make_password(password)
-    user.tmp_token = ''
     user.register_complete = True
     user.save()
     login(request, user, backend='django.contrib.auth.backends.ModelBackend')

@@ -23,6 +23,7 @@ load_dotenv(os.path.join(BASE_DIR_ENV, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('CHAT_KEY')
+WEBSITE_URL = os.getenv('WEBSITE_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -103,8 +104,11 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'",)
 CSP_STYLE_SRC = ("'self'",)
 CSP_IMG_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'", "ws://localhost:8080", "wss://localhost:8080")
-
+CSP_CONNECT_SRC = (
+	"'self'",  # Autoriser les connexions vers le même domaine
+	f"ws://{WEBSITE_URL}",  # Autoriser les connexions WebSocket non sécurisées
+	f"wss://{WEBSITE_URL}"  # Autoriser les connexions WebSocket sécurisées
+)
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -182,10 +186,10 @@ CORS_ALLOW_CREDENTIALS = True
 LOGIN_RATELIMIT_USER = True
 
 CSRF_TRUSTED_ORIGINS = [
-	'https://127.0.0.1:8080',
-	'https://localhost:8080',
+	f"http://{WEBSITE_URL}",
+	f"https://{WEBSITE_URL}"
 ]
 CORS_ALLOWED_ORIGINS = [
-	'https://127.0.0.1:8080',
-	'https://localhost:8080',
+	f"http://{WEBSITE_URL}",
+	f"https://{WEBSITE_URL}"
 ]
