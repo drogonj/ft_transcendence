@@ -21,7 +21,7 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
-      - vault-token:/vault/token:ro
+      - vault-token-1:/vault/token:ro
       - vault-cert:/etc/ssl/certs:ro
     networks:
       - network
@@ -58,75 +58,72 @@ services:
       timeout: 5s
       retries: 5
 
-    vault1:
-      build: ./services/vault/
-      container_name: vault1
-      ports:
-        - "8200:8200"
-      cap_add:
-        - IPC_LOCK
-      env_file:
-        - .env
-      networks:
-        - network
-      healthcheck:
-        test: ["CMD", "vault", "status"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-      volumes:
-      - vault-data-1:/vault/data
-      - vault-token-1:/vault/token
-      - vault-cert:/etc/ssl/certs
+  vault1:
+    build: ./services/vault1/
+    container_name: vault1
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    env_file:
+      - .env
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+    - vault-data-1:/vault/data
+    - vault-token-1:/vault/token
+    - vault-cert:/etc/ssl/certs
 
-    vault2:
-      build: ./services/vault/
-      container_name: vault2
-      ports:
-        - "8201:8200"
-      cap_add:
-        - IPC_LOCK
-      env_file:
-        - .env
-      networks:
-        - network
-      healthcheck:
-        test: ["CMD", "vault", "status"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-      volumes:
-      - vault-data-2:/vault/data
-      - vault-token-2:/vault/token
-      - vault-cert:/etc/ssl/certs
-      depends_on:
-        vault1:
-          condition: service_healthy
+  vault2:
+    build: ./services/vault2/
+    container_name: vault2
+    ports:
+      - "8201:8200"
+    cap_add:
+      - IPC_LOCK
+    env_file:
+      - .env
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+    - vault-data-2:/vault/data
+    - vault-token-2:/vault/token
+    depends_on:
+      vault1:
+        condition: service_healthy
 
-    vault3:
-      build: ./services/vault/
-      container_name: vault3
-      ports:
-        - "8202:8200"
-      cap_add:
-        - IPC_LOCK
-      env_file:
-        - .env
-      networks:
-        - network
-      healthcheck:
-        test: ["CMD", "vault", "status"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-      volumes:
-        - vault-data-3:/vault/data
-        - vault-token-3:/vault/token
-        - vault-cert:/etc/ssl/certs
-      depends_on:
-        vault1:
-          condition: service_healthy
-
+  vault3:
+    build: ./services/vault3/
+    container_name: vault3
+    ports:
+      - "8202:8200"
+    cap_add:
+      - IPC_LOCK
+    env_file:
+      - .env
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+    - vault-data-3:/vault/data
+    - vault-token-3:/vault/token
+    depends_on:
+      vault1:
+        condition: service_healthy
 
   back-game:
     container_name: back-game-pong
@@ -146,7 +143,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      vault:
+      vault1:
         condition: service_healthy
     volumes:
       - redis:/var/lib/redis

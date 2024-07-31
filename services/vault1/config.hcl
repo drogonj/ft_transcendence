@@ -1,4 +1,5 @@
-storage "file" {
+storage "raft" {
+  node_id = "raft_node_1"
   path = "/vault/data"
 }
 
@@ -9,8 +10,8 @@ listener "tcp" {
   tls_key_file = "/etc/ssl/private/vault/vault.key"
 }
 
-api_addr = "https://vault1:8000"
-cluster_addr = "https://vault1:8001"
+api_addr = "http://vault1:8000"
+cluster_addr = "http://vault1:8001"
 
 
 ui = true

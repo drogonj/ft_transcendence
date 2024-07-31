@@ -33,7 +33,7 @@ createsuperuser:
 	@python manage.py createsuperuser
 
 execvault:
-	@docker exec -it vault bash
+	@docker exec -it vault1 bash
 
 re : clean upb
 
