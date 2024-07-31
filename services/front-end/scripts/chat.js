@@ -14,7 +14,6 @@ export async function connectChatWebsocket() {
 
 	chatSocket.onmessage = function(e) {
 		const data = JSON.parse(e.data);
-		console.log(data);
 		const messageList = document.getElementById('message-content');
 		const newMessage = document.createElement('li');
 
@@ -44,9 +43,7 @@ export async function loadUsers(selfId) {
 		const response = await fetch('/api/chat/fetch_users/');
 		const usersData = await response.json();
 
-		console.log(usersData);
 		for (const user of usersData.users) {
-			console.log(selfId, user.id);
 			if (user.id !== 1 && user.id !== selfId) {
 				addUserToMenu(user.id, user.username, user.avatar, user.is_connected);
 			}
