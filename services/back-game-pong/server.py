@@ -27,20 +27,19 @@ class EchoWebSocket(WebSocketHandler):
 
     def open(self):
         clients.append(self)
-        print("A new client is connected to the server.")
+        print("[+] A new client is connected to the server.")
         if len(clients) == 2:
             Game(0, clients)
 
     def on_message(self, message):
         socket = json.loads(message)
         target_game = get_game_with_id(0)
-        print(f"New socket from client of type: {socket['type']}  {socket['values']}")
         if socket["type"] == "movePlayer":
             target_game.move_player(socket['values'])
-        print("Tornado: msg send to client")
 
     def on_close(self):
-        print("WebSocket closed")
+        print("[-] A client leave the server")
+        get_game_with_id(0).set_game_state(True)
         clients.remove(self)
 
 

@@ -23,6 +23,9 @@ class Player:
 				"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
 		}
 
+	def kill_connection(self):
+		self.__socket.close()
+
 	def player_can_move(self, step):
 		if step == -1 and self.__top_position <= 1:
 			return False

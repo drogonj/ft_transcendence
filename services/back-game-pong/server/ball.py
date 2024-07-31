@@ -1,4 +1,5 @@
 from .utils import get_random_number_with_decimal
+import math
 
 
 class Ball:
@@ -9,7 +10,6 @@ class Ball:
         Ball.ball_index += 1
         self.__vx = get_random_number_with_decimal(0.3, 1)
         self.__vy = get_random_number_with_decimal(0.3, 0.7)
-        print(f"{self.__vx}, {self.__vy}")
         self.__top_position = 48.5
         self.__left_position = 49.2
         self.__active_spell = None
@@ -39,12 +39,23 @@ class Ball:
         for player in players:
             if self.get_top_position() <= player.get_bot_position():
                 if self.get_bot_position() >= player.get_top_position():
-                    if self.get_left_position() < 2 or self.get_left_position() > 98:
+                    if self.get_left_position() < 2 or self.get_right_position() > 98:
                         return True
         return False
 
     def calcul_ball_traj(self, player):
-        print("ca")
+        intersect_y = self.__top_position + 1.5
+        paddle_height = 20
+        relative_intersect_y = (intersect_y - player.get_top_position()) - (paddle_height / 2)
+
+        normalized_relative_intersect_y = (relative_intersect_y / (paddle_height / 2))
+        bounce_angle = normalized_relative_intersect_y * (40 * math.pi / 180)
+
+        if player.get_side() == 'Left':
+            self.__vx = -math.cos(bounce_angle)
+        else:
+            self.__vx = math.cos(bounce_angle)
+        self.__vy = -math.sin(bounce_angle)
 
     def get_top_position(self):
         return self.__top_position
