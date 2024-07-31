@@ -8,9 +8,10 @@ export default function BallInvisible() {
 	Spell.call(this, 5, "Ball Freeze", "DESCRIPTION", newImage("../../assets/images/ball_invisible.png"));
 }
 
-BallInvisible.prototype.executor = function(playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
+BallInvisible.prototype = Object.create(Spell.prototype);
+BallInvisible.prototype.constructor = BallInvisible;
+
+BallInvisible.prototype.performExecutor = function(playerPaddle) {
 	const side = playerPaddle.paddleDirection === 1 ? 0 : 1;
 	let ballInSide = getAllBallInSide(side)
 	ballInSide.forEach((ball) => {

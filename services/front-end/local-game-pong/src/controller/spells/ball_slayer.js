@@ -8,9 +8,10 @@ export default function BallSlayer() {
 	Spell.call(this, 10, "Ball Slayer", "DESCRIPTION", newImage("../../assets/images/ball_slayer.png"));
 }
 
-BallSlayer.prototype.executor = function (playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
+BallSlayer.prototype = Object.create(Spell.prototype);
+BallSlayer.prototype.constructor = BallSlayer;
+
+BallSlayer.prototype.performExecutor = function (playerPaddle) {
 	const side = playerPaddle.paddleDirection === 1 ? 1 : 0;
 	let ballInSide = getAllBallInSide(side)
 	ballInSide.forEach((ball) => {

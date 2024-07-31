@@ -8,16 +8,14 @@ export default function PaddleSize() {
 	Spell.call(this, 17, "Paddle Size", "DESCRIPTION", newImage("../../assets/images/paddle_size.png"));
 }
 
-PaddleSize.prototype.executor = function (playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
+PaddleSize.prototype = Object.create(Spell.prototype);
+PaddleSize.prototype.constructor = PaddleSize;
+
+PaddleSize.prototype.performExecutor = function (playerPaddle) {
 	const targetPaddle = getOpponentPaddle(playerPaddle);
 	this.animation(targetPaddle).then(() => {
 		this.destructor(targetPaddle);
 	});
-	/*setSpellDelay(4).then(() => {
-		setPaddleSize(targetPaddle, savePaddleHeight);
-	})*/
 }
 
 PaddleSize.prototype.animation = function(paddle) {

@@ -9,9 +9,10 @@ export default function BallClone() {
 	Spell.call(this, 5, "Ball Slayer", "DESCRIPTION", newImage("../../assets/images/ball_clone.png"));
 }
 
-BallClone.prototype.executor = function (playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
+BallClone.prototype = Object.create(Spell.prototype);
+BallClone.prototype.constructor = BallClone;
+
+BallClone.prototype.performExecutor = function (playerPaddle) {
 	const side = playerPaddle.paddleDirection === 1 ? 1 : 0;
 	let ballInSide = getAllBallInSide(side)
 	ballInSide.forEach((ball) => {

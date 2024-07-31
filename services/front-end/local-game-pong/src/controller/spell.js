@@ -33,6 +33,13 @@ export function Spell(cooldown, spellName, description, icon) {
 	this.spellCoolDownHtml = this.spellHtml.getElementsByClassName("spellCd")[0];
 }
 
+Spell.prototype.executor = function(playerPaddle) {
+	if (this.isOnCooldown)
+		return false;
+	coolDownRun(this);
+	this.performExecutor(playerPaddle)
+}
+
 export function getSpellWithName(spellName) {
 	return spells.get(spellName);
 }
