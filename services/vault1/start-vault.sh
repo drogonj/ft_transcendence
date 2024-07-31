@@ -60,5 +60,6 @@ vault policy write django-policy /vault/config/django-policy.hcl
 vault audit enable file file_path=/var/log/vault_audit.log
 DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
 echo "$DJANGO_TOKEN" > /vault/token/token
+vault kv get secret/myapp/database
 echo "Vault initialized and configured"
 tail -f /dev/null

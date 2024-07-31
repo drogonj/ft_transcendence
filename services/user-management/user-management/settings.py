@@ -125,7 +125,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 #ASGI APPS
 ASGI_APPLICATION = 'user-management.asgi.application'
-
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',

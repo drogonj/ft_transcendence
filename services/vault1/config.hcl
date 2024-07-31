@@ -1,5 +1,4 @@
-storage "raft" {
-  node_id = "raft_node_1"
+storage "file" {
   path = "/vault/data"
 }
 
