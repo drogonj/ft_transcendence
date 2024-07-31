@@ -1,7 +1,7 @@
 import {renderPageWithName} from "../scripts/page.js";
-import {getClientSide, setDisplayPointToPlayer, setTopPositionToPlayer} from "./player.js";
+import {getClientSide, setTopPositionToPlayer} from "./player.js";
 import {createBall, moveBalls} from "./ball.js";
-import {getGameId, launchGame} from "./game.js";
+import {getGameId, launchGame, markPoint} from "./game.js";
 
 let ws;
 
@@ -38,7 +38,7 @@ function onReceive(event) {
     else if (data.type === "createBall")
         createBall(data.values);
     else if (data.type === "displayScore")
-        setDisplayPointToPlayer(data.values)
+        markPoint(data.values)
     else if (data.type === "renderPage")
         renderPageWithName(data.values["pageName"]);
     else if (data.type === "launchGame")

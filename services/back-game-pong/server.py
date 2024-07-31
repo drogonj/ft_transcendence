@@ -27,25 +27,25 @@ class EchoWebSocket(WebSocketHandler):
 
     def open(self):
         clients.append(self)
-        Game(0, clients, None)
+        print("[+] A new client is connected to the server.")
+        if len(clients) == 2:
+            Game(0, clients)
 
     def on_message(self, message):
         socket = json.loads(message)
         target_game = get_game_with_id(0)
-        print(f"New socket from client of type: {socket['type']}  {socket['values']}")
         if socket["type"] == "movePlayer":
-            target_game.move_player(socket['values'], "Left")
-        print("Tornado: msg send to client")
+            target_game.move_player(socket['values'])
 
     def on_close(self):
-        print("WebSocket closed")
+        print("[-] A client leave the server")
+        get_game_with_id(0).set_game_state(True)
         clients.remove(self)
 
 
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())
 
-# Tornado application
 tornado_app = Application([
     (r"/api/back", EchoWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
