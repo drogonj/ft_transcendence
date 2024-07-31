@@ -1,4 +1,4 @@
-import {setSpellDelay, Spell, spellLaunchController} from "../spell.js";
+import {setSpellDelay, Spell} from "../spell.js";
 import {getOpponentPaddle} from "../player.js";
 import {setCssProperty} from "../../view/style_view.js";
 import {newImage} from "../utils/utils.js";

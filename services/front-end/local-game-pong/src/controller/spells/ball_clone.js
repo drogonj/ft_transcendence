@@ -1,4 +1,4 @@
-import {Spell, spellLaunchController} from "../spell.js";
+import {Spell} from "../spell.js";
 import {copyBall, getAllBallInSide} from "../ball.js";
 import {getRandomNumberWithDecimal} from "../utils/math_utils.js";
 import {removeCssProperty, setCssProperty} from "../../view/style_view.js";

@@ -55,6 +55,10 @@ Player.prototype.getPaddleStyle = function () {
 	return this.paddleHtml.style;
 }
 
+Player.prototype.getStatistics = function () {
+	return this.statistics;
+}
+
 export function startPlayersLoop() {
 	if (keyDown.has('KeyW')) {
 		if (getLeftPaddle().paddleCanMoveUp())

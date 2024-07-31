@@ -1,4 +1,4 @@
-import {Spell, spellLaunchController} from "../spell.js";
+import {Spell} from "../spell.js";
 import {getOpponentPaddle} from "../player.js";
 import {setPaddleSize} from "../../view/player_view.js";
 import {newImage} from "../utils/utils.js";
