@@ -90,6 +90,69 @@ export function renderSignup() {
     });
 }
 
+async function addFriendshipMenu() {
+    app.innerHTML += `
+        <div class="friend-menu-container">
+            <button id="friend-menu-button" class="friend-menu-button">Amis</button>
+            <div id="friend-menu" class="friend-menu">
+                <div class="friend-menu-header">
+                    <button id="friends-button">Amis</button>
+                    <button id="requests-button">Demandes d'amis</button>
+                    <button id="add-friend-button">Ajouter un ami</button>
+                </div>
+                <ul id="friends-content" class="friend-menu-content active"></ul>
+                <ul id="requests-content" class="friend-menu-content"></ul>
+                <ul id="add-friend" class="friend-menu-content">
+                    <div id="search-bar">
+                        <form id="search-user-form">
+                            <input type="text" id="search-query" name="q" required>
+                                <i>Username</i>
+                                <input type="submit" value="search">
+                        </form>
+                    </div>
+                    <div id="search-results"></div>
+                </ul>
+            </div>
+        </div>
+    `;
+    // Fetch friends list
+    await loadFriends();
+    // Fetch friendship requests list
+    await loadFriendshipRequests();
+
+    document.getElementById('friend-menu-button').addEventListener('click', function() {
+        let menu = document.getElementById('friend-menu');
+        let menuButton = document.getElementById('friend-menu-button');
+        if (menu.style.maxHeight) {
+            menuButton.style.borderRadius = "5px 5px 0 0";
+            menu.style.maxHeight = null;
+        } else {
+            menuButton.style.borderRadius = "0";
+            menu.style.maxHeight = "40vh";
+        }
+    });
+
+    document.getElementById('friends-button').addEventListener('click', function() {
+        document.getElementById('friends-content').classList.add('active');
+        document.getElementById('add-friend').classList.remove('active');
+        document.getElementById('requests-content').classList.remove('active');
+    });
+
+    document.getElementById('requests-button').addEventListener('click', function() {
+        document.getElementById('requests-content').classList.add('active');
+        document.getElementById('add-friend').classList.remove('active');
+        document.getElementById('friends-content').classList.remove('active');
+    });
+
+    document.getElementById('add-friend-button').addEventListener('click', function() {
+        document.getElementById('add-friend').classList.add('active');
+        document.getElementById('friends-content').classList.remove('active');
+        document.getElementById('requests-content').classList.remove('active');
+    });
+
+    document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
+}
+
 export async function renderHome() {
     app.innerHTML = `
                     <h3 id="transcendence-title">
@@ -142,39 +205,14 @@ export async function renderHome() {
                     </div>
                     <button id="launch-game">Launch game</button>
                     <button id="launch-game-online">Launch game online</button>
-                    <div class="friend-menu-container">
-                        <button id="friend-menu-button" class="friend-menu-button">Amis</button>
-                        <div id="friend-menu" class="friend-menu">
-                            <div class="friend-menu-header">
-                                <button id="friends-button">Amis</button>
-                                <button id="requests-button">Demandes d'amis</button>
-                                <button id="add-friend-button">Ajouter un ami</button>
-                             </div>
-                             <ul id="friends-content" class="friend-menu-content active"></ul>
-                             <ul id="requests-content" class="friend-menu-content"></ul>
-                             <ul id="add-friend" class="friend-menu-content">
-                              <div id="search-bar">
-                              <form id="search-user-form">
-                                   <input type="text" id="search-query" name="q" required>
-                                   <i>Username</i>
-                                   <input type="submit" value="search">
-                               </form>
-                              </div>
-                              <div id="search-results"></div>
-                            </ul>
-                        </div>
-                    </div>
                 `;
-    // Fetch friends list
-    await loadFriends();
-    // Fetch friendship requests list
-    await loadFriendshipRequests();
+
+    await addFriendshipMenu();
 
     document.getElementById('profile-button').addEventListener('click', (event) => {
         event.preventDefault();
         navigateTo(`/profile/`, true);
     });
-    document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
     document.getElementById('logout-button').addEventListener('click', (event) => {
         handleLogout();
         disconnectFriendsWebsocket();
@@ -198,36 +236,6 @@ export async function renderHome() {
         document.addEventListener("click", () => {
             ws.send("Clicked");
         })
-    });
-
-    document.getElementById('friend-menu-button').addEventListener('click', function() {
-        let menu = document.getElementById('friend-menu');
-        let menuButton = document.getElementById('friend-menu-button');
-        if (menu.style.maxHeight) {
-            menuButton.style.borderRadius = "5px 5px 0 0";
-            menu.style.maxHeight = null;
-        } else {
-            menuButton.style.borderRadius = "0";
-            menu.style.maxHeight = "40vh";
-        }
-    });
-
-    document.getElementById('friends-button').addEventListener('click', function() {
-        document.getElementById('friends-content').classList.add('active');
-        document.getElementById('add-friend').classList.remove('active');
-        document.getElementById('requests-content').classList.remove('active');
-    });
-
-    document.getElementById('requests-button').addEventListener('click', function() {
-        document.getElementById('requests-content').classList.add('active');
-        document.getElementById('add-friend').classList.remove('active');
-        document.getElementById('friends-content').classList.remove('active');
-    });
-
-    document.getElementById('add-friend-button').addEventListener('click', function() {
-        document.getElementById('add-friend').classList.add('active');
-        document.getElementById('friends-content').classList.remove('active');
-        document.getElementById('requests-content').classList.remove('active');
     });
 }
 
@@ -396,6 +404,8 @@ export async function renderSelfProfile() {
               </section>
         </div>
         `;
+
+        await addFriendshipMenu();
 
         const uploadAvatar = document.getElementById('upload-avatar');
         const fileInput = document.getElementById('file-input');

@@ -17,6 +17,7 @@
     text-align: center;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
     transition: ease-in 0.1s;
+    border-radius: 5px 5px 0 0;
 }
 
 .friend-menu-button:hover {
@@ -38,6 +39,7 @@
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
     height: 40vh; /* Fixed height for the menu */
     overflow-y: auto; /* Add vertical scroll if content overflows */
+    scrollbar-width: thin;
 }
 
 .friend-menu-header {
@@ -180,7 +182,6 @@
     flex-grow: 1;
     width: 95%;
     background: #e1e2eb;
-    border: none;
     outline: none;
     padding: max(0.75vh, 0.75vw) 5%;
     border-radius: 2px;
@@ -189,7 +190,7 @@
     font-size: max(0.6vw, 0.6vh);
     transition: 0.3s;
     border: 1px solid #dbd8cf;
-    box-shadow: 0 0 5% #e1e2eb
+    box-shadow: 0 0 0.5rem #e1e2eb;
 }
 
 #search-user-form input:focus,

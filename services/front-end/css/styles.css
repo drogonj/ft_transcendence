@@ -15,7 +15,8 @@ body {
     -ms-user-select: none; /* Disable text selection in Internet Explorer/Edge */
     -webkit-touch-callout: none; /* Disable the callout that appears when long-pressing a link */
     color: rgba(255, 255, 255, 0.82);
-    background-color: var(--bg-primary);
+    background-image: url(https://cdn.dribbble.com/userupload/6898071/file/original-d6eee2f84315fca58967df52e2fed047.gif);
+    background-size: cover;
 }
 
 a {
@@ -570,6 +571,7 @@ a {
     overflow-y: scroll;
     font-size: max(1vh, 0.75vw);
     flex-grow: 1;
+    scrollbar-width: thin;
 }
 
 #match-history-container .match {
