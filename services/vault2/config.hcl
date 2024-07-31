@@ -1,5 +1,5 @@
 storage "raft" {
-  node_id = "raft_node_1"
+  node_id = "raft_node_2"
   path = "/vault/data"
 }
 
@@ -10,8 +10,9 @@ listener "tcp" {
   tls_key_file = "/etc/ssl/private/vault/vault.key"
 }
 
-api_addr = "https://vault:8200"
-cluster_addr = "https://vault:8201"
+api_addr = "https://vault2:8000"
+cluster_addr = "https://vault2:8001"
+
 
 ui = true
 disable_mlock = true
