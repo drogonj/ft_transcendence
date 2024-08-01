@@ -28,7 +28,6 @@ WEBSITE_URL = os.getenv('WEBSITE_URL')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]', 'chat']
 ALLOWED_HOSTS = ['*']
 
 # AUTH_USER_MODEL = "webchat.Account"
@@ -129,6 +128,9 @@ CACHES = {
 	'default': {
 		"BACKEND": "django.core.cache.backends.redis.RedisCache",
 		'LOCATION': 'redis://redis:6379/1',
+		'OPTIONS': {
+			"CLIENT_CLASS": "django_redis.client.DefaultClient",
+		}
 	}
 }
 
@@ -178,7 +180,8 @@ CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
