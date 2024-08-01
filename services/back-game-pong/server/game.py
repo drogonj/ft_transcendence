@@ -22,7 +22,7 @@ class Game:
 
 		socket_values = {}
 		socket_values["gameId"] = self.get_id()
-		socket_values["ballId"] = 0
+		socket_values["ballId"] = self.__balls[0].get_id()
 
 		player = self.get_player("Left")
 		socket_values.update(player.dumps_player_for_socket())
