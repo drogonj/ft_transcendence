@@ -1,4 +1,7 @@
 import json
+
+from tornado.websocket import WebSocketClosedError
+
 from .utils import get_random_number_between
 
 
@@ -14,13 +17,16 @@ class Player:
 
 	def send_message_to_player(self, data_type, data_values):
 		data = {'type': data_type, 'values': data_values}
-		self.__socket.write_message(json.dumps(data))
+		try:
+			self.__socket.write_message(json.dumps(data))
+		except WebSocketClosedError:
+			print("Client is already disconnected.")
 
 	def dumps_player_for_socket(self):
 		return {
-				"moveSpeed": self.__move_speed,
-				"paddleTopPosition": str(self.__top_position) + "%",
-				"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
+			"moveSpeed": self.__move_speed,
+			"paddleTopPosition": str(self.__top_position) + "%",
+			"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
 		}
 
 	def kill_connection(self):
@@ -52,6 +58,9 @@ class Player:
 
 	def get_side(self):
 		return self.__paddle_side
+
+	def get_socket(self):
+		return self.__socket
 
 
 def create_players(clients):

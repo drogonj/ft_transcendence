@@ -7,7 +7,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from server.game import Game, get_game_with_id
+from server.game import Game, get_game_with_id, remove_player_from_client
 
 
 # Server will send websocket as json with the followed possible key
@@ -39,7 +39,7 @@ class EchoWebSocket(WebSocketHandler):
 
     def on_close(self):
         print("[-] A client leave the server")
-        get_game_with_id(0).set_game_state(True)
+        remove_player_from_client(self)
         clients.remove(self)
 
 
