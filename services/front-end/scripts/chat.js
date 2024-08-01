@@ -106,16 +106,9 @@ export async function renderChatApp(user_id, username) {
 		</div>
 	`;
 
-	document.getElementById('chat-input').focus();
-	document.getElementById('chat-input').onkeyup = function(e) {
-		if (KeyboardEvent.keyCode === 13) {
-			document.getElementById('send-chat-message').click();
-		}
-	};
-
 	document.getElementById('send-chat-message').onclick = function(e) {
 		const messageInputDom = document.getElementById('chat-input');
-		const message = messageInputDom.value;
+		const message = messageInputDom.value.trim.whitespace();
 		chatSocket.send(JSON.stringify({
 			'message': message,
 			'user_id': user_id,

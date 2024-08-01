@@ -125,6 +125,9 @@ CACHES = {
 	'default': {
 		"BACKEND": "django.core.cache.backends.redis.RedisCache",
 		'LOCATION': 'redis://redis:6379/1',
+		'OPTIONS': {
+			"CLIENT_CLASS": "django_redis.client.DefaultClient",
+		}
 	}
 }
 
@@ -174,9 +177,11 @@ CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 CSRF_COOKIE_HTTPONLY = True
 CORS_ALLOW_CREDENTIALS = True
 LOGIN_RATELIMIT_USER = True
