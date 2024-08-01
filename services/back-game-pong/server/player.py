@@ -6,8 +6,9 @@ from .utils import get_random_number_between
 
 
 class Player:
-	def __init__(self, ws, side):
+	def __init__(self, ws, side, username):
 		self.__socket = ws
+		self.__username = username
 		self.__score = 0
 		self.__paddle_side = side
 		self.__top_position = 50
