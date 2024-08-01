@@ -31,7 +31,6 @@ class Ball:
 
     def trigger_ball_inside_goal(self):
         if self.get_left_position() <= 0 or self.get_right_position() >= 100:
-            print("goal")
             return True
         return False
 

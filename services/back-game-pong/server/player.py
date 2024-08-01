@@ -68,6 +68,6 @@ def create_players(clients):
 	new_players = []
 	side = "Left"
 	for client in clients:
-		new_players.append(Player(client, side))
+		new_players.append(Player(client, side, None))
 		side = "Right"
 	return new_players

@@ -95,9 +95,6 @@ async function loadPages() {
     await new Page("pong-game.html")
         .build();
 
-    await new Page("pong-game-online.html")
-        .build();
-
     await new Page("pong-game-waiting.html")
         .withListener("matchMakingCancel", "click", cancelMatchMaking)
         .build();

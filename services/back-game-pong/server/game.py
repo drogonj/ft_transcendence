@@ -18,7 +18,7 @@ class Game:
 		self.launch_game()
 
 	def launch_game(self):
-		self.send_message_to_game("renderPage", {"pageName": "pong-game-online.html"})
+		self.send_message_to_game("renderPage", {"pageName": "pong-game.html"})
 
 		socket_values = {}
 		socket_values["gameId"] = self.get_id()
