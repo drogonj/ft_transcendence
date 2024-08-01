@@ -70,3 +70,6 @@ class Ball:
 
     def get_ball_side(self):
         return "Left" if self.__left_position <= 50 else "Right"
+
+    def get_id(self):
+        return self.__ball_id

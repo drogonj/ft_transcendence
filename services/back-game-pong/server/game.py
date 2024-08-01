@@ -22,7 +22,7 @@ class Game:
 
 		socket_values = {}
 		socket_values["gameId"] = self.get_id()
-		socket_values["ballId"] = 0
+		socket_values["ballId"] = self.__balls[0].get_id()
 
 		player = self.get_player("Left")
 		socket_values.update(player.dumps_player_for_socket())
@@ -67,6 +67,11 @@ class Game:
 		player.move_paddle(step)
 		self.send_message_to_game("movePlayer", {"targetPlayer": player_side, "topPosition": f"{player.get_top_position()}%"})
 
+	def remove_player_with_client(self, client):
+		for player in self.__players:
+			if player.get_socket() == client:
+				self.__players.remove(player)
+
 	def mark_point(self, ball):
 		side = reverse_side(ball.get_ball_side())
 
@@ -93,7 +98,6 @@ class Game:
 		self.send_message_to_game("renderPage", {"pageName": "menu-end.html"})
 		for player in self.__players:
 			player.kill_connection()
-		games.remove(self)
 
 	def get_player(self, side):
 		return self.__players[0] if side == "Left" else self.__players[1]
@@ -104,8 +108,33 @@ class Game:
 	def set_game_state(self, state):
 		self.__is_game_end = state
 
+	def is_game_containing_client(self, client):
+		for player in self.__players:
+			if player.get_socket() == client:
+				return True
+		return False
+
+	def is_game_containing_players(self):
+		return len(self.__players) > 0
+
 
 def get_game_with_id(game_id):
 	for game in games:
 		if game.get_id() == game_id:
 			return game
+
+
+def get_game_with_client(client):
+	for game in games:
+		if game.is_game_containing_client(client):
+			return game
+
+
+def remove_player_from_client(client):
+	game = get_game_with_client(client)
+
+	game.remove_player_with_client(client)
+	game.set_game_state(True)
+
+	if not game.is_game_containing_players():
+		games.remove(game)

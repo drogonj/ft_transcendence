@@ -31,7 +31,6 @@ function onOpen() {
 
 function onReceive(event) {
     const data = JSON.parse(event.data);
-    console.log("New message from server of type: " + data.type);
 
     if (data.type === "moveBall")
         moveBalls(data.values);
