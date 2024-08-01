@@ -1,12 +1,12 @@
 #menuEnd {
-	width: 33vw;
+	width: 40vw;
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%,-50%);
 	background-color: var(--bg-primary);
 	color: var(--primary);
-	font-size: 3vmin;
+	font-size: 1.7vw;
 	border-radius: 3%;
 	border: 0.5vmin solid white;
 }
@@ -45,6 +45,7 @@
 
 #statsName {
 	width: 50%;
+	background-color: #1A2130;
 }
 
 .statsValues {

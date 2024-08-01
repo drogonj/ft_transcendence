@@ -15,6 +15,8 @@ import {
     handleUserSearch,
 } from './friends.js';
 
+import { loadUsers, renderChatApp } from './chat.js';
+
 export function renderLogin() {
     app.innerHTML = `
                     <section class="auth-section">
@@ -207,6 +209,11 @@ export async function renderHome() {
                     <button id="launch-game-online">Launch game online</button>
                 `;
 
+	// Render chat
+	await renderChatApp(currentUser.user_id, currentUser.username);
+	// Load users
+	await loadUsers(currentUser.user_id);
+
     await addFriendshipMenu();
 
     document.getElementById('profile-button').addEventListener('click', (event) => {
@@ -223,19 +230,6 @@ export async function renderHome() {
 
     document.getElementById('launch-game-online').addEventListener('click', (event) => {
         navigateTo('/game-online', true);
-        let ws = new WebSocket("ws://localhost:2605/api/back");
-        ws.onopen = function(event) {
-            console.log("WebSocket is open now.");
-            ws.send("Hello, server!");
-        };
-
-        ws.onmessage = function (event) {
-            console.log(event.data);
-        };
-
-        document.addEventListener("click", () => {
-            ws.send("Clicked");
-        })
     });
 }
 
@@ -289,7 +283,6 @@ export async function renderUserProfile(userId) {
     const response = await fetch(`/api/user/profile/${userId}/`);
 
     if (!response.ok) {
-        console.error('failed to get user informations');
         navigateTo('/home');
     }
 

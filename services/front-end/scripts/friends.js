@@ -5,7 +5,7 @@ let friendSocket;
 let friendSocketRunning = false;
 
 export async function connectFriendsWebsocket() {
-    friendSocket = new WebSocket('wss://localhost:8080/ws/friend-requests/');
+    friendSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/friend-requests/`);
 
     friendSocket.onopen = function(e) {5
         friendSocketRunning = true;
@@ -247,6 +247,7 @@ export async function loadFriends() {
         console.error('Error loading friends:', error);
     }
 }
+
 // Function to add a friendship request to the menu
 export function addFriendshipRequestToMenu(user, username, avatar) {
     const friendshipRequestsContainer = document.getElementById('requests-content');

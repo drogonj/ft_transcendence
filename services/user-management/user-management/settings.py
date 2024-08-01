@@ -13,18 +13,21 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from authentication.vault_client import get_vault_client
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR_ENV = Path(__file__).resolve().parent.parent.parent.parent
 load_dotenv(os.path.join(BASE_DIR_ENV, '.env'))
-
+vault_client = get_vault_client()
+db_secrets = vault_client.read_secret('myapp/database')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_KEY')
+SECRET_KEY = db_secrets.get("DJANGO_KEY")
+WEBSITE_URL = db_secrets.get("WEBSITE_URL", "localhost")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -91,19 +94,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'user-management.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.postgresql_psycopg2"),
-        "NAME": os.environ.get("SQL_DATABASE"),        
-        "USER": os.environ.get("SQL_USER"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD"),
-        "HOST": os.environ.get("SQL_HOST"),
-        "PORT": os.environ.get("SQL_PORT"),
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": db_secrets.get("POSTGRES_DB"),        
+        "USER": db_secrets.get("POSTGRES_USER"),
+        "PASSWORD": db_secrets.get("POSTGRES_PASSWORD"),
+        "HOST": db_secrets.get("POSTGRES_HOST"),
+        "PORT": db_secrets.get("POSTGRES_PORT"),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -125,7 +126,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 #ASGI APPS
 ASGI_APPLICATION = 'user-management.asgi.application'
-
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -139,7 +139,11 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'",)
 CSP_STYLE_SRC = ("'self'",)
 CSP_IMG_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'", "ws://localhost:8080", "wss://localhost:8080")
+CSP_CONNECT_SRC = (
+    "'self'",  # Autoriser les connexions vers le même domaine
+    f"ws://{WEBSITE_URL}",  # Autoriser les connexions WebSocket non sécurisées
+    f"wss://{WEBSITE_URL}"  # Autoriser les connexions WebSocket sécurisées
+)
 
 
 # Internationalization
@@ -179,12 +183,10 @@ CORS_ALLOW_CREDENTIALS = True
 LOGIN_RATELIMIT_USER = True
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://127.0.0.1:8080',
-    'https://localhost:8080',
+    f"http://{WEBSITE_URL}",
+    f"https://{WEBSITE_URL}"
 ]
 CORS_ALLOWED_ORIGINS = [
-    'https://127.0.0.1:8080',
-    'https://localhost:8080',
+    f"http://{WEBSITE_URL}",
+    f"https://{WEBSITE_URL}"
 ]
-
-
