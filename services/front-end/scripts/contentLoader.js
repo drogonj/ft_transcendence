@@ -4,13 +4,12 @@ import {
     renderSignup,
     renderUserUpdateForm,
     renderConfirmRegistration,
-    renderUserProfile
+    renderUserProfile, cancelMatchMaking
 } from './render.js';
 import {getCurrentUserInfo, handleLogin} from "./auth.js";
 import { connectFriendsWebsocket } from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
 import launch from "../local-game-pong/src/main.js";
-import launchClientWebSocket from "../online-game-pong/websocket.js";
 
 export const app = document.getElementById('app');
 
@@ -100,7 +99,7 @@ async function loadPages() {
         .build();
 
     await new Page("pong-game-waiting.html")
-        .withListener("test", "click", launchClientWebSocket)
+        .withListener("matchMakingCancel", "click", cancelMatchMaking)
         .build();
 
     await new Page("menu-end.html")

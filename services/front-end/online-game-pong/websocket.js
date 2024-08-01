@@ -11,6 +11,10 @@ export default function launchClientWebSocket() {
         ws.onmessage = onReceive;
 }
 
+export function closeWebSocket() {
+    ws.close();
+}
+
 export function sendMessageToServer(type, values) {
     values["clientSide"] = getClientSide();
     values["gameId"] = getGameId();
