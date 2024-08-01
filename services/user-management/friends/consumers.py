@@ -136,15 +136,3 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
             'id': user_id,
             'username': username,
         }))
-        
-# class UpdateConsumer(AsyncWebsocketConsumer):
-#     def connect(self):
-#         self.accept()
-
-#     def receive(self, text_data):
-#         data = json.loads(text_data)
-#         button_text = data.get('button_text', 'Default Button')
-
-#         self.send(text_data=json.dumps({
-#             'button_html': f'<li><button>{button_text}</button></li>'
-#         }))

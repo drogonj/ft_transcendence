@@ -48,9 +48,7 @@ export async function loadUsers(selfId) {
 		const response = await fetch('/api/chat/fetch_users/');
 		const usersData = await response.json();
 
-		console.log(usersData);
 		for (const user of usersData.users) {
-			console.log(selfId, user.id);
 			if (user.id !== 1 && user.id !== selfId) {
 				addUserToMenu(user.id, user.username, user.avatar, user.is_connected);
 			}
@@ -61,7 +59,7 @@ export async function loadUsers(selfId) {
 	}
 }
 
-export function addUserToMenu(userID, username, avatar, is_connected) {
+async function addUserToMenu(userID, username, avatar, is_connected) {
 	const usersContainer = document.getElementById('users-content');
 
 	const newUser = document.createElement('li');
@@ -94,6 +92,18 @@ export function addUserToMenu(userID, username, avatar, is_connected) {
 		 navigateTo(uri, true);
 	});
 }
+
+// async function muteUser(event) {
+// 	const userId = event.target.getAttribute('data-user-id');
+// 	const userElement = document.getElementById(`user-${userId}`);
+// 	const isMuted = userElement.classList.contains('muted');
+
+// 	if (isMuted) {
+// 		userElement.classList.remove('muted');
+// 	} else {
+// 		userElement.classList.add('muted');
+// 	}
+// }
 
 export async function renderChatApp(user_id, username) {
 	await connectChatWebsocket();
