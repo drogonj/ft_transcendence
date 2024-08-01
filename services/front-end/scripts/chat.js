@@ -4,6 +4,10 @@ let chatSocketRunning = false;
 import { navigateTo, app } from './contentLoader.js';
 
 export async function connectChatWebsocket() {
+	if (chatSocket) {
+		return;
+	}
+
 	const roomName = 'general';
 	chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/` + roomName + '/');
 
