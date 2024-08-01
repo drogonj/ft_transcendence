@@ -6,7 +6,7 @@
 }
 
 .friend-menu-button {
-    background-color: #ff0266;
+    background-color: rgb(43 38 109 / 31%);;
     color: white;
     border: none;
     margin: 0;
@@ -21,7 +21,7 @@
 }
 
 .friend-menu-button:hover {
-    background-color: #c70652;
+    background-color: #00000052;
 }
 
 .friend-menu {
@@ -29,8 +29,8 @@
     padding: 0;
     position: absolute;
     bottom: max(1.8vw, 1.8vh); /* Adjust based on your button height */
-    background-color: #c5c8de;
-    box-shadow: 0 0 10px rgba(129, 66, 199, 0.69);
+    background-color: #00000082;
+    box-shadow: 0 0 10px rgb(151 151 151 / 27%);
     border-radius: 5px 5px 0 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
@@ -45,13 +45,12 @@
 .friend-menu-header {
     display: flex;
     padding: 0.15vw;
-    background-color: #d3d5e3;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #ccc0;
 }
 
 .friend-menu-header button {
     font-size: max(0.6vw, 0.8vh);
-    background-color: #ff0266;
+    background-color: #2d31696e;
     color: white;
     border: none;
     margin: 1%;
@@ -62,7 +61,7 @@
 }
 
 .friend-menu-header button:hover {
-    background-color: #c70652;
+    background-color: #00000047;
 }
 
 
@@ -84,11 +83,10 @@
     height: max(2.5vw, 3vh);
     padding: 3%;
     margin-top: 1.5%;
-    border-bottom: 1px solid #ccc;
     font-size: max(0.7vw, 1vh);
     text-align: left; /* Align text to the left */
     border-radius: 5px;
-    background: #e1e2eb;
+    background: #ffffff2b;
     transition: ease-in 0.1s;
 }
 
@@ -97,7 +95,7 @@
 }
 
 .friend-menu li:hover {
-    background-color: #cecfdb;
+    background: #ffffff42;
 }
 
 .avatar-container {
@@ -124,7 +122,7 @@
 .friend-menu li span p {
     max-width: max(3vw, 3vh);;
     overflow: hidden;
-    background: linear-gradient(to right,  #ff0266 0%,rgba(0,0,0,1) 80%,rgba(0,0,0,0) 100%);
+    background: linear-gradient(to right,  #ffffff 0%,rgb(255 255 255) 80%,rgba(0,0,0,0) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent
 }
@@ -141,6 +139,7 @@
     width: max(0.65vw, 0.65vh);
     aspect-ratio: 1 / 1;
     transition: ease-in 0.1s;
+    opacity: 0.75;
 }
 
 .friend-menu li button img:hover {
@@ -181,59 +180,59 @@
 #search-user-form #search-query {
     flex-grow: 1;
     width: 95%;
-    background: #e1e2eb;
+    background: #ffffff3d;
     outline: none;
     padding: max(0.75vh, 0.75vw) 5%;
     border-radius: 2px;
-    color: black;
+    color: white;
     font-weight: 500;
     font-size: max(0.6vw, 0.6vh);
     transition: 0.3s;
-    border: 1px solid #dbd8cf;
-    box-shadow: 0 0 0.5rem #e1e2eb;
+    border: 1px solid #dbd8cf47;
+    box-shadow: 0 0 0.5rem #e1e2eb9e;
 }
 
 #search-user-form input:focus,
 #search-bar form input:hover,
 #search-bar form input:valid {
-    background: #ebebeb
+    background: #ebebeb61
 }
 
-#search-user-form i
-{
-    position: fixed; /* Use relative positioning within the flex container */
-    bottom: auto; /* Remove fixed bottom positioning */
-    padding: 0 max(0.75vw, 0.75vh);
-    font-style: normal;
-    color: black;
-    transition: 0.5s;
-    pointer-events: none;
-    font-size: max(0.6vw, 0.7vh);
-    align-self: center; /* Ensure the icon is vertically centered */
-}
-#search-user-form input:focus ~ i,
-#search-user-form input:valid ~ i
-{
-    display: none;
-}
+/*#search-user-form i*/
+/*{*/
+/*    position: fixed; !* Use relative positioning within the flex container *!*/
+/*    bottom: auto; !* Remove fixed bottom positioning *!*/
+/*    padding: 0 max(0.75vw, 0.75vh);*/
+/*    font-style: normal;*/
+/*    color: #efe4e4;*/
+/*    transition: 0.5s;*/
+/*    pointer-events: none;*/
+/*    font-size: max(0.6vw, 0.7vh);*/
+/*    align-self: center; !* Ensure the icon is vertically centered *!*/
+/*}*/
+/*#search-user-form input:focus ~ i,*/
+/*#search-user-form input:valid ~ i*/
+/*{*/
+/*    display: none;*/
+/*}*/
 
 #search-user-form input[type="submit"]
 {
     position: absolute;
     font-size: max(0.6vw, 0.7vh);
-    border-radius: 10px;
+    border-radius: 0.25rem;
     right: 10%;
     padding: 2%;
     border-width: 1px;
     outline: none;
-    color: #343434;
+    color: #ffffff;
     cursor: pointer;
     border: none;
     transition-duration: 0.5s;
 }
 
 #search-user-form input[type="submit"]:hover {
-    background: #ff0266;
+    background: #00000057;
     color: whitesmoke;
 }
 

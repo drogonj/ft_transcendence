@@ -93,8 +93,8 @@ export function renderSignup() {
 }
 
 async function addFriendshipMenu() {
-    app.innerHTML += `
-        <div class="friend-menu-container">
+    const friendshipMenuContainer = document.querySelector('.friend-menu-container');
+    friendshipMenuContainer.innerHTML = `
             <button id="friend-menu-button" class="friend-menu-button">Amis</button>
             <div id="friend-menu" class="friend-menu">
                 <div class="friend-menu-header">
@@ -108,14 +108,13 @@ async function addFriendshipMenu() {
                     <div id="search-bar">
                         <form id="search-user-form">
                             <input type="text" id="search-query" name="q" required>
-                                <i>Username</i>
+<!--                                <i>Username</i>-->
                                 <input type="submit" value="search">
                         </form>
                     </div>
                     <div id="search-results"></div>
                 </ul>
             </div>
-        </div>
     `;
     // Fetch friends list
     await loadFriends();
@@ -207,6 +206,8 @@ export async function renderHome() {
                     </div>
                     <button id="launch-game">Launch game</button>
                     <button id="launch-game-online">Launch game online</button>
+                    
+                    <div class="friend-menu-container"></div>
                 `;
 
 	// Render chat
@@ -288,22 +289,96 @@ export async function renderUserProfile(userId) {
 
     const userData = await response.json();
 
-    app.innerHTML = `
-        <div class="profile-container">
-            <h1>User Profile</h1>
-            <div class="profile-picture">
-                <img src="${userData.avatar}" alt="Profile Picture">
-            </div>
-            <div class="profile-details">
-                <p><strong>Username:</strong> ${userData.username}</p>
-            </div> 
+    try {
+        app.innerHTML = `
+            <div class="profile-section-container">
+              
+              <section class="profile-section">
+                <div class="profile-box">
+                  <h2>Profile</h2>
+                  <div id="avatar-display">
+                    <div id="avatar-container">
+                      <img src="${userData.avatar}" alt="avatar" id="avatar">
+                    </div>
+                  </div>
+                  <p id="profile-username">${userData.username}</p>
+                </div>
+              </section>
+                
+              <section class="profile-section">
+                <div class="profile-box">
+                  <h2>Stats</h2>
+                    <div id="profile-card-trophy">
+                            <p>${userData.trophy}</p>
+                            <img alt="trophy" src="../assets/images/trophy.png">
+                        </div>
+                        <div class="single-chart">
+                            <svg viewBox="0 0 36 36" class="circular-chart orange">
+                                <path class="circle-bg" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                     a 15.9155 15.9155 0 0 1 0 31.831
+                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <text x="18" y="20.35" class="percentage">30%</text>
+                            </svg>
+                            <p>winrate</p>
+                        </div>
+                    <div id="stats-text-container">
+                        <p><span>Victory: </span>3</p>
+                        <p><span>Defeat: </span>7</p>
+                        <p><span>Goals: </span>37</p>
+                        <p><span>Tournaments Won: </span>1</p>
+                    </div>
+                </div>
+              </section>
+  
+              <section class="profile-section">
+                <div class="profile-box">
+                  <h2>Match History</h2>
+                  <div id="match-history-container">
+                      <span class="match">
+                        <p class="usernames">${userData.username} vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                      <span class="match">
+                        <p class="usernames">${userData.username} vs ADMIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                  </div>
+                </div>
+              </section>
         </div>
-        <button id="home">Home</button>
-    `;
-    document.getElementById('home').addEventListener('click', (event) => {
-        event.preventDefault();
-        navigateTo('/', true);
-    });
+        
+        <div class="friend-menu-container"></div>
+        `;
+
+        await addFriendshipMenu();
+
+        const uploadAvatar = document.getElementById('upload-avatar');
+        const fileInput = document.getElementById('file-input');
+
+        uploadAvatar.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (event) => {
+            await changeAvatar(event);
+        });
+
+        document.getElementById('change-username-btn').addEventListener('click', async function (event) {
+            event.preventDefault();
+            await changeUsername();
+        });
+
+        document.getElementById('change-password-btn').addEventListener('click', async function (event) {
+            event.preventDefault();
+            await changePassword();
+        });
+
+    } catch (error) {
+        navigateTo('/login');
+    }
 }
 
 export async function renderSelfProfile() {
@@ -319,17 +394,17 @@ export async function renderSelfProfile() {
                     <img alt="upload" id="upload-avatar" src="../assets/images/camera.png">
                     <input type="file" id="file-input" accept="image/*" style="display:none;">
                     <div id="avatar-container">
-                      <img src="/media/avatars/default.png" alt="avatar" id="avatar">
+                      <img src="${currentUser.avatar}" alt="avatar" id="avatar">
                     </div>
                   </div>
                   
                   <div class="inputBox">
-                    <input type="text" id="username" name="username" value="QUOI" required="">
+                    <input type="text" id="username" name="username" value="${currentUser.username}" required="">
                     <input type="submit" value="Change username" id="change-username-btn">
                   </div>
                   
                   <div class="inputBox">
-                    <input type="text" id="email" name="email" value="test2@mail.com" disabled="">
+                    <input type="text" id="email" name="email" value="${currentUser.email}" disabled="">
                   </div>
                   
                   <div class="inputBox">
@@ -356,7 +431,7 @@ export async function renderSelfProfile() {
                 <div class="profile-box">
                   <h2>Stats</h2>
                     <div id="profile-card-trophy">
-                            <p>100</p>
+                            <p>${currentUser.trophy}</p>
                             <img alt="trophy" src="../assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -396,6 +471,8 @@ export async function renderSelfProfile() {
                 </div>
               </section>
         </div>
+        
+        <div class="friend-menu-container"></div>
         `;
 
         await addFriendshipMenu();

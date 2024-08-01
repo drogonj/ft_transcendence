@@ -21,7 +21,7 @@ export function cleanUrl() {
 }
 
 const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
-const profileRegex = /\/profile\/(\d+)/;
+const profileRegex = /\/profile\/(\d+)\/?/;
 
 export function navigateTo(route, pushState, data) {
     if (pushState)
@@ -29,7 +29,7 @@ export function navigateTo(route, pushState, data) {
     else
         history.replaceState({route: route}, 'SPA Application', route);
 
-    const url = window.location.href;
+    let url = window.location.href;
 
     if (route === '/login' || route === '/login/') {
         renderLogin();
@@ -39,11 +39,14 @@ export function navigateTo(route, pushState, data) {
         renderHome();
     } else if (confirmRegistrationUrlRegex.test(route)) {
         renderConfirmRegistration();
-    } else if (profileRegex.test(route)) {
-        const userId = url.match(/\/profile\/(\d+)\//)[1];
-        renderUserProfile(userId);
     } else if (route === '/profile' || route === '/profile/') {
         renderSelfProfile();
+    } else if (profileRegex.test(route)) {
+        if (!url.endsWith('/')) {
+            url += '/';
+        }
+        const userId = url.match(/\/profile\/(\d+)\//)[1];
+        renderUserProfile(userId);
     } else if (route === '/game' || route === '/game/') {
         renderPageWithName("menu-start-settings.html");
     } else if (route === '/game-online' || route === '/game-online/') {
