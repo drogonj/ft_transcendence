@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'user-management.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": db_secrets.get("POSTGRES_DB"),        
         "USER": db_secrets.get("POSTGRES_USER"),
         "PASSWORD": db_secrets.get("POSTGRES_PASSWORD"),
@@ -104,7 +104,6 @@ DATABASES = {
         "PORT": db_secrets.get("POSTGRES_PORT"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

@@ -28,10 +28,7 @@ WEBSITE_URL = os.getenv('WEBSITE_URL')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]', 'chat']
 ALLOWED_HOSTS = ['*']
-
-# AUTH_USER_MODEL = "webchat.Account"
 
 # Application definition
 
@@ -92,13 +89,13 @@ CHANNEL_LAYERS = {
 	}
 }
 
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
-}
+# REST_FRAMEWORK = {
+# 	# Use Django's standard `django.contrib.auth` permissions,
+# 	# or allow read-only access for unauthenticated users.
+# 	'DEFAULT_PERMISSION_CLASSES': [
+# 		'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+# 	]
+# }
 
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'",)
@@ -114,21 +111,24 @@ CSP_CONNECT_SRC = (
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ.get("POSTGRES_DB"),        
-        "USER": os.environ.get("POSTGRES_USER"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
-        "HOST": os.environ.get("POSTGRES_HOST"),
-        "PORT": os.environ.get("POSTGRES_PORT"),
-    }
+	"default": {
+		"ENGINE": "django.db.backends.postgresql",
+		"NAME": os.environ.get("POSTGRES_DB"),		
+		"USER": os.environ.get("POSTGRES_USER"),
+		"PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+		"HOST": os.environ.get("POSTGRES_HOST"),
+		"PORT": os.environ.get("POSTGRES_PORT"),
+	}
 }
 
 # Cache configuration
 CACHES = {
 	'default': {
 		"BACKEND": "django.core.cache.backends.redis.RedisCache",
-		'LOCATION': 'redis://redis:6379/1',
+		'LOCATION': 'redis://redis:6379',
+		# 'OPTIONS': {
+		# 	"CLIENT_CLASS": "django_redis.client.DefaultClient",
+		# }
 	}
 }
 
@@ -178,7 +178,8 @@ CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
