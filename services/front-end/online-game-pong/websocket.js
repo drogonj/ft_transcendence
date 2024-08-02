@@ -5,16 +5,18 @@ import {getGameId, launchGame, markPoint} from "./game.js";
 
 let ws;
 
-export default function launchClientWebSocket() {
+export default function launchClientGame(socketValues) {
 	 ws = new WebSocket("ws://localhost:2605/api/back");
-        ws.onopen = onOpen;
-        ws.onmessage = onReceive;
+     ws.onopen = onOpen;
+     ws.onmessage = onReceive;
 }
 
 export function launchClientMatchMaking() {
     ws = new WebSocket("ws://localhost:2607/api/matchmaking");
-        ws.onopen = onOpen;
-        ws.onmessage = onReceive;
+    ws.onopen = onOpen;
+    ws.onmessage = onReceive;
+    ws.onerror = onError;
+    sendMessageToServer("createUser", {"username": "rien"})
 }
 
 export function closeWebSocket() {
@@ -22,13 +24,15 @@ export function closeWebSocket() {
 }
 
 export function sendMessageToServer(type, values) {
-    values["clientSide"] = getClientSide();
-    values["gameId"] = getGameId();
     const message = {
         "type": type,
         "values": values
     }
     ws.send(JSON.stringify(message));
+}
+
+function onError(event) {
+    console.error("WebSocket error observed:", event);
 }
 
 function onOpen() {
@@ -52,6 +56,8 @@ function onReceive(event) {
         renderPageWithName(data.values["pageName"]);
     else if (data.type === "launchGame")
         launchGame(data.values);
+    else if (data.type === "launchClientGame")
+        launchClientGame(data.values)
     else
         console.log("Error: Server send a unknown type of data");
 }

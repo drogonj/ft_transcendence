@@ -14,3 +14,6 @@ class User:
         message["type"] = message_type
         message["values"] = message_values
         self.__socket.send(message)
+
+    def kill_connection(self):
+        self.__socket.close()

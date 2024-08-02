@@ -3,7 +3,9 @@ import os
 
 import django
 from django.core.wsgi import get_wsgi_application
+from tornado import gen
 from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
@@ -24,7 +26,10 @@ async def main_check_loop():
         if len(users_in_queue) > 1:
             selected_users = get_two_users()
             create_players(selected_users)
-        await asyncio.sleep(1)
+            for user in selected_users:
+                user.kill_connection()
+                users_in_queue.remove(user)
+        await gen.sleep(1)
 
 
 def create_players(users_list):
@@ -39,11 +44,10 @@ def get_two_users():
     while not len(selected_user) == 2:
         user = random.choice(users_in_queue)
         selected_user.append(user)
-        users_in_queue.remove(user)
     return selected_user
 
 
-class MatchMakingWebSocket(WebSocketHandler):
+class EchoWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
@@ -71,7 +75,7 @@ class MatchMakingWebSocket(WebSocketHandler):
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
-    (r"/api/matchmaking", MatchMakingWebSocket),  # API handler path
+    (r"/api/matchmaking", EchoWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
@@ -80,7 +84,5 @@ if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2607)
     print("Starting Tornado server on http://localhost:2607")
-
-    loop = asyncio.new_event_loop()
-    loop.create_task(main_check_loop())
-    loop.run_forever()
+    IOLoop.current().spawn_callback(main_check_loop)
+    IOLoop.current().start()
