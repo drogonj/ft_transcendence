@@ -10,6 +10,7 @@ from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from user import User
+from websocket import WebSocketClient
 import asyncio
 import random
 
@@ -18,7 +19,14 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backmatchmaking.settings')
 django.setup()
 
 users_in_queue = []
+client = None
 
+
+async def bind_to_game_server():
+    global client
+    client = WebSocketClient("ws://back-game:2605/api/back")
+    await client.connect()
+    await client.send("test", {"slt": "cava", "oui": "te"})
 
 async def main_check_loop():
     while True:
@@ -57,7 +65,8 @@ class EchoWebSocket(WebSocketHandler):
     def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
-        users_in_queue.append(User(self, socket_values))
+        if socket['type'] == 'createUser':
+            users_in_queue.append(User(self, socket_values))
 
     def on_close(self):
         user = self.get_user_from_socket()
@@ -84,5 +93,6 @@ if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2607)
     print("Starting Tornado server on http://localhost:2607")
+    IOLoop.current().spawn_callback(bind_to_game_server)
     IOLoop.current().spawn_callback(main_check_loop)
     IOLoop.current().start()

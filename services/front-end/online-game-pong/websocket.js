@@ -6,17 +6,20 @@ import {getGameId, launchGame, markPoint} from "./game.js";
 let ws;
 
 export default function launchClientGame(socketValues) {
-	 ws = new WebSocket("ws://localhost:2605/api/back");
-     ws.onopen = onOpen;
-     ws.onmessage = onReceive;
+    ws.close();
+    ws = new WebSocket("ws://localhost:2605/api/back");
+    ws.onopen = onOpen;
+    ws.onmessage = onReceive;
 }
 
 export function launchClientMatchMaking() {
     ws = new WebSocket("ws://localhost:2607/api/matchmaking");
-    ws.onopen = onOpen;
+    ws.onopen = function () {
+        console.log("WebSocket NatchMaking is open now.");
+        sendMessageToServer("createUser", {"username": "rien"})
+    };
     ws.onmessage = onReceive;
     ws.onerror = onError;
-    sendMessageToServer("createUser", {"username": "rien"})
 }
 
 export function closeWebSocket() {

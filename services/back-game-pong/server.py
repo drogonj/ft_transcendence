@@ -35,6 +35,8 @@ class EchoWebSocket(WebSocketHandler):
     def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
+        print(socket['type'])
+        print(socket_values)
         if socket["type"] == "movePlayer":
             get_game_with_client(self).move_player(socket_values)
         elif socket["type"] == "createPlayer":
