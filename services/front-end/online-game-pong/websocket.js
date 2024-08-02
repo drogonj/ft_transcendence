@@ -11,6 +11,12 @@ export default function launchClientWebSocket() {
         ws.onmessage = onReceive;
 }
 
+export function launchClientMatchMaking() {
+    ws = new WebSocket("ws://localhost:2607/api/matchmaking");
+        ws.onopen = onOpen;
+        ws.onmessage = onReceive;
+}
+
 export function closeWebSocket() {
     ws.close();
 }

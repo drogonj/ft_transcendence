@@ -22,8 +22,8 @@ async def main_check_loop():
     while True:
         print("Looking for two users..")
         if len(users_in_queue) > 1:
-            selected_user = get_two_users()
-            create_players(selected_user)
+            selected_users = get_two_users()
+            create_players(selected_users)
         await asyncio.sleep(1)
 
 
@@ -56,8 +56,8 @@ class MatchMakingWebSocket(WebSocketHandler):
         users_in_queue.append(User(self, socket_values))
 
     def on_close(self):
-        print("[-] A client leave the server")
         user = self.get_user_from_socket()
+        print(f"[-] {user.get_username()} leave the matchmaking server")
         users_in_queue.remove(user)
 
     def get_user_from_socket(self):
