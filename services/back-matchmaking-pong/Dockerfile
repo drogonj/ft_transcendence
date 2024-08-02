@@ -1,7 +1,7 @@
 FROM python:3.10-slim-bullseye
 LABEL maintainer="ayagmur <ayagmur@student.42mulhouse.fr>"
 LABEL version="0.1"
-LABEL description="Back game pong microservice"
+LABEL description="Back matchmaking pong microservice"
 
 COPY . .
 

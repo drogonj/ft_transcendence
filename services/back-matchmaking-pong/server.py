@@ -1,11 +1,9 @@
 import json
 import os
-import threading
 
 import django
 from django.core.wsgi import get_wsgi_application
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
@@ -20,8 +18,7 @@ django.setup()
 users_in_queue = []
 
 
-async def main_check_loop(forever_loop):
-    asyncio.set_event_loop(forever_loop)
+async def main_check_loop():
     while True:
         print("Looking for two users..")
         if len(users_in_queue) > 1:
@@ -46,7 +43,7 @@ def get_two_users():
     return selected_user
 
 
-class EchoWebSocket(WebSocketHandler):
+class MatchMakingWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
@@ -74,7 +71,7 @@ class EchoWebSocket(WebSocketHandler):
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
-    (r"/api/matchmaking", EchoWebSocket),  # API handler path
+    (r"/api/matchmaking", MatchMakingWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
@@ -85,8 +82,5 @@ if __name__ == "__main__":
     print("Starting Tornado server on http://localhost:2607")
 
     loop = asyncio.new_event_loop()
-    t = threading.Thread(target=main_check_loop, args=(loop,), daemon=True)
-    t.start()
-    asyncio.run_coroutine_threadsafe(main_check_loop(loop), loop)
-
-    IOLoop.current().start()
+    loop.create_task(main_check_loop())
+    loop.run_forever()
