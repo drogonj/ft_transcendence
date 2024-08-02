@@ -90,6 +90,15 @@ services:
     networks:
      - network
 
+  back-matchmaking:
+    container_name: back-matchmaking-pong
+    build: services/back-matchmaking-pong/
+    ports:
+      - "2607:2607"
+    env_file: .env
+    networks:
+      - network
+
   redis:
     container_name: redis
     build: ./services/redis/
