@@ -23,7 +23,7 @@ export async function connectChatWebsocket(user_id) {
 		const newMessage = document.createElement('li');
 
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} ${data.username ? "- :" + data.username : ''} ${data.message}`;
+		newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.message : "<" + data.message + ">"}`;
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;

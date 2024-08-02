@@ -39,8 +39,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 		await self.accept()
 
-		logger.info(f'User connected: {self.user_id}')
-		logger.info(f'User connected: {self.username}')
 		await self.channel_layer.group_send(
 			self.room_group_name,
 			{
@@ -48,7 +46,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				'message': f'{self.username} has joined the chat',
 				'user_id': self.user_id,
 				'username': '',
-				'timestamp': ''
+				'timestamp': now().strftime('%H:%M:%S')
 			})
 
 	async def disconnect(self, close_code):
