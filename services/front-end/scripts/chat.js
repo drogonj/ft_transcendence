@@ -1,7 +1,8 @@
+import { navigateTo, app } from './contentLoader.js';
+import { currentUser } from './auth.js';
+
 let chatSocket = null;
 let chatSocketRunning = false;
-
-import { navigateTo, app } from './contentLoader.js';
 
 export async function connectChatWebsocket(user_id) {
 	if (chatSocket) {
@@ -43,13 +44,13 @@ export async function connectChatWebsocket(user_id) {
 	};
 }
 
-export async function loadUsers(selfId) {
+export async function loadUsers() {
 	try {
 		const response = await fetch('/api/user/get_users/');
 		const usersData = await response.json();
 
 		for (const user of usersData.users) {
-			if (user.user_id !== 1 && user.id !== selfId) {
+			if (user.user_id !== 1 && user.user_id !== currentUser.user_id && user.is_connected) {
 				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
 			}
 		}
@@ -105,8 +106,8 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 // 	}
 // }
 
-export async function renderChatApp(user_id, username) {
-	await connectChatWebsocket(user_id);
+export async function renderChatApp() {
+	await connectChatWebsocket(currentUser.user_id);
 	app.innerHTML += `
 		<div id="users-list" class="users-list">
 		<div class="users-title">Users</div>
@@ -123,6 +124,9 @@ export async function renderChatApp(user_id, username) {
 		</div>
 	`;
 
+	// Load users
+	await loadUsers();
+
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeyup = function(e) {
 		if (KeyboardEvent.keyCode === 13) {
@@ -135,9 +139,16 @@ export async function renderChatApp(user_id, username) {
 		const message = messageInputDom.value;
 		chatSocket.send(JSON.stringify({
 			'message': message,
-			'user_id': user_id,
-			'username': username
+			'user_id': currentUser.user_id,
+			'username': currentUser.username
 		}));
 		messageInputDom.value = '';
 	};
+
+}
+
+export async function updateUsersList() {
+	const usersContentDom = document.getElementById('users-content');
+	usersContentDom.innerHTML = '';
+	await loadUsers();
 }
