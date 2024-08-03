@@ -2,19 +2,21 @@ import json
 
 from tornado.websocket import WebSocketClosedError
 
-from .utils import get_random_number_between
+
+available_players = []
 
 
 class Player:
-	def __init__(self, ws, side, username):
-		self.__socket = ws
-		self.__username = username
+	def __init__(self, socket_values):
+		self.__socket = None
+		self.__username = socket_values["username"]
 		self.__score = 0
-		self.__paddle_side = side
+		self.__paddle_side = socket_values["side"]
 		self.__top_position = 50
 		self.__paddle_size = 20
 		self.__move_speed = 5
 		self.__spells = 0
+		available_players.append(self)
 
 	def send_message_to_player(self, data_type, data_values):
 		data = {'type': data_type, 'values': data_values}
@@ -42,6 +44,10 @@ class Player:
 
 		return True
 
+	def bind_socket_to_player(self, socket):
+		self.__socket = socket
+		available_players.remove(self)
+
 	def increase_score(self):
 		self.__score += 1
 
@@ -50,6 +56,9 @@ class Player:
 
 	def move_paddle(self, step):
 		self.__top_position += step
+
+	def get_username(self):
+		return self.__username
 
 	def get_top_position(self):
 		return self.__top_position
@@ -64,10 +73,7 @@ class Player:
 		return self.__socket
 
 
-def create_players(clients):
-	new_players = []
-	side = "Left"
-	for client in clients:
-		new_players.append(Player(client, side, None))
-		side = "Right"
-	return new_players
+def get_player_with_username(username):
+	for player in available_players:
+		if player.get_username() == username:
+			return player

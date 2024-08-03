@@ -10,7 +10,7 @@ from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from user import User
-from websocket import WebSocketClient
+from websocket import WebSocketClient, get_game_server
 import asyncio
 import random
 
@@ -19,32 +19,31 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backmatchmaking.settings')
 django.setup()
 
 users_in_queue = []
-client = None
 
 
 async def bind_to_game_server():
-    global client
-    client = WebSocketClient("ws://back-game:2605/api/back")
-    await client.connect()
-    await client.send("test", {"slt": "cava", "oui": "te"})
+    WebSocketClient.game_server = WebSocketClient("ws://back-game:2605/api/back")
+    await get_game_server().connect()
+    await get_game_server().send("test", {"slt": "cava", "oui": "te"})
+
 
 async def main_check_loop():
     while True:
         print("Looking for two users..")
         if len(users_in_queue) > 1:
+            print("2 players founds, sending to game server..")
             selected_users = get_two_users()
-            create_players(selected_users)
+            await get_game_server().send("createGame", {"username1": selected_users[0].get_username(), "username2": selected_users[1].get_username()})
+
+            side = "Left"
             for user in selected_users:
-                user.kill_connection()
+                get_game_server().send("createPlayer", {"username": user.get_username(), "side": side})
+                side = "Right"
+
+            for user in selected_users:
                 users_in_queue.remove(user)
+                user.send_message_to_user("connectTo", {"server": "gameServer"})
         await gen.sleep(1)
-
-
-def create_players(users_list):
-    side = "Left"
-    for user in users_list:
-        user.send_message_to_user("createPlayer", {"username": "exemple", "side": side})
-        side = "Right"
 
 
 def get_two_users():
@@ -65,8 +64,10 @@ class EchoWebSocket(WebSocketHandler):
     def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
+        user = User(self, socket_values)
         if socket['type'] == 'createUser':
-            users_in_queue.append(User(self, socket_values))
+            users_in_queue.append(user)
+        print(f"{user.get_username()} is bind to a client in the matchmaking server")
 
     def on_close(self):
         user = self.get_user_from_socket()

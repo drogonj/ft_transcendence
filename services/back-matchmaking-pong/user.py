@@ -13,7 +13,7 @@ class User:
         message = {}
         message["type"] = message_type
         message["values"] = message_values
-        self.__socket.send(message)
+        self.__socket.write_message(message)
 
     def kill_connection(self):
         self.__socket.close()

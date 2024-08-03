@@ -8,17 +8,26 @@ let ws;
 export default function launchClientGame(socketValues) {
     ws.close();
     ws = new WebSocket("ws://localhost:2605/api/back");
-    ws.onopen = onOpen;
+    ws.onopen = function () {
+        console.log("WebSocket NatchMaking is open now.");
+        sendMessageToServer("bindSocket", {"username": "test0"})
+    };
     ws.onmessage = onReceive;
+    ws.onerror = onError;
 }
 
 export function launchClientMatchMaking() {
     ws = new WebSocket("ws://localhost:2607/api/matchmaking");
     ws.onopen = function () {
-        console.log("WebSocket NatchMaking is open now.");
-        sendMessageToServer("createUser", {"username": "rien"})
+        console.log("WebSocket MatchMaking is open now.");
+        sendMessageToServer("createUser", {"username": "test0"})
     };
-    ws.onmessage = onReceive;
+    ws.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "connectTo")
+            launchClientGame()
+    }
     ws.onerror = onError;
 }
 
