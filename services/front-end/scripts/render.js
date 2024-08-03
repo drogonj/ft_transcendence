@@ -14,8 +14,7 @@ import {
     changeFriendStatus,
     handleUserSearch,
 } from './friends.js';
-
-import { loadUsers, renderChatApp } from './chat.js';
+import { renderChatApp } from './chat.js';
 
 export function renderLogin() {
     app.innerHTML = `

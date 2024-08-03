@@ -1,3 +1,5 @@
+#webchat/consumers.py
+
 import json, requests
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Message
@@ -113,4 +115,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'user_id': user_id,
 			'username': username,
 			'timestamp': timestamp
+		}))
+
+	async def user_status_update(self, event):
+		user_id = event['id']
+		username = event['username']
+		is_connected = event['is_connected']
+
+		await self.send(text_data=json.dumps({
+			'type': 'user_status_update',
+			'id': user_id,
+			'username': username,
+			'is_connected': is_connected,
 		}))

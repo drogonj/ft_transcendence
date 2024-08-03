@@ -1,5 +1,6 @@
-import { getCsrfToken, csrfToken } from "./auth.js";
+import { getCsrfToken, csrfToken, currentUser } from "./auth.js";
 import { navigateTo } from "./contentLoader.js";
+import { updateUserStatus } from "./chat.js";
 
 let friendSocket;
 let friendSocketRunning = false;

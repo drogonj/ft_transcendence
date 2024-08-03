@@ -20,14 +20,28 @@ export async function connectChatWebsocket(user_id) {
 	chatSocket.onmessage = function(e) {
 		const data = JSON.parse(e.data);
 		console.log(data);
-		const messageList = document.getElementById('message-content');
-		const newMessage = document.createElement('li');
+	// 	const messageList = document.getElementById('message-content');
+	// 	const newMessage = document.createElement('li');
 
-		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.message : "<" + data.message + ">"}`;
-		messageList.insertBefore(newMessage, messageList.firstChild);
-		const chatMessages = document.getElementById('chat-messages');
-		chatMessages.scrollTop = chatMessages.scrollHeight;
+	// 	newMessage.classList.add('chat-message');
+	// 	newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.message : "<" + data.message + ">"}`;
+	// 	messageList.insertBefore(newMessage, messageList.firstChild);
+	// 	const chatMessages = document.getElementById('chat-messages');
+	// 	chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		if (data.type === 'user_status_update') {
+			updateUserStatus(data.id, data.is_connected);
+		} else {
+			// Handle chat message
+			const messageList = document.getElementById('message-content');
+			const newMessage = document.createElement('li');
+
+			newMessage.classList.add('chat-message');
+			newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.message : "<" + data.message + ">"}`;
+			messageList.insertBefore(newMessage, messageList.firstChild);
+			const chatMessages = document.getElementById('chat-messages');
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+		}
 	};
 
 	chatSocket.onclose = function(e) {
@@ -50,7 +64,7 @@ export async function loadUsers() {
 		const usersData = await response.json();
 
 		for (const user of usersData.users) {
-			if (user.user_id !== 1 && user.user_id !== currentUser.user_id && user.is_connected) {
+			if (user.user_id !== 1 && user.user_id !== currentUser.user_id) {
 				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
 			}
 		}
@@ -81,8 +95,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 
 	usersContainer.insertAdjacentElement('beforeend', newUser);
 
-	//changeUserStatus(user, is_connected);
-
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
 		await muteUser(event);
 	});
@@ -94,17 +106,15 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 	});
 }
 
-// async function muteUser(event) {
-// 	const userId = event.target.getAttribute('data-user-id');
-// 	const userElement = document.getElementById(`user-${userId}`);
-// 	const isMuted = userElement.classList.contains('muted');
-
-// 	if (isMuted) {
-// 		userElement.classList.remove('muted');
-// 	} else {
-// 		userElement.classList.add('muted');
-// 	}
-// }
+export async function updateUserStatus(user_id, is_connected) {
+    const usersContainer = document.getElementById(`user-${user_id}`);
+    if (usersContainer) {
+        const statusIndicator = usersContainer.querySelector('.status-indicator');
+        if (statusIndicator) {
+            statusIndicator.className = `status-indicator ${is_connected ? 'online' : 'offline'}`;
+        }
+    }
+}
 
 export async function renderChatApp() {
 	await connectChatWebsocket(currentUser.user_id);
