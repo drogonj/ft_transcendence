@@ -11,7 +11,6 @@ from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from user import User
 from websocket import WebSocketClient, get_game_server
-import asyncio
 import random
 
 # Set the Django settings module
@@ -29,7 +28,8 @@ async def bind_to_game_server():
 
 async def main_check_loop():
     while True:
-        print("Looking for two users..")
+        if random.randrange(0, 10) == 0:
+            print("Looking for two users..")
         if len(users_in_queue) > 1:
             print("2 players founds, sending to game server..")
             selected_users = get_two_users()
@@ -37,7 +37,7 @@ async def main_check_loop():
 
             side = "Left"
             for user in selected_users:
-                get_game_server().send("createPlayer", {"username": user.get_username(), "side": side})
+                await get_game_server().send("createPlayer", {"username": user.get_username(), "side": side})
                 side = "Right"
 
             for user in selected_users:
@@ -64,15 +64,13 @@ class EchoWebSocket(WebSocketHandler):
     def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
-        user = User(self, socket_values)
         if socket['type'] == 'createUser':
+            user = User(self, socket_values)
             users_in_queue.append(user)
-        print(f"{user.get_username()} is bind to a client in the matchmaking server")
+            print(f"{user.get_username()} is bind to a client in the matchmaking server")
 
     def on_close(self):
-        user = self.get_user_from_socket()
-        print(f"[-] {user.get_username()} leave the matchmaking server")
-        users_in_queue.remove(user)
+        print(f"[-] A user leave the matchmaking server.")
 
     def get_user_from_socket(self):
         for user in users_in_queue:

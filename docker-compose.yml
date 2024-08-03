@@ -98,6 +98,9 @@ services:
     env_file: .env
     networks:
       - network
+    depends_on:
+      back-game:
+        condition: service_started
 
   redis:
     container_name: redis
