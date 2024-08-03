@@ -23,7 +23,7 @@ export async function connectChatWebsocket(user_id) {
 		const newMessage = document.createElement('li');
 
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} ${data.username ? "- :" + data.username : ''} ${data.message}`;
+		newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.content : " : " + data.content}`;
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -80,8 +80,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 
 	usersContainer.insertAdjacentElement('beforeend', newUser);
 
-	//changeUserStatus(user, is_connected);
-
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
 		await muteUser(event);
 	});
@@ -92,18 +90,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 		 navigateTo(uri, true);
 	});
 }
-
-// async function muteUser(event) {
-// 	const userId = event.target.getAttribute('data-user-id');
-// 	const userElement = document.getElementById(`user-${userId}`);
-// 	const isMuted = userElement.classList.contains('muted');
-
-// 	if (isMuted) {
-// 		userElement.classList.remove('muted');
-// 	} else {
-// 		userElement.classList.add('muted');
-// 	}
-// }
 
 export async function renderChatApp(user_id, username) {
 	await connectChatWebsocket(user_id);
@@ -134,7 +120,8 @@ export async function renderChatApp(user_id, username) {
 		const messageInputDom = document.getElementById('chat-input');
 		const message = messageInputDom.value;
 		chatSocket.send(JSON.stringify({
-			'message': message,
+			'type': 'chat.message',
+			'content': message,
 			'user_id': user_id,
 			'username': username
 		}));
