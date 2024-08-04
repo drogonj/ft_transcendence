@@ -10,28 +10,28 @@ class WebSocketClient:
     def __init__(self, uri):
         self.uri = uri
         self.websocket = None
+        WebSocketClient.game_server = self
 
     async def connect(self):
         self.websocket = await websockets.connect(self.uri)
         print("Connection with game server established.")
+        asyncio.ensure_future(self.close_handle())
 
     async def send(self, message_type, values):
         data = {"type": message_type, "values": values}
-        await self.websocket.send(json.dumps(data))
+        try:
+            await self.websocket.send(json.dumps(data))
+        except:
+            print("Server seem to be not connected..")
+            self.websocket = None
 
-    async def receive(self):
-        if self.websocket:
-            response = await self.websocket.recv()
-            print(f"Message received from the server: {response}")
-            return response
+    async def close_handle(self):
+        await self.websocket.wait_closed()
+        self.websocket = None
+        print("Connection with game server lost..")
 
-    async def run(self):
-        await self.connect()
-        await self.send("Hello, server!")
-        await self.receive()
-        # Keep the connection open for further communication
-        while True:
-            await asyncio.sleep(1)  # Keep the connection alive (or replace with actual logic)
+    def is_connected(self):
+        return self.websocket is not None
 
 
 def get_game_server():

@@ -21,13 +21,18 @@ users_in_queue = []
 
 
 async def bind_to_game_server():
-    WebSocketClient.game_server = WebSocketClient("ws://back-game:2605/api/back")
-    await get_game_server().connect()
-    await get_game_server().send("test", {"slt": "cava", "oui": "te"})
+    print("Try to connect to the game server..")
+    try:
+        await get_game_server().connect()
+    except:
+        print("error bind")
 
 
 async def main_check_loop():
     while True:
+        if not get_game_server().is_connected():
+            await bind_to_game_server()
+            continue
         if random.randrange(0, 10) == 0:
             print("Looking for two users..")
         if len(users_in_queue) > 1:
@@ -47,14 +52,10 @@ async def main_check_loop():
 
 
 def get_two_users():
-    selected_user = []
-    while not len(selected_user) == 2:
-        user = random.choice(users_in_queue)
-        selected_user.append(user)
-    return selected_user
+    return random.sample(users_in_queue, 2)
 
 
-class EchoWebSocket(WebSocketHandler):
+class MatchMakingWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
@@ -83,7 +84,7 @@ class EchoWebSocket(WebSocketHandler):
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
-    (r"/api/matchmaking", EchoWebSocket),  # API handler path
+    (r"/api/matchmaking", MatchMakingWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
@@ -92,6 +93,6 @@ if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2607)
     print("Starting Tornado server on http://localhost:2607")
-    IOLoop.current().spawn_callback(bind_to_game_server)
+    WebSocketClient("ws://back-game:2605/api/back")
     IOLoop.current().spawn_callback(main_check_loop)
     IOLoop.current().start()

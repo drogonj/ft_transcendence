@@ -2,15 +2,15 @@ import {renderPageWithName} from "../scripts/page.js";
 import {getClientSide, setTopPositionToPlayer} from "./player.js";
 import {createBall, moveBalls} from "./ball.js";
 import {getGameId, launchGame, markPoint} from "./game.js";
+import {currentUser} from "../scripts/auth.js";
 
 let ws;
 
 export default function launchClientGame(socketValues) {
-    ws.close();
     ws = new WebSocket("ws://localhost:2605/api/back");
     ws.onopen = function () {
         console.log("WebSocket NatchMaking is open now.");
-        sendMessageToServer("bindSocket", {"username": "test0"})
+        sendMessageToServer("bindSocket", {"username": currentUser.username})
     };
     ws.onmessage = onReceive;
     ws.onerror = onError;
@@ -20,7 +20,7 @@ export function launchClientMatchMaking() {
     ws = new WebSocket("ws://localhost:2607/api/matchmaking");
     ws.onopen = function () {
         console.log("WebSocket MatchMaking is open now.");
-        sendMessageToServer("createUser", {"username": "test0"})
+        sendMessageToServer("createUser", {"username": currentUser.username})
     };
     ws.onmessage = function (event) {
         const data = JSON.parse(event.data);
@@ -28,6 +28,7 @@ export function launchClientMatchMaking() {
         if (data.type === "connectTo")
             document.getElementById("matchMakingCancel").disabled = "disabled"
             document.getElementById("mainTitle").textContent = "Player found ! Setting up the game.."
+            ws.close();
             launchClientGame()
     }
     ws.onerror = onError;
