@@ -157,9 +157,9 @@ export async function renderHome() {
                 `;
 
 	// Render chat
-	await renderChatApp(currentUser.user_id, currentUser.username);
+	await renderChatApp();
 	// Load users
-	await loadUsers(currentUser.user_id);
+	await loadUsers();
     // Fetch friends list
     await loadFriends();
     // Fetch friendship requests list
