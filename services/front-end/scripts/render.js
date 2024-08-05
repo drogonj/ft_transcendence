@@ -379,18 +379,18 @@ export async function renderSelfProfile() {
                     <img alt="upload" id="upload-avatar" src="/assets/images/camera.png">
                     <input type="file" id="file-input" accept="image/*" style="display:none;">
                     <div id="avatar-container">
-                      <img src="/media/avatars/default.png" alt="avatar" id="avatar">
+                      <img src="${userData.avatar}" alt="avatar" id="avatar">
                     </div>
                   </div>
                   
                   <div class="inputBox">
-                    <input type="text" id="username" name="username" value="admin" required="">
+                    <input type="text" id="username" name="username" value="${userData.username}" required="">
                   </div>
                   <div class="inputBox">
                     <input type="submit" value="Change username" id="change-username-btn">
                   </div>
                   <div class="inputBox">
-                    <input type="text" id="email" name="email" value="admin@email.com" disabled="">
+                    <input type="text" id="email" name="email" value="${userData.email}" disabled="">
                   </div>
                   
                   <div class="inputBox">
