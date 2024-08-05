@@ -42,9 +42,10 @@ class Game:
 				if ball.trigger_ball_inside_goal():
 					self.mark_point(ball)
 					continue
-				ball.trigger_ball_inside_border()
-				if ball.trigger_ball_inside_player(self.__players):
-					target_player = self.__players[0] if ball.get_ball_side() == "Left" else self.__players[1]
+				elif ball.trigger_ball_inside_border():
+					ball.calcul_ball_border_traj()
+				elif ball.trigger_ball_inside_player(self.__players):
+					target_player = self.get_player("Left") if ball.get_ball_side() == "Left" else self.get_player("Right")
 					ball.calcul_ball_traj(target_player)
 				ball.move_ball()
 				balls_to_send.append(ball.dumps_ball_for_socket())
@@ -110,7 +111,7 @@ class Game:
 		return self.__usernames
 
 	def get_player(self, side):
-		return self.__players[0] if side == "Left" else self.__players[1]
+		return self.__players[0] if self.__players[0].get_side() == side else self.__players[1]
 
 	def get_id(self):
 		return self.__game_id

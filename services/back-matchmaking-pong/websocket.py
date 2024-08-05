@@ -2,6 +2,10 @@ import asyncio
 import json
 
 import websockets
+from websockets.exceptions import (
+    ConnectionClosed,
+    WebSocketException
+)
 
 
 class WebSocketClient:
@@ -21,8 +25,8 @@ class WebSocketClient:
         data = {"type": message_type, "values": values}
         try:
             await self.websocket.send(json.dumps(data))
-        except:
-            print("Server seem to be not connected..")
+        except (ConnectionClosed, WebSocketException) as e:
+            print(f"Failed to send message: {e}")
             self.websocket = None
 
     async def close_handle(self):

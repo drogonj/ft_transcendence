@@ -11,6 +11,12 @@ from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from user import User
 from websocket import WebSocketClient, get_game_server
+from websockets.exceptions import (
+    ConnectionClosedError,
+    InvalidURI,
+    InvalidHandshake,
+    WebSocketException
+)
 import random
 
 # Set the Django settings module
@@ -21,33 +27,44 @@ users_in_queue = []
 
 
 async def bind_to_game_server():
-    print("Try to connect to the game server..")
+    print("Try connecting to the game server..")
     try:
         await get_game_server().connect()
-    except:
-        print("error bind")
+    except (OSError, InvalidURI, InvalidHandshake, ConnectionClosedError, WebSocketException) as e:
+        print(f"Failed to connect: {e}")
+
+
+async def check_game_server_health():
+    if not get_game_server().is_connected():
+        await bind_to_game_server()
+        return False
+    return True
+
+
+async def send_users_to_server():
+    selected_users = get_two_users()
+    await get_game_server().send("createGame", {"username1": selected_users[0].get_username(),
+                                                "username2": selected_users[1].get_username()})
+
+    side = "Left"
+    for user in selected_users:
+        await get_game_server().send("createPlayer", {"username": user.get_username(), "side": side})
+        side = "Right"
+
+    for user in selected_users:
+        users_in_queue.remove(user)
+        user.send_message_to_user("connectTo", {"server": "gameServer"})
 
 
 async def main_check_loop():
     while True:
-        if not get_game_server().is_connected():
-            await bind_to_game_server()
+        if not await check_game_server_health():
             continue
         if random.randrange(0, 10) == 0:
             print("Looking for two users..")
         if len(users_in_queue) > 1:
             print("2 players founds, sending to game server..")
-            selected_users = get_two_users()
-            await get_game_server().send("createGame", {"username1": selected_users[0].get_username(), "username2": selected_users[1].get_username()})
-
-            side = "Left"
-            for user in selected_users:
-                await get_game_server().send("createPlayer", {"username": user.get_username(), "side": side})
-                side = "Right"
-
-            for user in selected_users:
-                users_in_queue.remove(user)
-                user.send_message_to_user("connectTo", {"server": "gameServer"})
+            await send_users_to_server()
         await gen.sleep(1)
 
 
