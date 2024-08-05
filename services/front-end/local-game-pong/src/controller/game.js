@@ -10,7 +10,7 @@ import {startBallLoop} from "./ball.js";
 import {displayPlayerPoint} from "../view/player_view.js";
 import {timerDecrease} from "./header.js";
 import {displayStatistics} from "../view/statistics_view.js";
-import {renderPageWithName} from "../../../scripts/page.js";
+import {navigateTo} from "../../../scripts/contentLoader.js";
 
 
 export function launchGame() {
@@ -24,7 +24,7 @@ export function isGameEnd() {
 }
 
 export function endGame() {
-	renderPageWithName("menu-end.html");
+	navigateTo("/game-end", true);
 	displayStatistics(getLeftPaddle().statistics, getRightPaddle().statistics);
 }
 

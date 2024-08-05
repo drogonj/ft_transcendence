@@ -16,7 +16,7 @@ class Game:
 		games.append(self)
 
 	def launch_game(self):
-		self.send_message_to_game("renderPage", {"pageName": "pong-game.html"})
+		self.send_message_to_game("renderPage", {"url": "/game-online"})
 
 		socket_values = {}
 		socket_values["gameId"] = self.get_id()
@@ -61,7 +61,7 @@ class Game:
 	def move_player(self, socket_values):
 		player_side = socket_values["clientSide"]
 		player = self.get_player(player_side)
-		step = -1 if socket_values["direction"] == "moveUp" else 1
+		step = -0.5 if socket_values["direction"] == "moveUp" else 0.5
 		if not player.player_can_move(step):
 			return
 		player.move_paddle(step)
@@ -95,7 +95,7 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
-		self.send_message_to_game("renderPage", {"pageName": "menu-end.html"})
+		self.send_message_to_game("renderPage", {"url": "/game-end"})
 		for player in self.__players:
 			player.kill_connection()
 

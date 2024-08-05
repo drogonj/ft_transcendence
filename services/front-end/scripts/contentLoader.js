@@ -4,15 +4,22 @@ import {
     renderSignup,
     renderConfirmRegistration,
     cancelMatchMaking,
+    renderGameWaiting,
+    renderGameSettings,
+    renderGameLocal,
+    renderGameOnline,
+    renderGameEnd,
     renderUserProfile,
     renderSelfProfile
 } from './render.js';
 import {getCsrfToken, getCurrentUserInfo, handleLogin} from "./auth.js";
 import {connectFriendsWebsocket} from "./friends.js";
-import Page, {renderPageWithName} from "./page.js";
-import launch from "../local-game-pong/src/main.js";
 
 export const app = document.getElementById('app');
+
+export function getHostNameFromURL() {
+    return window.location.hostname + (window.location.port ? ":" + window.location.port : "");
+}
 
 export function cleanUrl() {
     const currentUrl = new URL(window.location.href);
@@ -47,10 +54,16 @@ export function navigateTo(route, pushState, data) {
         }
         const userId = url.match(/\/profile\/(\d+)\//)[1];
         renderUserProfile(userId);
-    } else if (route === '/game' || route === '/game/') {
-        renderPageWithName("menu-start-settings.html");
+    } else if (route === '/game-settings' || route === '/game-settings/') {
+        renderGameSettings();
+    } else if (route === '/game-local' || route === '/game-local/') {
+        renderGameLocal();
     } else if (route === '/game-online' || route === '/game-online/') {
-        renderPageWithName("pong-game-waiting.html");
+        renderGameOnline();
+    } else if (route === '/waiting-screen' || route === '/waiting-screen/') {
+        renderGameWaiting();
+    } else if (route === '/game-end' || route === '/game-end/') {
+        renderGameEnd();
     } else {
         navigateTo('/home', false);
     }
@@ -65,7 +78,6 @@ window.addEventListener('popstate', function (event) {
 });
 
 document.addEventListener('DOMContentLoaded', async function () {
-    await loadPages();
     const jsError = document.getElementById('js-error');
     if (jsError) {
         jsError.remove();
@@ -90,19 +102,3 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.error('Error fetching authentication status:', error);
     }
 });
-
-async function loadPages() {
-    await new Page("menu-start-settings.html")
-        .withListener("buttonPlay", "click", launch)
-        .build();
-
-    await new Page("pong-game.html")
-        .build();
-
-    await new Page("pong-game-waiting.html")
-        .withListener("matchMakingCancel", "click", cancelMatchMaking)
-        .build();
-
-    await new Page("menu-end.html")
-        .build();
-}

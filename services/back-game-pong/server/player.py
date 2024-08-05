@@ -36,10 +36,10 @@ class Player:
 		self.__socket.close()
 
 	def player_can_move(self, step):
-		if step == -1 and self.__top_position <= 1:
+		if step < 0 and self.__top_position <= 1:
 			return False
 
-		if step == 1 and self.__top_position >= (99 - self.__paddle_size):
+		if step > 0 and self.__top_position >= (99 - self.__paddle_size):
 			return False
 
 		return True

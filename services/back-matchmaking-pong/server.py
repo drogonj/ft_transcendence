@@ -92,7 +92,6 @@ class MatchMakingWebSocket(WebSocketHandler):
         print(f"[-] A user leave the matchmaking server.")
         user = self.get_user_from_socket()
         if user:
-            print("user removed")
             users_in_queue.remove(user)
 
 

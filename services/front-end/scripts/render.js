@@ -17,6 +17,7 @@ import {
 
 import { loadUsers, renderChatApp } from './chat.js';
 import {closeWebSocket, launchClientMatchMaking} from "../online-game-pong/websocket.js";
+import launchLocalGame from "../local-game-pong/src/main.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -96,7 +97,7 @@ export function renderSignup() {
 async function addFriendshipMenu() {
     const friendshipMenuContainer = document.querySelector('.friend-menu-container');
     friendshipMenuContainer.innerHTML = `
-            <button id="friend-menu-button" class="friend-menu-button">Amis</button>
+            <button id="friend-menu-button" class="friend-menu-button">Friends (or amis in French)</button>
             <div id="friend-menu" class="friend-menu">
                 <div class="friend-menu-header">
                     <button id="friends-button">Amis</button>
@@ -205,8 +206,10 @@ export async function renderHome() {
                         <span class="left"></span>
                         <span class="bottom"></span>
                     </div>
-                    <button id="launch-game">Launch game</button>
-                    <button id="launch-game-online">Launch game online</button>
+                    <div id="gameButtons">
+                        <button id="launch-game" class="friend-menu-button">Start local game</button>
+                        <button id="launch-game-online" class="friend-menu-button">Start online game</button>
+                    </div>
                     
                     <div class="friend-menu-container"></div>
                 `;
@@ -227,12 +230,12 @@ export async function renderHome() {
         disconnectFriendsWebsocket();
     });
     document.getElementById('launch-game').addEventListener('click', (event) => {
-        navigateTo('/game', true);
+        navigateTo('/game-settings', true);
     });
 
     document.getElementById('launch-game-online').addEventListener('click', (event) => {
         launchClientMatchMaking();
-        navigateTo('/game-online', true);
+        navigateTo('/waiting-screen', true);
     });
 }
 
@@ -496,6 +499,185 @@ export async function renderSelfProfile() {
         else
             navigateTo('/login');
     }
+}
+
+export async function renderGameWaiting() {
+    app.innerHTML = `
+        <div id="mainWait">
+	        <h1 id="mainTitle">
+		        You are in the MatchMaking. Searching game...
+	        </h1>
+	        <button id="matchMakingCancel" class="friend-menu-button">
+		        Cancel the queue
+	        </button>
+        </div>
+    `;
+    document.getElementById('matchMakingCancel').addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo('/home', true);
+    });
+}
+
+export async function renderGameEnd() {
+    app.innerHTML = `
+        <div id="menuEnd">
+            <section id="gameEndHeader">
+                <div id="leftPlayerHeader" class="playerHeader">
+                    <div>LeftPlayer</div>
+                    <img src="../../assets/images/iconleft.jpg">
+                </div>
+                <div id="RightPlayerHeader" class="playerHeader">
+                    <div>RightPlayer</div>
+                    <img src="../../assets/images/righticon.jpg">
+                </div>
+            </section>
+            <section id="statistics">
+                <div id="statsName">
+                    <div>Final score</div>
+                    <div>Touched balls</div>
+                    <div>Used spells</div>
+                    <div>Time without taking goals</div>
+                    <div>Goals in a row</div>
+                </div>
+                <div id="leftPlayer" class="statsValues">
+                </div>
+                <div id="rightPlayer" class="statsValues">
+                </div>
+            </section>
+            <div id="buttonContinue">
+                <button class="button">Continue</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('buttonContinue').addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo('/home', true);
+    });
+}
+
+export async function renderGameSettings() {
+    app.innerHTML = `
+        <div id="menuStart" class="menu">
+            <h1>Game settings</h1>
+        
+            <output class="menuItem">Paddle Move Speed</output>
+            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="15">
+        
+            <output class="menuItem">Paddle Size</output>
+            <input id="inputPaddleSize" class="menuItem slider" type="range" min="5" max="40" value="20">
+        
+            <output class="menuItem">Ball Move Speed</output>
+            <input id="inputBallSpeed" class="menuItem slider" type="range" min="6" max="20" value="12">
+        
+            <output class="menuItem">Ball Size</output>
+            <input id="inputBallSize" class="menuItem slider" type="range" min="1" max="3" value="1.5" step="0.1">
+        
+            <output class="menuItem">Number of ball</output>
+            <input id="inputNumberBall" class="menuItem slider" type="range" min="1" max="20" value="1">
+        
+            <output class="menuItem">Bounce max Angle</output>
+            <input id="inputBounceMaxAngle" class="menuItem slider" type="range" min="20" max="75" value="40">
+        
+            <output class="menuItem">Max game time</output>
+            <input id="inputMaxGameTime" class="menuItem slider" type="range" min="1" max="15" value="5">
+        
+            <output class="menuItem">Max score</output>
+            <input id="inputMaxScore" class="menuItem slider" type="range" min="10" max="100" value="25">
+        
+            <output class="menuItem">Respawn only if all balls gone</output>
+        
+            <label class="container menuItem">
+                <input id="respawnIfAllBallsGone" type="checkbox" />
+                <span class="checkmark"></span>
+            </label>
+    
+            <button id="buttonPlay" class="menuItem button">Play</button>
+        </div>
+    `;
+    document.getElementById('buttonPlay').addEventListener('click', (event) => {
+        event.preventDefault();
+        launchLocalGame();
+    });
+}
+
+export async function renderGameLocal() {
+    app.innerHTML = `
+        <div id="main">
+            <div id="mapAndHeader">
+                <div id="header">
+                    <div id="headerLeft">
+                        <div class="iconPlayer">
+                            <img src="../../assets/images/iconleft.jpg">
+                        </div>
+                        <div class="spellName">
+                            <div class="playerName">Player Left</div>
+                            <div class="spellContainer"></div>
+                        </div>
+                        <div class="scorePlayer">0</div>
+                    </div>
+        
+                    <div id="headerMiddle">
+                        <div id="headerTimer">10</div>
+                    </div>
+        
+                    <div id="headerRight">
+                        <div class="scorePlayer">0</div>
+                        <div class="spellName">
+                            <div class="playerName">Player Right</div>
+                            <div class="spellContainer"></div>
+                        </div>
+                        <div class="iconPlayer">
+                            <img src="../../assets/images/righticon.jpg">
+                        </div>
+                    </div>
+                </div>
+                <div id="map" class="centerLine">
+                    <div id="paddleLeft" class="playerPaddle"></div>
+                    <div id="paddleRight" class="playerPaddle"></div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+export async function renderGameOnline() {
+    app.innerHTML = `
+        <div id="main">
+            <div id="mapAndHeader">
+                <div id="header">
+                    <div id="headerLeft">
+                        <div class="iconPlayer">
+                            <img src="../../assets/images/iconleft.jpg">
+                        </div>
+                        <div class="spellName">
+                            <div class="playerName">Player Left</div>
+                            <div class="spellContainer"></div>
+                        </div>
+                        <div class="scorePlayer">0</div>
+                    </div>
+        
+                    <div id="headerMiddle">
+                        <div id="headerTimer">10</div>
+                    </div>
+        
+                    <div id="headerRight">
+                        <div class="scorePlayer">0</div>
+                        <div class="spellName">
+                            <div class="playerName">Player Right</div>
+                            <div class="spellContainer"></div>
+                        </div>
+                        <div class="iconPlayer">
+                            <img src="../../assets/images/righticon.jpg">
+                        </div>
+                    </div>
+                </div>
+                <div id="map" class="centerLine">
+                    <div id="paddleLeft" class="playerPaddle"></div>
+                    <div id="paddleRight" class="playerPaddle"></div>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 export function cancelMatchMaking() {

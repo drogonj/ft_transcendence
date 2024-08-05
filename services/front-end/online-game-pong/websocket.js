@@ -1,13 +1,13 @@
-import {renderPageWithName} from "../scripts/page.js";
 import {setTopPositionToPlayer} from "./player.js";
 import {createBall, moveBalls} from "./ball.js";
 import {launchGame, markPoint} from "./game.js";
 import {currentUser} from "../scripts/auth.js";
+import {getHostNameFromURL, navigateTo} from "../scripts/contentLoader.js";
 
 let ws;
 
 export default function launchClientGame(socketValues) {
-    ws = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`);
+    ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onopen = function () {
         console.log("WebSocket NatchMaking is open now.");
         sendMessageToServer("bindSocket", {"username": currentUser.username})
@@ -17,7 +17,7 @@ export default function launchClientGame(socketValues) {
 }
 
 export function launchClientMatchMaking() {
-    ws = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/matchmaking`);
+    ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/matchmaking`);
     ws.onopen = function () {
         console.log("WebSocket MatchMaking is open now.");
         sendMessageToServer("createUser", {"username": currentUser.username})
@@ -68,7 +68,7 @@ function onReceive(event) {
     else if (data.type === "displayScore")
         markPoint(data.values)
     else if (data.type === "renderPage")
-        renderPageWithName(data.values["pageName"]);
+        navigateTo(data.values["url"], true);
     else if (data.type === "launchGame")
         launchGame(data.values);
     else if (data.type === "launchClientGame")

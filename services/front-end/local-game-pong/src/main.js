@@ -6,29 +6,11 @@ import {loadHeader} from "./controller/header.js";
 import loadSettings from "./controller/settings.js";
 import loadSpell from "./controller/spell.js";
 import {launchGame} from "./controller/game.js";
-import {renderPageWithName} from "../../scripts/page.js";
+import {navigateTo} from "../../scripts/contentLoader.js";
 
-
-
-//launchLocal();
-
-/*document.getElementById("b").addEventListener("click", function (e) {
-	renderPageWithName("menu-start-settings.html");
-});*/
-
-/* launchLocal() {
-	loadSpell();
-	document.getElementById("buttonPlay").addEventListener("click", (event) => {
-		document.getElementById("main").style.display = "block"
-		launch();
-		document.getElementById("menuStart").remove();
-		launchGame();
-	});
-}*/
-
-export default function launch() {
+export default function launchLocalGame() {
 	loadSettings(document.getElementsByTagName("input"));
-	renderPageWithName("pong-game.html");
+	navigateTo("/game-local", true);
 	loadSpell();
 	loadMap();
 	loadListeners();
