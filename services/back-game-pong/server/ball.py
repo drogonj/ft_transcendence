@@ -27,7 +27,8 @@ class Ball:
 
     def trigger_ball_inside_border(self):
         if self.__top_position <= 0 or self.__top_position >= 97:
-            self.__vy = -self.__vy
+            return True
+        return False
 
     def trigger_ball_inside_goal(self):
         if self.get_left_position() <= 0 or self.get_right_position() >= 100:
@@ -40,6 +41,15 @@ class Ball:
                 if player.get_side() == "Left" and self.get_left_position() < 2 or player.get_side() == "Right" and self.get_right_position() > 98:
                     return True
         return False
+
+    def calcul_ball_border_traj(self):
+        if self.__top_position < 50 and self.__vy < 0:
+            return
+
+        if self.__top_position > 50 and self.__vy > 0:
+            return
+
+        self.__vy = -self.__vy
 
     def calcul_ball_traj(self, player):
         intersect_y = self.__top_position + 1.5

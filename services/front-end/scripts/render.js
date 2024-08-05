@@ -16,7 +16,7 @@ import {
 } from './friends.js';
 
 import { loadUsers, renderChatApp } from './chat.js';
-import launchClientWebSocket, {closeWebSocket} from "../online-game-pong/websocket.js";
+import {closeWebSocket, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -183,7 +183,7 @@ export async function renderHome() {
     });
 
     document.getElementById('launch-game-online').addEventListener('click', (event) => {
-        launchClientWebSocket()
+        launchClientMatchMaking();
         navigateTo('/game-online', true);
     });
 

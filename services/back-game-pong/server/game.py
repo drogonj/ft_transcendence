@@ -1,5 +1,4 @@
 import asyncio
-from .player import create_players
 from .ball import Ball
 from .utils import reverse_side
 
@@ -8,14 +7,13 @@ games = []
 
 
 class Game:
-	def __init__(self, game_id, clients):
+	def __init__(self, game_id, socket_values):
 		self.__game_id = game_id
-		self.__players = create_players(clients)
+		self.__players = []
+		self.__usernames = [socket_values["username1"], socket_values["username2"]]
 		self.__balls = [Ball()]
 		self.__is_game_end = False
-		asyncio.create_task(self.launch_max_time())
 		games.append(self)
-		self.launch_game()
 
 	def launch_game(self):
 		self.send_message_to_game("renderPage", {"pageName": "pong-game.html"})
@@ -35,6 +33,7 @@ class Game:
 		player.send_message_to_player("launchGame", socket_values)
 
 		asyncio.create_task(self.main_loop())
+		asyncio.create_task(self.launch_max_time())
 
 	async def main_loop(self):
 		balls_to_send = []
@@ -43,9 +42,10 @@ class Game:
 				if ball.trigger_ball_inside_goal():
 					self.mark_point(ball)
 					continue
-				ball.trigger_ball_inside_border()
-				if ball.trigger_ball_inside_player(self.__players):
-					target_player = self.__players[0] if ball.get_ball_side() == "Left" else self.__players[1]
+				elif ball.trigger_ball_inside_border():
+					ball.calcul_ball_border_traj()
+				elif ball.trigger_ball_inside_player(self.__players):
+					target_player = self.get_player("Left") if ball.get_ball_side() == "Left" else self.get_player("Right")
 					ball.calcul_ball_traj(target_player)
 				ball.move_ball()
 				balls_to_send.append(ball.dumps_ball_for_socket())
@@ -99,8 +99,19 @@ class Game:
 		for player in self.__players:
 			player.kill_connection()
 
+	def trigger_game_launch(self):
+		if len(self.__players) == 2:
+			self.launch_game()
+
+	def add_player_to_game(self, player):
+		self.__players.append(player)
+		self.trigger_game_launch()
+
+	def get_usernames(self):
+		return self.__usernames
+
 	def get_player(self, side):
-		return self.__players[0] if side == "Left" else self.__players[1]
+		return self.__players[0] if self.__players[0].get_side() == side else self.__players[1]
 
 	def get_id(self):
 		return self.__game_id
@@ -138,3 +149,11 @@ def remove_player_from_client(client):
 
 	if not game.is_game_containing_players():
 		games.remove(game)
+
+
+def bind_player_to_game(player):
+	for game in games:
+		for username in game.get_usernames():
+			if username == player.get_username():
+				game.add_player_to_game(player)
+				return
