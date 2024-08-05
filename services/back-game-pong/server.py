@@ -55,12 +55,12 @@ class EchoWebSocket(WebSocketHandler):
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
-    (r"/api/back", EchoWebSocket),  # API handler path
+    (r"/ws/back", EchoWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
 if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2605)
-    print("Starting Tornado server on http://localhost:2605")
+    print("Starting Tornado server on port 2605")
     IOLoop.current().start()

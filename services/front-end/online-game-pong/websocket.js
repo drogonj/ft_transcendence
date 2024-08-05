@@ -1,13 +1,13 @@
 import {renderPageWithName} from "../scripts/page.js";
-import {getClientSide, setTopPositionToPlayer} from "./player.js";
+import {setTopPositionToPlayer} from "./player.js";
 import {createBall, moveBalls} from "./ball.js";
-import {getGameId, launchGame, markPoint} from "./game.js";
+import {launchGame, markPoint} from "./game.js";
 import {currentUser} from "../scripts/auth.js";
 
 let ws;
 
 export default function launchClientGame(socketValues) {
-    ws = new WebSocket("ws://localhost:2605/api/back");
+    ws = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`);
     ws.onopen = function () {
         console.log("WebSocket NatchMaking is open now.");
         sendMessageToServer("bindSocket", {"username": currentUser.username})
@@ -17,7 +17,7 @@ export default function launchClientGame(socketValues) {
 }
 
 export function launchClientMatchMaking() {
-    ws = new WebSocket("ws://localhost:2607/api/matchmaking");
+    ws = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/matchmaking`);
     ws.onopen = function () {
         console.log("WebSocket MatchMaking is open now.");
         sendMessageToServer("createUser", {"username": currentUser.username})

@@ -59,6 +59,7 @@ async def send_users_to_server():
 async def main_check_loop():
     while True:
         if not await check_game_server_health():
+            await gen.sleep(3)
             continue
         if random.randrange(0, 10) == 0:
             print("Looking for two users..")
@@ -89,19 +90,24 @@ class MatchMakingWebSocket(WebSocketHandler):
 
     def on_close(self):
         print(f"[-] A user leave the matchmaking server.")
+        user = self.get_user_from_socket()
+        if user:
+            print("user removed")
+            users_in_queue.remove(user)
+
 
     def get_user_from_socket(self):
         for user in users_in_queue:
             if user.get_socket() == self:
                 return user
-        print("User not found.")
+        return False
 
 
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
-    (r"/api/matchmaking", MatchMakingWebSocket),  # API handler path
+    (r"/ws/matchmaking", MatchMakingWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
@@ -109,7 +115,7 @@ tornado_app = Application([
 if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2607)
-    print("Starting Tornado server on http://localhost:2607")
-    WebSocketClient("ws://back-game:2605/api/back")
+    print("Starting Tornado server on port 2607")
+    WebSocketClient("ws://back-game:2605/ws/back")
     IOLoop.current().spawn_callback(main_check_loop)
     IOLoop.current().start()
