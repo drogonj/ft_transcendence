@@ -16,4 +16,7 @@ urlpatterns = [
     path('api/user/oauth/callback/', views.oauth_callback, name='oauth_callback'),
     path('api/user/oauth/confirm_registration/', views.oauth_confirm_registration, name='oauth_confirm_registration'),
     path('api/user/profile/<int:user_id>/', views.UserInfoView.as_view(), name='profile'),
+    path('api/user/change-username/', views.ChangeUsernameView.as_view(), name='change-username'),
+    path('api/user/change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('api/user/upload-avatar/', views.ChangeAvatarView.as_view(), name='upload-avatar'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

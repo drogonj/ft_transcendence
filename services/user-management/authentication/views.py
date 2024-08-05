@@ -216,6 +216,9 @@ class UserInfoView(View):
             'username': user.username,
             'avatar': profil_image_url,
             'user_id': user.id,
+            'email': user.email,
+            'trophy': user.trophy,
+            'winrate': user.winrate,
         }
         return JsonResponse(data)
 
@@ -238,3 +241,63 @@ class UserUpdateView(LoginRequiredMixin, FormView):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@method_decorator(login_required, name='dispatch')
+class ChangeUsernameView(LoginRequiredMixin, FormView):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+
+            if not username:
+                return HttpResponseBadRequest('no username provided')
+
+            request.user.username = username
+            request.user.save()
+            return JsonResponse({'success': True, 'message': 'username changed'})
+        except Exception as e:
+            return HttpResponseBadRequest(f'error: {e}')
+
+@method_decorator(login_required, name='dispatch')
+class ChangePasswordView(LoginRequiredMixin, FormView):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            password = data.get('password')
+            new_password = data.get('newPassword')
+            confirm_password = data.get('confirmNewPassword')
+
+            if not new_password or not confirm_password or new_password != confirm_password:
+                return HttpResponseBadRequest()
+
+            if not password or not request.user.check_password(password):
+                return HttpResponseBadRequest()
+
+            request.user.set_password(new_password)
+            request.user.save()
+
+            user = authenticate(request, username=request.user.username, password=password)
+            login(request, user, 'authentication.authentication_backends.EmailOrUsernameModelBackend')
+
+            return JsonResponse({'success': True, 'message': 'password changed'})
+
+        except Exception as e:
+            return HttpResponseBadRequest(f'error: {e}')
+
+@method_decorator(login_required, name='dispatch')
+class ChangeAvatarView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            profile_picture = request.FILES.get('avatar')
+
+            if not profile_picture:
+                return HttpResponseBadRequest('No image provided')
+
+            user = request.user
+            user.change_profile_pic(profile_picture)
+
+            return JsonResponse({'success': True, 'avatar': user.profil_image.url})
+
+        except Exception as e:
+            return HttpResponseBadRequest('Failed to upload image')

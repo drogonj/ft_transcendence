@@ -166,17 +166,29 @@ def search_users(request):
     query = request.GET.get('q')
     if query:
         users = User.objects.filter(Q(username__icontains=query))
-        user_data = [{
-            'username': user.username,
-            'id': user.id,
-            'avatar': user.profil_image.url,
-            'pending_request': True if FriendshipRequest.objects.filter(from_user=request.user).exists() else False
-             }
-            for user in users
-            if user.username != request.user.username
-            and not Friendship.objects.filter(from_user=user, to_user=request.user).exists()]
+
+        user_data = []
+        for user in users:
+            # Vérifiez les demandes d'amitié et les amitiés existantes
+            has_friendship_request = FriendshipRequest.objects.filter(
+                from_user=request.user, to_user=user
+            ).exists()
+            has_friendship = Friendship.objects.filter(
+                Q(from_user=request.user, to_user=user) |
+                Q(from_user=user, to_user=request.user)
+            ).exists()
+
+            # Ajouter l'utilisateur seulement s'il n'est pas l'utilisateur actuel et si aucune amitié n'existe déjà
+            if user.username != request.user.username and not has_friendship:
+                user_data.append({
+                    'username': user.username,
+                    'id': user.id,
+                    'avatar': user.profil_image.url,
+                    'pending_request': has_friendship_request
+                })
     else:
         user_data = []
+
     return JsonResponse({'users': user_data})
 
 class GetAllUsersDataView(View):

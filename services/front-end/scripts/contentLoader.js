@@ -2,12 +2,13 @@ import {
     renderLogin,
     renderHome,
     renderSignup,
-    renderUserUpdateForm,
     renderConfirmRegistration,
-    renderUserProfile, cancelMatchMaking
+    cancelMatchMaking,
+    renderUserProfile,
+    renderSelfProfile
 } from './render.js';
-import {getCurrentUserInfo, handleLogin} from "./auth.js";
-import { connectFriendsWebsocket } from "./friends.js";
+import {getCsrfToken, getCurrentUserInfo, handleLogin} from "./auth.js";
+import {connectFriendsWebsocket} from "./friends.js";
 import Page, {renderPageWithName} from "./page.js";
 import launch from "../local-game-pong/src/main.js";
 
@@ -16,11 +17,11 @@ export const app = document.getElementById('app');
 export function cleanUrl() {
     const currentUrl = new URL(window.location.href);
     const newUrl = currentUrl.origin + currentUrl.pathname; // Conserve uniquement l'origine et le chemin sans les paramètres
-    history.replaceState({ route: newUrl }, 'SPA Application', newUrl);
+    history.replaceState({route: newUrl}, 'SPA Application', newUrl);
 }
 
 const confirmRegistrationUrlRegex = /\/confirm-registration\/?(\?.*)?$/;
-const profileRegex = /\/profile\/(\d+)/;
+const profileRegex = /\/profile\/(\d+)\/?/;
 
 export function navigateTo(route, pushState, data) {
     if (pushState)
@@ -28,7 +29,7 @@ export function navigateTo(route, pushState, data) {
     else
         history.replaceState({route: route}, 'SPA Application', route);
 
-    const url = window.location.href;
+    let url = window.location.href;
 
     if (route === '/login' || route === '/login/') {
         renderLogin();
@@ -36,11 +37,14 @@ export function navigateTo(route, pushState, data) {
         renderSignup();
     } else if (route === '/home' || route === '/home/') {
         renderHome();
-    } else if (route === '/update' || route === '/update/') {
-        renderUserUpdateForm();
     } else if (confirmRegistrationUrlRegex.test(route)) {
         renderConfirmRegistration();
+    } else if (route === '/profile' || route === '/profile/') {
+        renderSelfProfile();
     } else if (profileRegex.test(route)) {
+        if (!url.endsWith('/')) {
+            url += '/';
+        }
         const userId = url.match(/\/profile\/(\d+)\//)[1];
         renderUserProfile(userId);
     } else if (route === '/game' || route === '/game/') {
@@ -60,7 +64,7 @@ window.addEventListener('popstate', function (event) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     await loadPages();
     const jsError = document.getElementById('js-error');
     if (jsError) {

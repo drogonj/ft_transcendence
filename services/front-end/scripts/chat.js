@@ -30,7 +30,7 @@ export async function connectChatWebsocket(user_id) {
 			newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.content : " : " + data.content}`;
 
 			messageList.insertBefore(newMessage, messageList.firstChild);
-			
+
 			const chatMessages = document.getElementById('chat-messages');
 			chatMessages.scrollTop = chatMessages.scrollHeight;
 		} else if (data.type === 'user_status_update') {
@@ -83,11 +83,13 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 			<p>${username}</p>
 		</span>
 		<button class="mute-user-button" data-user-id="${user_id}">
-			<img src="../assets/images/chat/chat_icon.png" alt="mute">
+			<img src="/assets/images/chat/chat_icon.png" alt="mute">
 		</button>
 	`;
 
 	usersContainer.insertAdjacentElement('beforeend', newUser);
+
+	//changeUserStatus(user, is_connected);
 
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
 		await muteUser(event);
@@ -158,7 +160,7 @@ async function updateUserStatus(other_id, isConnected) {
 				}
 			}
 			break ;
-		} 
+		}
 	} catch (error) {
 		console.error('Error loading users:', error);
 	}

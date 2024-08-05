@@ -93,6 +93,68 @@ export function renderSignup() {
     });
 }
 
+async function addFriendshipMenu() {
+    const friendshipMenuContainer = document.querySelector('.friend-menu-container');
+    friendshipMenuContainer.innerHTML = `
+            <button id="friend-menu-button" class="friend-menu-button">Amis</button>
+            <div id="friend-menu" class="friend-menu">
+                <div class="friend-menu-header">
+                    <button id="friends-button">Amis</button>
+                    <button id="requests-button">Demandes d'amis</button>
+                    <button id="add-friend-button">Ajouter un ami</button>
+                </div>
+                <ul id="friends-content" class="friend-menu-content active"></ul>
+                <ul id="requests-content" class="friend-menu-content"></ul>
+                <ul id="add-friend" class="friend-menu-content">
+                    <div id="search-bar">
+                        <form id="search-user-form">
+                            <input type="text" id="search-query" name="q" required>
+<!--                                <i>Username</i>-->
+                                <input type="submit" value="search">
+                        </form>
+                    </div>
+                    <div id="search-results"></div>
+                </ul>
+            </div>
+    `;
+    // Fetch friends list
+    await loadFriends();
+    // Fetch friendship requests list
+    await loadFriendshipRequests();
+
+    document.getElementById('friend-menu-button').addEventListener('click', function() {
+        let menu = document.getElementById('friend-menu');
+        let menuButton = document.getElementById('friend-menu-button');
+        if (menu.style.maxHeight) {
+            menuButton.style.borderRadius = "5px 5px 0 0";
+            menu.style.maxHeight = null;
+        } else {
+            menuButton.style.borderRadius = "0";
+            menu.style.maxHeight = "40vh";
+        }
+    });
+
+    document.getElementById('friends-button').addEventListener('click', function() {
+        document.getElementById('friends-content').classList.add('active');
+        document.getElementById('add-friend').classList.remove('active');
+        document.getElementById('requests-content').classList.remove('active');
+    });
+
+    document.getElementById('requests-button').addEventListener('click', function() {
+        document.getElementById('requests-content').classList.add('active');
+        document.getElementById('add-friend').classList.remove('active');
+        document.getElementById('friends-content').classList.remove('active');
+    });
+
+    document.getElementById('add-friend-button').addEventListener('click', function() {
+        document.getElementById('add-friend').classList.add('active');
+        document.getElementById('friends-content').classList.remove('active');
+        document.getElementById('requests-content').classList.remove('active');
+    });
+
+    document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
+}
+
 export async function renderHome() {
     app.innerHTML = `
                     <h3 id="transcendence-title">
@@ -116,64 +178,50 @@ export async function renderHome() {
                     <div class="profile-card">
                         <div id="avatar-display">
                             <div id="avatar-container">
-                                <img src="/api/user/get_avatar/" alt="avatar" id="avatar"/>
+                                <img src="${currentUser.avatar}" alt="avatar" id="avatar"/>
                             </div>
                         </div>
                         <p>${currentUser.username}</p>
+                        <div id="profile-card-trophy">
+                            <p>${currentUser.trophy}</p>
+                            <img alt="trophy" src="/assets/images/trophy.png">
+                        </div>
+                        <div class="single-chart">
+                            <svg viewBox="0 0 36 36" class="circular-chart orange">
+                                <path class="circle-bg" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                     a 15.9155 15.9155 0 0 1 0 31.831
+                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <text x="18" y="20.35" class="percentage">30%</text>
+                            </svg>
+                            <p>winrate</p>
+                        </div>
                         <div class="buttons">
                             <a href="#" id="profile-button">Show profile</a>
-                            <a href="#" id="update-user-info">Change profile</a>  
                             <a href="#" id="logout-button">Logout</a>
                         </div>
                         <span class="left"></span>
                         <span class="bottom"></span>
                     </div>
-                    <div id="gameButtons">
-                        <button id="launch-game" class="button">Start local game</button>
-                        <button id="launch-game-online" class="button">Start online game</button>
-                    </div>
-                    <div class="friend-menu-container">
-                        <button id="friend-menu-button" class="friend-menu-button">Amis</button>
-                        <div id="friend-menu" class="friend-menu">
-                            <div class="friend-menu-header">
-                                <button id="friends-button">Amis</button>
-                                <button id="requests-button">Demandes d'amis</button>
-                                <button id="add-friend-button">Ajouter un ami</button>
-                             </div>
-                             <ul id="friends-content" class="friend-menu-content active"></ul>
-                             <ul id="requests-content" class="friend-menu-content"></ul>
-                             <ul id="add-friend" class="friend-menu-content">
-                              <div id="search-bar">
-                              <form id="search-user-form">
-                                   <input type="text" id="search-query" name="q" required>
-                                   <i>Username</i>
-                                   <input type="submit" value="search">
-                               </form>
-                              </div>
-                              <div id="search-results"></div>
-                            </ul>
-                        </div>
-                    </div>
+                    <button id="launch-game">Launch game</button>
+                    <button id="launch-game-online">Launch game online</button>
+                    
+                    <div class="friend-menu-container"></div>
                 `;
 
-	// Render chat
-	await renderChatApp();
-	// Load users
-	await loadUsers();
-    // Fetch friends list
-    await loadFriends();
-    // Fetch friendship requests list
-    await loadFriendshipRequests();
+    // Render chat
+    await renderChatApp(currentUser.user_id, currentUser.username);
+    // Load users
+    await loadUsers(currentUser.user_id);
 
-    document.getElementById('update-user-info').addEventListener('click', (event) => {
-        event.preventDefault();
-        navigateTo('/update/', true);
-    });
+    await addFriendshipMenu();
+
     document.getElementById('profile-button').addEventListener('click', (event) => {
         event.preventDefault();
-        navigateTo(`/profile/${currentUser.user_id}/`, true);
+        navigateTo(`/profile/`, true);
     });
-    document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
     document.getElementById('logout-button').addEventListener('click', (event) => {
         handleLogout();
         disconnectFriendsWebsocket();
@@ -186,67 +234,6 @@ export async function renderHome() {
         launchClientMatchMaking();
         navigateTo('/game-online', true);
     });
-
-    document.getElementById('friend-menu-button').addEventListener('click', function() {
-        let menu = document.getElementById('friend-menu');
-        let menuButton = document.getElementById('friend-menu-button');
-        if (menu.style.maxHeight) {
-            menuButton.style.borderRadius = "5px 5px 0 0";
-            menu.style.maxHeight = null;
-        } else {
-            menuButton.style.borderRadius = "0";
-            menu.style.maxHeight = "500px";
-        }
-    });
-
-    document.getElementById('friends-button').addEventListener('click', function() {
-        document.getElementById('friends-content').classList.add('active');
-        document.getElementById('add-friend').classList.remove('active');
-        document.getElementById('requests-content').classList.remove('active');
-    });
-
-    document.getElementById('requests-button').addEventListener('click', function() {
-        document.getElementById('requests-content').classList.add('active');
-        document.getElementById('add-friend').classList.remove('active');
-        document.getElementById('friends-content').classList.remove('active');
-    });
-
-    document.getElementById('add-friend-button').addEventListener('click', function() {
-        document.getElementById('add-friend').classList.add('active');
-        document.getElementById('friends-content').classList.remove('active');
-        document.getElementById('requests-content').classList.remove('active');
-    });
-}
-
-export async function renderUserUpdateForm() {
-    const response = await fetch('/api/user/info/');
-
-    try {
-        const userData = await response.json();
-
-        app.innerHTML = `
-        <h2>Update User Information</h2>
-        <form id="user-update-form">
-            <div>
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" value="${userData.username}" required>
-            </div>
-            <div>
-                <label for="profil_image">Profile Picture:</label>
-                <input type="file" id="profil_image" name="profil_image" accept="image/*">
-            </div>
-            <button type="submit">Update</button>
-        </form>
-        <button id="home">Home</button>
-    `;
-        document.getElementById('user-update-form').addEventListener('submit', handleUserUpdate);
-        document.getElementById('home').addEventListener('click', (event) => {
-            event.preventDefault();
-            navigateTo('/');
-        });
-    } catch (error) {
-        navigateTo('/login');
-    }
 }
 
 export async function renderConfirmRegistration() {
@@ -298,28 +285,217 @@ export async function renderConfirmRegistration() {
 export async function renderUserProfile(userId) {
     const response = await fetch(`/api/user/profile/${userId}/`);
 
-    if (!response.ok) {
-        navigateTo('/home');
-    }
-
     const userData = await response.json();
 
-    app.innerHTML = `
-        <div class="profile-container">
-            <h1>User Profile</h1>
-            <div class="profile-picture">
-                <img src="${userData.avatar}" alt="Profile Picture">
-            </div>
-            <div class="profile-details">
-                <p><strong>Username:</strong> ${userData.username}</p>
-            </div> 
+    try {
+        app.innerHTML = `
+            <div class="profile-section-container">
+              
+              <section class="profile-section">
+                <h2>Profile</h2>
+                <div class="profile-box">
+                  <div id="avatar-display">
+                    <div id="avatar-container">
+                      <img src="${userData.avatar}" alt="avatar" id="avatar">
+                    </div>
+                  </div>
+                  <p id="profile-username">${userData.username}</p>
+                </div>
+              </section>
+                
+              <section class="profile-section">
+                <h2>Stats</h2>
+                <div class="profile-box">
+                    <div id="profile-card-trophy">
+                            <p>${userData.trophy}</p>
+                            <img alt="trophy" src="/assets/images/trophy.png">
+                        </div>
+                        <div class="single-chart">
+                            <svg viewBox="0 0 36 36" class="circular-chart orange">
+                                <path class="circle-bg" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                     a 15.9155 15.9155 0 0 1 0 31.831
+                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <text x="18" y="20.35" class="percentage">30%</text>
+                            </svg>
+                            <p>winrate</p>
+                        </div>
+                    <div id="stats-text-container">
+                        <p><span>Victory: </span>3</p>
+                        <p><span>Defeat: </span>7</p>
+                        <p><span>Goals: </span>37</p>
+                        <p><span>Tournaments Won: </span>1</p>
+                    </div>
+                </div>
+              </section>
+  
+              <section class="profile-section">
+                <h2>Match History</h2>
+                <div class="profile-box">
+                  <div id="match-history-container">
+                      <span class="match">
+                        <p class="usernames">${userData.username} vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                      <span class="match">
+                        <p class="usernames">${userData.username} vs ADMIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                  </div>
+                </div>
+              </section>
         </div>
-        <button id="home">Home</button>
-    `;
-    document.getElementById('home').addEventListener('click', (event) => {
-        event.preventDefault();
-        navigateTo('/', true);
-    });
+        <button id="home-button">Home</button>
+        <div class="friend-menu-container"></div>
+        `;
+
+        await addFriendshipMenu();
+
+        document.getElementById('home-button').addEventListener('click', function (event) {
+            event.preventDefault();
+            navigateTo('/home', true);
+        });
+
+    } catch (error) {
+        if (currentUser.username)
+            navigateTo('/home');
+        else
+            navigateTo('/login');
+    }
+}
+
+export async function renderSelfProfile() {
+    try {
+        app.innerHTML = `
+            <div class="profile-section-container">
+              
+
+                <section class="profile-section">
+                 <h2>Profile</h2>
+                <div class="profile-box">
+                  <div id="avatar-display">
+                    <img alt="upload" id="upload-avatar" src="/assets/images/camera.png">
+                    <input type="file" id="file-input" accept="image/*" style="display:none;">
+                    <div id="avatar-container">
+                      <img src="/media/avatars/default.png" alt="avatar" id="avatar">
+                    </div>
+                  </div>
+                  
+                  <div class="inputBox">
+                    <input type="text" id="username" name="username" value="admin" required="">
+                  </div>
+                  <div class="inputBox">
+                    <input type="submit" value="Change username" id="change-username-btn">
+                  </div>
+                  <div class="inputBox">
+                    <input type="text" id="email" name="email" value="admin@email.com" disabled="">
+                  </div>
+                  
+                  <div class="inputBox">
+                    <input type="password" id="password" name="password" required="">
+                    <i>Password</i>
+                  </div>
+                  <div class="inputBox">
+                    <input type="password" id="new-password" name="new-password" required="">
+                    <i>New Password</i>
+                  </div>
+                  <div class="inputBox">
+                    <input type="password" id="confirm-new-password" name="confirm-new-password" required="">
+                    <i>Confirm new Password</i>
+                  </div>
+                  <div class="inputBox">
+                    <input type="submit" value="Change password" id="change-password-btn">
+                  </div>
+                  
+                  <div id="response-message" style="display: none;"></div>
+                </div>
+              </section>
+                
+              <section class="profile-section">
+                <h2>Stats</h2>
+                <div class="profile-box">
+
+                    <div id="profile-card-trophy">
+                            <p>${currentUser.trophy}</p>
+                            <img alt="trophy" src="/assets/images/trophy.png">
+                        </div>
+                        <div class="single-chart">
+                            <svg viewBox="0 0 36 36" class="circular-chart orange">
+                                <path class="circle-bg" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                     a 15.9155 15.9155 0 0 1 0 31.831
+                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <text x="18" y="20.35" class="percentage">30%</text>
+                            </svg>
+                            <p>winrate</p>
+                        </div>
+                    <div id="stats-text-container">
+                        <p><span>Victory: </span>3</p>
+                        <p><span>Defeat: </span>7</p>
+                        <p><span>Goals: </span>37</p>
+                        <p><span>Tournaments Won: </span>1</p>
+                    </div>
+                </div>
+              </section>
+  
+              <section class="profile-section">
+                <h2>Match History</h2>
+                <div class="profile-box">
+                  <div id="match-history-container">
+                      <span class="match">
+                        <p class="usernames">YOU vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                      <span class="match">
+                        <p class="usernames">YOU vs ADMIN</p>
+                        <p class="scores">12 : 3</p>
+                      </span>
+                  </div>
+                </div>
+              </section>
+        </div>
+        <button id="home-button">Home</button>
+        <div class="friend-menu-container"></div>
+        `;
+
+        await addFriendshipMenu();
+
+        const uploadAvatar = document.getElementById('upload-avatar');
+        const fileInput = document.getElementById('file-input');
+
+        uploadAvatar.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (event) => {
+            await changeAvatar(event);
+        });
+
+        document.getElementById('change-username-btn').addEventListener('click', async function (event) {
+            event.preventDefault();
+            await changeUsername();
+        });
+
+        document.getElementById('change-password-btn').addEventListener('click', async function (event) {
+            event.preventDefault();
+            await changePassword();
+        });
+
+        document.getElementById('home-button').addEventListener('click', function (event) {
+            event.preventDefault();
+            navigateTo('/home', true);
+        });
+
+    } catch (error) {
+        if (currentUser.username)
+            navigateTo('/home');
+        else
+            navigateTo('/login');
+    }
 }
 
 export function cancelMatchMaking() {
