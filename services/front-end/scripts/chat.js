@@ -1,69 +1,16 @@
+import { navigateTo, app } from './contentLoader.js';
+import { currentUser } from './auth.js';
+
 let chatSocket = null;
 let chatSocketRunning = false;
-let userSocket = null;
-let userSocketRunning = false;
 
-import { navigateTo, app } from './contentLoader.js';
+export async function connectChatWebsocket(user_id) {
+	if (chatSocket) {
+		return;
+	}
 
-// export async function connectUserWebsocket() {
-// 	userSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/users/`);
-
-// 	userSocket.onopen = function(e) {
-// 		chatSocketRunning = true;
-// 		console.log("User connection established.");
-// 	};
-
-// 	userSocket.onmessage = function(e) {
-// 		const data = JSON.parse(e.data);
-// 		const type = data.type;
-// 		console.log(data);
-
-// 		const usersContainer = document.getElementById('users-content');
-// 		const user = document.getElementById(`user-${data.user_id}`);
-
-// 		const route =  window.location.pathname + window.location.search;
-//		 if (route === '/home' || route === '/home/') {
-//			 if (type === 'friend_request_notification') {
-//				 const avatar = data.avatar
-//				 addFriendshipRequestToMenu(user_id, from_user, avatar)
-//			 } else if (type === 'accepted_friendship_request_notification') {
-//				 const avatar = data.avatar
-//				 const is_connected = data.is_connected
-//				 addFriendToMenu(user_id, from_user, avatar, is_connected)
-//			 } else if (type === 'canceled_friendship_notification') {
-//				 const divId = "friend-" + user_id;
-//				 const element = document.getElementById(divId);
-//				 element.remove();
-//			 } else if (type === 'friend_connected_notification') {
-//				 changeFriendStatus(user_id, true);
-//			 } else if (type === 'friend_disconnected_notification') {
-//				 changeFriendStatus(user_id, false)
-//			 }
-// 		}
-
-// 		newMessage.classList.add('chat-message');
-// 		newMessage.textContent = data.message;
-// 		chatMessages.appendChild(newMessage);
-// 		chatMessages.scrollTop = chatMessages.scrollHeight;
-// 	};
-
-// 	userSocket.onclose = function(e) {
-// 		chatSocketRunning = false;
-// 		if (e.wasClean) {
-// 			console.log(`[close] User Connection closed cleanly, code=${e.code} reason=${e.reason}`);
-// 		} else {
-// 			console.log('[close] User Connection died');
-// 		}
-// 	};
-
-// 	userSocket.onerror = function(error) {
-// 		console.error(`[error] ${error.message}`);
-// 	};
-// }
-
-export async function connectChatWebsocket() {
 	const roomName = 'general';
-	chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/` + roomName + '/');
+	chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/${user_id}/`);
 
 	chatSocket.onopen = function(e) {
 		chatSocketRunning = true;
@@ -73,14 +20,22 @@ export async function connectChatWebsocket() {
 	chatSocket.onmessage = function(e) {
 		const data = JSON.parse(e.data);
 		console.log(data);
-		const messageList = document.getElementById('message-content');
-		const newMessage = document.createElement('li');
 
-		newMessage.classList.add('chat-message');
-		newMessage.textContent = data.timestamp + " <" + data.username + "> " + data.message;
-		messageList.insertBefore(newMessage, messageList.firstChild);
-		const chatMessages = document.getElementById('chat-messages');
-		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		if (data.type === 'chat_message') {
+			const messageList = document.getElementById('message-content');
+			const newMessage = document.createElement('li');
+
+			newMessage.classList.add('chat-message');
+			newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.content : " : " + data.content}`;
+
+			messageList.insertBefore(newMessage, messageList.firstChild);
+
+			const chatMessages = document.getElementById('chat-messages');
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+		} else if (data.type === 'user_status_update') {
+			updateUserStatus(data.user_id, data.is_connected);
+		}
 	};
 
 	chatSocket.onclose = function(e) {
@@ -97,16 +52,14 @@ export async function connectChatWebsocket() {
 	};
 }
 
-export async function loadUsers(selfId) {
+export async function loadUsers() {
 	try {
-		const response = await fetch('/api/chat/fetch_users/');
+		const response = await fetch('/api/user/get_users/');
 		const usersData = await response.json();
 
-		console.log(usersData);
 		for (const user of usersData.users) {
-			console.log(selfId, user.id);
-			if (user.id !== 1 && user.id !== selfId) {
-				addUserToMenu(user.id, user.username, user.avatar, user.is_connected);
+			if (user.user_id !== 1 && user.user_id !== currentUser.user_id) {
+				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
 			}
 		}
 
@@ -115,21 +68,21 @@ export async function loadUsers(selfId) {
 	}
 }
 
-export function addUserToMenu(userID, username, avatar, is_connected) {
+async function addUserToMenu(user_id, username, avatar, is_connected) {
 	const usersContainer = document.getElementById('users-content');
 
 	const newUser = document.createElement('li');
-	newUser.id = `user-${userID}`;
+	newUser.id = `user-${user_id}`;
 
 	newUser.innerHTML = `
 		<div class="status-indicator ${is_connected ? 'online' : 'offline'}"></div>
 		<div class="avatar-container">
 			<img class="avatar" src="${avatar}" alt="${username}'s Avatar">
 		</div>
-		<span class="profile-link" data-user-id="${userID}">
+		<span class="profile-link" data-user-id="${user_id}">
 			<p>${username}</p>
 		</span>
-		<button class="mute-user-button" data-user-id="${userID}">
+		<button class="mute-user-button" data-user-id="${user_id}">
 			<img src="/assets/images/chat/chat_icon.png" alt="mute">
 		</button>
 	`;
@@ -149,8 +102,8 @@ export function addUserToMenu(userID, username, avatar, is_connected) {
 	});
 }
 
-export async function renderChatApp(user_id, username) {
-	await connectChatWebsocket();
+export async function renderChatApp() {
+	await connectChatWebsocket(currentUser.user_id);
 	app.innerHTML += `
 		<div id="users-list" class="users-list">
 		<div class="users-title">Users</div>
@@ -178,10 +131,37 @@ export async function renderChatApp(user_id, username) {
 		const messageInputDom = document.getElementById('chat-input');
 		const message = messageInputDom.value;
 		chatSocket.send(JSON.stringify({
-			'message': message,
-			'user_id': user_id,
-			'username': username
+			'type': 'chat_message',
+			'content': message,
+			'user_id': currentUser.user_id,
+			'username': currentUser.username
 		}));
 		messageInputDom.value = '';
 	};
+}
+
+async function updateUserStatus(other_id, isConnected) {
+	console.log('Updating user status:', other_id, isConnected);
+	try {
+		const response = await fetch('/api/user/get_users/');
+		const usersData = await response.json();
+
+		for (const user of usersData.users) {
+			const statusElement = document.getElementById(`user-${other_id}`);
+			if (user.user_id !== other_id) {
+				continue ;
+			} else if (statusElement) {
+				statusElement.querySelector('.status-indicator').className = `status-indicator ${isConnected ? 'online' : 'offline'}`;
+				console.log(`Updated status for user ${other_id} to ${isConnected ? "Online" : "Offline"}`);
+			} else {
+				const usersContainer = document.getElementById('usersContainer');
+				if (usersContainer) {
+					addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
+				}
+			}
+			break ;
+		}
+	} catch (error) {
+		console.error('Error loading users:', error);
+	}
 }

@@ -41,6 +41,13 @@ a {
     object-position: center; /* centre l'image */
 }
 
+#gameButtons {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+
 #main, #mapAndHeader {
     aspect-ratio: 16 / 9;
     max-width: 95vw;

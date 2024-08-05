@@ -1,5 +1,5 @@
 import {navigateTo, app, cleanUrl} from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, changeUsername, changePassword, changeAvatar, currentUser, getCsrfToken, csrfToken } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, currentUser, getCsrfToken, csrfToken } from './auth.js';
 import {
     connectFriendsWebsocket,
     disconnectFriendsWebsocket,
@@ -16,6 +16,7 @@ import {
 } from './friends.js';
 
 import { loadUsers, renderChatApp } from './chat.js';
+import {closeWebSocket, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -230,6 +231,7 @@ export async function renderHome() {
     });
 
     document.getElementById('launch-game-online').addEventListener('click', (event) => {
+        launchClientMatchMaking();
         navigateTo('/game-online', true);
     });
 }
@@ -493,4 +495,9 @@ export async function renderSelfProfile() {
         else
             navigateTo('/login');
     }
+}
+
+export function cancelMatchMaking() {
+    closeWebSocket();
+    navigateTo('/home', true)
 }

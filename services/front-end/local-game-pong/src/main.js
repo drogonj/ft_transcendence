@@ -12,6 +12,10 @@ import {renderPageWithName} from "../../scripts/page.js";
 
 //launchLocal();
 
+/*document.getElementById("b").addEventListener("click", function (e) {
+	renderPageWithName("menu-start-settings.html");
+});*/
+
 /* launchLocal() {
 	loadSpell();
 	document.getElementById("buttonPlay").addEventListener("click", (event) => {

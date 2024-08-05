@@ -7,7 +7,8 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from server.game import Game, get_game_with_id
+from server.game import Game, get_game_with_client, remove_player_from_client, bind_player_to_game
+from server.player import Player, get_player_with_username
 
 
 # Server will send websocket as json with the followed possible key
@@ -26,20 +27,27 @@ class EchoWebSocket(WebSocketHandler):
         return True  # Allow all origins
 
     def open(self):
-        clients.append(self)
-        print("[+] A new client is connected to the server.")
-        if len(clients) == 2:
-            Game(0, clients)
+        print("[+] A new connection is established to game server.")
 
     def on_message(self, message):
         socket = json.loads(message)
-        target_game = get_game_with_id(0)
+        socket_values = socket['values']
         if socket["type"] == "movePlayer":
-            target_game.move_player(socket['values'])
+            get_game_with_client(self).move_player(socket_values)
+        elif socket["type"] == "createPlayer":
+            Player(socket_values)
+        elif socket["type"] == "createGame":
+            Game(0, socket_values)
+        elif socket["type"] == "bindSocket":
+            player = get_player_with_username(socket["values"]["username"])
+            player.bind_socket_to_player(self)
+            bind_player_to_game(player)
+
+
 
     def on_close(self):
         print("[-] A client leave the server")
-        get_game_with_id(0).set_game_state(True)
+        remove_player_from_client(self)
         clients.remove(self)
 
 
@@ -47,12 +55,12 @@ class EchoWebSocket(WebSocketHandler):
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
-    (r"/api/back", EchoWebSocket),  # API handler path
+    (r"/ws/back", EchoWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
 if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2605)
-    print("Starting Tornado server on http://localhost:2605")
+    print("Starting Tornado server on port 2605")
     IOLoop.current().start()

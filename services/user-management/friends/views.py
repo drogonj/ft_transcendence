@@ -191,16 +191,28 @@ def search_users(request):
 
     return JsonResponse({'users': user_data})
 
-class ListAllUsersView(View):
+class GetAllUsersDataView(View):
 	def get(self, request):
 		users = User.objects.all()
 		user_data = [
 			{
 				'username': user.username,
-				'id': user.id,
+				'user_id': user.id,
 				'avatar': user.profil_image.url if user.profil_image else None,
 				'is_connected': user.is_connected,
 			}
 			for user in users
 		]
 		return JsonResponse({'users': user_data})
+
+class GetOneUserDataView(View):
+	def get(self, request, user_id):
+		try:
+			user = User.objects.get(id=user_id)
+			user_data = {
+				'username': user.username,
+				'is_connected': user.is_connected,
+			}
+			return JsonResponse(user_data)
+		except User.DoesNotExist:
+			return JsonResponse({'error': 'User not found'}, status=404)

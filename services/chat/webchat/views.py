@@ -1,18 +1,9 @@
-import requests, logging
-from django.http import JsonResponse
-from django.views import View
+from django.contrib.auth.signals import user_logged_out
+from django.dispatch import receiver
+from .consumers import user_to_consumer
+import asyncio
 
-logger = logging.getLogger(__name__)
-
-class FetchUserDataView(View):
-    def get(self, request):
-        try:
-            response = requests.get('http://user-management:8000/api/user/get_users/')
-            response.raise_for_status()
-
-            data = response.json()
-            return JsonResponse(data, safe=False)
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching user data: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
+@receiver(user_logged_out)
+def on_user_logged_out(sender, request, user, **kwargs):
+	consumer_instance = user_to_consumer.get(user)
+	asyncio.run(consumer_instance.logout())

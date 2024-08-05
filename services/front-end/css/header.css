@@ -18,24 +18,19 @@
     background-color: #ffffff;
 }
 
-.spellNameAndElo {
+.spellName {
+    width: 45%;
     height: 100%;
 }
 
-.playerNameAndElo {
+.playerName {
+    text-align: center;
     margin: 2px;
-    display: flex;
-    align-items: center;
     font-size: 40%;
 }
 
 .scorePlayer {
     font-size: 50%;
-}
-
-.playerElo {
-    font-size: 60%;
-    margin: 3px;
 }
 
 .spellContainer {
