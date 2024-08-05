@@ -1,5 +1,8 @@
 #!/bin/bash
 
+pkill vault
+rm -rf /vault/data/*
+
 set -e
 
 # Variables
@@ -14,15 +17,13 @@ mkdir -p "${DIR}"
 openssl genpkey -algorithm RSA -out "${CA_KEY}" -aes256 -pass pass:mycapass
 
 # Créer le certificat auto-signé de la CA
-openssl req -x509 -new -nodes -key "${CA_KEY}" -sha256 -days 3650 -out "${CA_CERT}" \
-  -subj "/C=FR/ST=Alsace/L=Mulhouse/O=Transcendence CA/CN=Transcendence Root CA" -passin pass:mycapass
+openssl req -x509 -new -nodes -key "${CA_KEY}" -sha256 -days 3650 -out "${CA_CERT}" -subj "/C=FR/ST=Alsace/L=Mulhouse/O=Transcendence CA/CN=Transcendence Root CA" -passin pass:mycapass
 
 # Fonction pour générer les certificats pour un serveur Vault
 generate_cert() {
   local SERVER_NAME=$1
   local IP1=$2
   local IP2=$3
-  local IP3=$4
 
   # Générer la clé privée du serveur
   openssl genpkey -algorithm RSA -out "${DIR}/${SERVER_NAME}.key"
@@ -52,7 +53,6 @@ subjectAltName       = @alt_names
 [alt_names]
 IP.1  = ${IP1}
 IP.2  = ${IP2}
-IP.3  = ${IP3}
 DNS.1 = ${SERVER_NAME}
 EOF
 
@@ -60,24 +60,18 @@ EOF
   openssl req -new -key "${DIR}/${SERVER_NAME}.key" -out "${DIR}/${SERVER_NAME}.csr" -config "${DIR}/${SERVER_NAME}.cnf"
 
   # Signer la CSR avec la CA
-  openssl x509 -req -in "${DIR}/${SERVER_NAME}.csr" -CA "${CA_CERT}" -CAkey "${CA_KEY}" \
-    -CAcreateserial -out "${DIR}/${SERVER_NAME}.crt" -days 365 -sha256 \
-    -extensions v3_req -extfile "${DIR}/${SERVER_NAME}.cnf" -passin pass:mycapass
+  openssl x509 -req -in "${DIR}/${SERVER_NAME}.csr" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${DIR}/${SERVER_NAME}.crt" -days 365 -sha256 -extensions v3_req -extfile "${DIR}/${SERVER_NAME}.cnf" -passin pass:mycapass
 
   # Créer le certificat combiné pour le serveur
   cat "${DIR}/${SERVER_NAME}.crt" "${CA_CERT}" > "${DIR}/${SERVER_NAME}-combined.crt"
 }
 
-# Générer les certificats pour le serveur Vault
-generate_cert "vault" "127.0.0.1" "0.0.0.0" "172.30.0.2"
+generate_cert "vault" "127.0.0.1" "0.0.0.0"
 
-# Démarrer Vault
 vault server -config=/vault/config/config.hcl &
 
-# Attendre que Vault démarre
 sleep 5
 
-# Initialiser et déverrouiller Vault
 if ! vault status >/dev/null 2>&1; then
     echo "Initializing Vault..."
     vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/data/init.json
@@ -90,9 +84,16 @@ ROOT_TOKEN=$(jq -r '.root_token' /vault/data/init.json)
 echo "Unsealing Vault..."
 vault operator unseal $UNSEAL_KEY
 
+sealed=$(vault status -format=json | jq -r '.sealed')
+if [ "$sealed" = "true" ]; then
+    echo "Erreur : Vault est toujours scellé après tentative de déverrouillage"
+    exit 1
+fi
+
+echo "Vault unsealed successfully"
+
 export VAULT_TOKEN=$ROOT_TOKEN
 
-# Configurer Vault
 if ! vault secrets list | grep -q '^secret/'; then
     echo "Enabling KV v2 secret engine at path 'secret/'"
     vault secrets enable -path=secret kv-v2
@@ -121,11 +122,9 @@ path "secret/data/myapp/*" {
 EOF
 
 vault policy write django-policy /vault/config/django-policy.hcl
-vault audit enable file file_path=/vault/logs/audit.log
+vault audit enable file file_path=/var/log/vault_audit.log
 DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
 echo "$DJANGO_TOKEN" > /vault/token/token
-
+vault kv get secret/myapp/database
 echo "Vault initialized and configured"
-
-# Garder le conteneur en vie
 tail -f /dev/null

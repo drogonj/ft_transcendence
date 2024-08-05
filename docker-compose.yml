@@ -79,15 +79,9 @@ services:
     volumes:
      - vault-data:/vault/data
      - vault-token:/vault/token
-     - vault-logs:/vault/logs
-     - vault-config:/vault/config
      - vault-ssl:/vault/ssl
     hostname: 'vault'
     environment:
-      VAULT_ADDR: 'https://vault:8200'
-      VAULT_CACERT: '/vault/ssl/ca.crt'
-      VAULT_CLIENT_CERT: '/vault/ssl/vault.crt'
-      VAULT_CLIENT_KEY: '/vault/ssl/vault.key'
       TZ: 'Europe/Paris'
       VAULT_SKIP_IP_AUTO_CONFIG: 'true'
 
@@ -133,7 +127,5 @@ volumes:
   django:
   vault-data:
   vault-token:
-  vault-logs:
-  vault-config:
   vault-ssl:
   redis:
