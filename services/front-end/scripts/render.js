@@ -1,5 +1,5 @@
 import {navigateTo, app, cleanUrl} from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, currentUser, getCsrfToken, csrfToken } from './auth.js';
+import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, changeAvatar, changeUsername, changePassword, currentUser, getCsrfToken, csrfToken } from './auth.js';
 import {
     connectFriendsWebsocket,
     disconnectFriendsWebsocket,
