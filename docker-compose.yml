@@ -25,11 +25,7 @@ services:
     depends_on:
       redis:
         condition: service_started
-      vault1:
-        condition: service_healthy
-      vault2:
-        condition: service_healthy
-      vault3:
+      vault:
         condition: service_healthy
     env_file:
       - .env
@@ -62,65 +58,37 @@ services:
       timeout: 5s
       retries: 5
 
-  vault1:
-    build: ./services/vault1
-    container_name: vault1
+  vault:
+    container_name: vault
+    build: ./services/vault/
+    restart: always
+    hostname: 'vault'
+    environment:
+      VAULT_ADDR: 'https://127.0.0.1:8200'  # Changé de 'https://vault:8200'
+      VAULT_CACERT: '/vault/ssl/ca.crt'
+      VAULT_CLIENT_CERT: '/vault/ssl/vault.crt'
+      VAULT_CLIENT_KEY: '/vault/ssl/vault.key'
+      TZ: 'Europe/Paris'
+      VAULT_SKIP_IP_AUTO_CONFIG: 'true'
     ports:
-      - "8200:8200"
+      - '8200:8200'
+    volumes:
+      - './services/vault/logs:/vault/logs'
+      - './services/vault/plugins:/vault/plugins'
+      - './services/vault/ssl:/vault/ssl'
+      - './services/vault/file:/vault/file'
+      - './services/vault/config:/vault/config'
+      - './services/vault/data:/vault/data'
+      - './services/vault/token:/vault/token'
     cap_add:
       - IPC_LOCK
-    environment:
-      - VAULT_ADDR=https://vault1:8200
-      - VAULT_CACERT=/vault/certs/ca.pem
     networks:
-      - network
+      - network  # Assurez-vous que ce réseau est défini
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - vault-data:/vault/data
-
-  vault2:
-    build: ./services/vault2
-    container_name: vault2
-    cap_add:
-      - IPC_LOCK
-    environment:
-      - VAULT_ADDR=https://vault2:8200
-      - VAULT_CACERT=/vault/certs/ca.pem
-    networks:
-      - network
-    depends_on:
-      - vault1
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - vault-data:/vault/data
-
-  vault3:
-    build: ./services/vault3
-    container_name: vault3
-    cap_add:
-      - IPC_LOCK
-    environment:
-      - VAULT_ADDR=https://vault3:8200
-      - VAULT_CACERT=/vault/certs/ca.pem
-    networks:
-      - network
-    depends_on:
-      - vault1
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - vault-data:/vault/data
 
   back-game:
     container_name: back-game-pong
@@ -140,7 +108,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      vault1:
+      vault:
         condition: service_healthy
     volumes:
       - redis:/var/lib/redis
