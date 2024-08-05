@@ -24,7 +24,7 @@ services:
     volumes:
       - django:/singlepageapp
       - vault-token:/vault/token:ro
-      - vault-cert:/etc/ssl/certs:ro
+      - vault-ssl:/vault/ssl:ro
     networks:
       - network
     depends_on:
@@ -79,7 +79,18 @@ services:
     volumes:
      - vault-data:/vault/data
      - vault-token:/vault/token
-     - vault-cert:/etc/ssl/certs
+     - vault-logs:/vault/logs
+     - vault-config:/vault/config
+     - vault-ssl:/vault/ssl
+    hostname: 'vault'
+    environment:
+      VAULT_ADDR: 'https://vault:8200'
+      VAULT_CACERT: '/vault/ssl/ca.crt'
+      VAULT_CLIENT_CERT: '/vault/ssl/vault.crt'
+      VAULT_CLIENT_KEY: '/vault/ssl/vault.key'
+      TZ: 'Europe/Paris'
+      VAULT_SKIP_IP_AUTO_CONFIG: 'true'
+
 
   back-game:
     container_name: back-game-pong
@@ -108,8 +119,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      vault:
-        condition: service_healthy
     volumes:
       - redis:/var/lib/redis
     networks:
@@ -124,5 +133,7 @@ volumes:
   django:
   vault-data:
   vault-token:
-  vault-cert:
+  vault-logs:
+  vault-config:
+  vault-ssl:
   redis:
