@@ -1,9 +1,9 @@
 clean:
-	@docker compose down
-	@docker container prune -f
-	@docker image prune -f
-	@docker network prune -f
-	@docker volume prune -f
+	@sudo docker compose down
+	@sudo docker container prune -f
+	@sudo docker image prune -f
+	@sudo docker network prune -f
+	@sudo docker volume prune -f
 	
 fullclean: clean
 	@docker image rm $$(docker image ls -q) || true

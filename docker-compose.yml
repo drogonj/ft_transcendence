@@ -8,7 +8,6 @@ services:
     depends_on:
       - user-management
     volumes:
-      #- nginx:/singlepageapp
       - django:/tmp_static/
     networks:
       - network
@@ -21,12 +20,17 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
-      - vault-token-1:/vault/token:ro
-      - vault-cert:/etc/ssl/certs:ro
     networks:
       - network
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+      vault1:
+        condition: service_healthy
+      vault2:
+        condition: service_healthy
+      vault3:
+        condition: service_healthy
     env_file:
       - .env
 
@@ -59,14 +63,15 @@ services:
       retries: 5
 
   vault1:
-    build: ./services/vault1/
+    build: ./services/vault1
     container_name: vault1
     ports:
       - "8200:8200"
     cap_add:
       - IPC_LOCK
-    env_file:
-      - .env
+    environment:
+      - VAULT_ADDR=https://vault1:8200
+      - VAULT_CACERT=/vault/certs/ca.pem
     networks:
       - network
     healthcheck:
@@ -75,55 +80,47 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-    - vault-data-1:/vault/data
-    - vault-token-1:/vault/token
-    - vault-cert:/etc/ssl/certs
+      - vault-data:/vault/data
 
   vault2:
-    build: ./services/vault2/
+    build: ./services/vault2
     container_name: vault2
-    ports:
-      - "8201:8200"
     cap_add:
       - IPC_LOCK
-    env_file:
-      - .env
+    environment:
+      - VAULT_ADDR=https://vault2:8200
+      - VAULT_CACERT=/vault/certs/ca.pem
     networks:
       - network
+    depends_on:
+      - vault1
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-    - vault-data-2:/vault/data
-    - vault-token-2:/vault/token
-    depends_on:
-      vault1:
-        condition: service_healthy
+      - vault-data:/vault/data
 
   vault3:
-    build: ./services/vault3/
+    build: ./services/vault3
     container_name: vault3
-    ports:
-      - "8202:8200"
     cap_add:
       - IPC_LOCK
-    env_file:
-      - .env
+    environment:
+      - VAULT_ADDR=https://vault3:8200
+      - VAULT_CACERT=/vault/certs/ca.pem
     networks:
       - network
+    depends_on:
+      - vault1
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-    - vault-data-3:/vault/data
-    - vault-token-3:/vault/token
-    depends_on:
-      vault1:
-        condition: service_healthy
+      - vault-data:/vault/data
 
   back-game:
     container_name: back-game-pong
@@ -155,13 +152,6 @@ networks:
     driver: bridge
 
 volumes:
-  nginx:
   django:
-  vault-data-1:
-  vault-data-2:
-  vault-data-3:
-  vault-token-1:
-  vault-token-2:
-  vault-token-3:
-  vault-cert:
   redis:
+  vault-data:
