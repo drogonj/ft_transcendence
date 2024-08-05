@@ -1,12 +1,13 @@
 #!/bin/sh
 
-set -eu pipefail
+set -eu
 
-IP1="192.168.65.12"
-IP2="127.0.0.1"
+IP1="127.0.0.1"
+IP2="0.0.0.0"
 
 DNS1="vault"
 DNS2="localhost"
+DNS3="vault.transcendence"
 
 DIR="/vault/ssl"
 
@@ -27,10 +28,10 @@ distinguished_name = req_distinguished_name
 req_extensions     = v3_req
 [req_distinguished_name]
 C  = FR
-ST = ALSACE
+ST = Alsace
 L  = Mulhouse
-O  = localhost
-CN = vault
+O  = Transcendence
+CN = vault.transcendence
 [v3_req]
 basicConstraints     = CA:FALSE
 subjectKeyIdentifier = hash
@@ -42,6 +43,7 @@ IP.1  = ${IP1}
 IP.2  = ${IP2}
 DNS.1 = ${DNS1}
 DNS.2 = ${DNS2}
+DNS.3 = ${DNS3}
 EOF
 
 # Generate Vault's certificates and a CSR
@@ -59,7 +61,7 @@ openssl req \
   -days 3660 \
   -nodes \
   -x509 \
-  -subj "/C=FR/ST=PARIS/L=Mulhouse/O=Vault CA" \
+  -subj "/CN=vault" \
   -keyout "${DIR}/ca.key" \
   -out "${DIR}/ca.crt"
 

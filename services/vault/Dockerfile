@@ -76,4 +76,4 @@ EXPOSE 8200
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-CMD ["server", "-config="/vault/config/config.hcl" "tail -f /dev/null""]
+CMD ["server", "-config="/vault/config/config.hcl""]
