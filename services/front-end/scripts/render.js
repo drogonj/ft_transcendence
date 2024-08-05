@@ -183,7 +183,7 @@ export async function renderHome() {
                         <p>${currentUser.username}</p>
                         <div id="profile-card-trophy">
                             <p>${currentUser.trophy}</p>
-                            <img alt="trophy" src="../assets/images/trophy.png">
+                            <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
                             <svg viewBox="0 0 36 36" class="circular-chart orange">
@@ -210,10 +210,10 @@ export async function renderHome() {
                     <div class="friend-menu-container"></div>
                 `;
 
-	// Render chat
-	await renderChatApp(currentUser.user_id, currentUser.username);
-	// Load users
-	await loadUsers(currentUser.user_id);
+    // Render chat
+    await renderChatApp(currentUser.user_id, currentUser.username);
+    // Load users
+    await loadUsers(currentUser.user_id);
 
     await addFriendshipMenu();
 
@@ -283,10 +283,6 @@ export async function renderConfirmRegistration() {
 export async function renderUserProfile(userId) {
     const response = await fetch(`/api/user/profile/${userId}/`);
 
-    if (!response.ok) {
-        navigateTo('/home');
-    }
-
     const userData = await response.json();
 
     try {
@@ -294,8 +290,8 @@ export async function renderUserProfile(userId) {
             <div class="profile-section-container">
               
               <section class="profile-section">
+                <h2>Profile</h2>
                 <div class="profile-box">
-                  <h2>Profile</h2>
                   <div id="avatar-display">
                     <div id="avatar-container">
                       <img src="${userData.avatar}" alt="avatar" id="avatar">
@@ -306,11 +302,11 @@ export async function renderUserProfile(userId) {
               </section>
                 
               <section class="profile-section">
+                <h2>Stats</h2>
                 <div class="profile-box">
-                  <h2>Stats</h2>
                     <div id="profile-card-trophy">
                             <p>${userData.trophy}</p>
-                            <img alt="trophy" src="../assets/images/trophy.png">
+                            <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
                             <svg viewBox="0 0 36 36" class="circular-chart orange">
@@ -334,8 +330,8 @@ export async function renderUserProfile(userId) {
               </section>
   
               <section class="profile-section">
+                <h2>Match History</h2>
                 <div class="profile-box">
-                  <h2>Match History</h2>
                   <div id="match-history-container">
                       <span class="match">
                         <p class="usernames">${userData.username} vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
@@ -349,35 +345,22 @@ export async function renderUserProfile(userId) {
                 </div>
               </section>
         </div>
-        
+        <button id="home-button">Home</button>
         <div class="friend-menu-container"></div>
         `;
 
         await addFriendshipMenu();
 
-        const uploadAvatar = document.getElementById('upload-avatar');
-        const fileInput = document.getElementById('file-input');
-
-        uploadAvatar.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', async (event) => {
-            await changeAvatar(event);
-        });
-
-        document.getElementById('change-username-btn').addEventListener('click', async function (event) {
+        document.getElementById('home-button').addEventListener('click', function (event) {
             event.preventDefault();
-            await changeUsername();
-        });
-
-        document.getElementById('change-password-btn').addEventListener('click', async function (event) {
-            event.preventDefault();
-            await changePassword();
+            navigateTo('/home', true);
         });
 
     } catch (error) {
-        navigateTo('/login');
+        if (currentUser.username)
+            navigateTo('/home');
+        else
+            navigateTo('/login');
     }
 }
 
@@ -387,11 +370,11 @@ export async function renderSelfProfile() {
             <div class="profile-section-container">
               
 
-                 <section class="profile-section">
+                <section class="profile-section">
+                 <h2>Profile</h2>
                 <div class="profile-box">
-                  <h2>Profile</h2>
                   <div id="avatar-display">
-                    <img alt="upload" id="upload-avatar" src="../assets/images/camera.png">
+                    <img alt="upload" id="upload-avatar" src="/assets/images/camera.png">
                     <input type="file" id="file-input" accept="image/*" style="display:none;">
                     <div id="avatar-container">
                       <img src="${currentUser.avatar}" alt="avatar" id="avatar">
@@ -428,11 +411,12 @@ export async function renderSelfProfile() {
               </section>
                 
               <section class="profile-section">
+                <h2>Stats</h2>
                 <div class="profile-box">
-                  <h2>Stats</h2>
+
                     <div id="profile-card-trophy">
                             <p>${currentUser.trophy}</p>
-                            <img alt="trophy" src="../assets/images/trophy.png">
+                            <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
                             <svg viewBox="0 0 36 36" class="circular-chart orange">
@@ -456,8 +440,8 @@ export async function renderSelfProfile() {
               </section>
   
               <section class="profile-section">
+                <h2>Match History</h2>
                 <div class="profile-box">
-                  <h2>Match History</h2>
                   <div id="match-history-container">
                       <span class="match">
                         <p class="usernames">YOU vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
@@ -471,7 +455,7 @@ export async function renderSelfProfile() {
                 </div>
               </section>
         </div>
-        
+        <button id="home-button">Home</button>
         <div class="friend-menu-container"></div>
         `;
 
@@ -498,7 +482,15 @@ export async function renderSelfProfile() {
             await changePassword();
         });
 
+        document.getElementById('home-button').addEventListener('click', function (event) {
+            event.preventDefault();
+            navigateTo('/home', true);
+        });
+
     } catch (error) {
-        navigateTo('/login');
+        if (currentUser.username)
+            navigateTo('/home');
+        else
+            navigateTo('/login');
     }
 }

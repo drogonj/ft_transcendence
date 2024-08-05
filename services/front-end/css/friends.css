@@ -120,7 +120,7 @@
 }
 
 .friend-menu li span p {
-    max-width: max(3vw, 3vh);;
+    max-width: max(5vw, 8vh);
     overflow: hidden;
     background: linear-gradient(to right,  #ffffff 0%,rgb(255 255 255) 80%,rgba(0,0,0,0) 100%);
     -webkit-background-clip: text;
@@ -166,7 +166,7 @@
 .status-indicator-text {
     margin-right: 5%;
     font-size: 0.75em;
-    color: #1e1f26;
+    color: #ffffff;
     display: inline-block; /* Ensure text and indicator are inline */
     vertical-align: middle; /* Align text vertically with the indicator */
 }
@@ -223,7 +223,6 @@
     border-radius: 0.25rem;
     right: 10%;
     padding: 2%;
-    border-width: 1px;
     outline: none;
     color: #ffffff;
     cursor: pointer;
@@ -237,12 +236,13 @@
 }
 
 #invitation-sent-img {
-    width: 25px;
-    height: 25px;
+    width: max(1.25vw, 1.25vh);
+    aspect-ratio: 1 / 1;
+    transition: ease-in 0.1s;
 }
 
 #search-results p {
-    color: black;
+    color: white;
     margin-left: max(0.5vh, 0.5vw);
     font-size: max(0.6vw, 0.75vh);
 }

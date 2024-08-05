@@ -130,7 +130,7 @@ export function addUserToMenu(userID, username, avatar, is_connected) {
 			<p>${username}</p>
 		</span>
 		<button class="mute-user-button" data-user-id="${userID}">
-			<img src="../assets/images/chat/chat_icon.png" alt="mute">
+			<img src="/assets/images/chat/chat_icon.png" alt="mute">
 		</button>
 	`;
 

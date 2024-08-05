@@ -206,7 +206,7 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
             <p>${username}</p>
         </span>
         <button class="delete-friend-button" data-friend-id="${user}">
-            <img src="../assets/images/friends/red_cross.png" alt="delete">
+            <img src="/assets/images/friends/red_cross.png" alt="delete">
         </button>
     `;
 
@@ -268,10 +268,10 @@ export function addFriendshipRequestToMenu(user, username, avatar) {
             <p>${username}</p>
         </span>
         <button class="accept-friendship-request-button" data-friend-id="${user}" data-friend-avatar="${avatar}">
-            <img src="../assets/images/friends/green_check.png" alt="accept">
+            <img src="/assets/images/friends/green_check.png" alt="accept">
         </button>
         <button class="decline-friendship-request-button" data-friend-id="${user}">
-            <img src="../assets/images/friends/red_cross.png" alt="cancel">
+            <img src="/assets/images/friends/red_cross.png" alt="cancel">
         </button>
     `;
 
@@ -334,7 +334,7 @@ export async function handleUserSearch(event) {
             if (user.pending_request === false) {
                 userField.innerHTML += `
                 <button class="add-friend-button" data-user-username="${user.username}" data-user-id="${user.id}">
-                    <img src="../assets/images/friends/green_cross.png" alt="add">
+                    <img src="/assets/images/friends/green_cross.png" alt="add">
                 </button>
                 `;
                 userField.querySelector('.add-friend-button').addEventListener('click', async (event) => {
@@ -346,12 +346,12 @@ export async function handleUserSearch(event) {
                         <span class="profile-link" data-user-id="${user.id}">
                             <p>${user.username}</p>
                         </span>
-                        <img id="invitation-sent-img" src="../assets/images/friends/invitation_sent.png" alt="invitation-sent">
+                        <img id="invitation-sent-img" src="/assets/images/friends/invitation_sent.png" alt="invitation-sent">
                         `;
                 });
             } else {
                 userField.innerHTML += `
-                <img id="invitation-sent-img" src="../assets/images/friends/invitation_sent.png" alt="invitation-sent">
+                <img id="invitation-sent-img" src="/assets/images/friends/invitation_sent.png" alt="invitation-sent">
                 `;
             }
 
