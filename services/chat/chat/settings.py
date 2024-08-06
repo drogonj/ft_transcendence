@@ -125,10 +125,7 @@ DATABASES = {
 CACHES = {
 	'default': {
 		"BACKEND": "django.core.cache.backends.redis.RedisCache",
-		'LOCATION': 'redis://redis:6379',
-		# 'OPTIONS': {
-		# 	"CLIENT_CLASS": "django_redis.client.DefaultClient",
-		# }
+		'LOCATION': 'redis://redis:6379/1',
 	}
 }
 
@@ -156,7 +153,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
 

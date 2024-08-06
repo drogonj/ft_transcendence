@@ -4,6 +4,13 @@ import { currentUser } from './auth.js';
 let chatSocket = null;
 let chatSocketRunning = false;
 
+// Quelques points verifier:
+// Attention a la prise en compte de ADMIN et de son ID dans le chat et les rooms (choix de config)
+// Deplacer les GetAllUsersDataView(View) dans Authentication et modifier les routes (urls.py) (optionnel)
+// Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
+// ==> REDIS:6379/1 pour le cache (voir si besoin d'une adresse 0 et/ou definir si juste redis:6379 pour DB)
+// Commencer la partie muted users (voir si on mute les messages ou les users)
+
 export async function connectChatWebsocket(user_id) {
 	if (chatSocket) {
 		return;
@@ -18,24 +25,51 @@ export async function connectChatWebsocket(user_id) {
 	};
 
 	chatSocket.onmessage = function(e) {
-		const data = JSON.parse(e.data);
-		console.log(data);
+		(async () => {
+			const data = JSON.parse(e.data);
+			console.log(data);
+			console.log(currentUser.user_id);	
 
-
-		if (data.type === 'chat_message') {
-			const messageList = document.getElementById('message-content');
-			const newMessage = document.createElement('li');
-
-			newMessage.classList.add('chat-message');
-			newMessage.textContent = `${data.timestamp} ${data.username ? data.username + " : " + data.content : " : " + data.content}`;
-
-			messageList.insertBefore(newMessage, messageList.firstChild);
-
-			const chatMessages = document.getElementById('chat-messages');
-			chatMessages.scrollTop = chatMessages.scrollHeight;
-		} else if (data.type === 'user_status_update') {
-			updateUserStatus(data.user_id, data.is_connected);
-		}
+			if (data.type === 'chat_message') {
+				const messageList = document.getElementById('message-content');
+				const newMessage = document.createElement('li');
+	
+				newMessage.classList.add('chat-message');
+				newMessage.textContent = `${data.timestamp} ${data.username} : ${data.content}`;
+	
+				messageList.insertBefore(newMessage, messageList.firstChild);
+				
+				const chatMessages = document.getElementById('chat-messages');
+				chatMessages.scrollTop = chatMessages.scrollHeight;
+			} else if (data.type === 'private_message') {
+				const messageList = document.getElementById('message-content');
+				const newMessage = document.createElement('li');
+	
+				const receiverStatus = await getUserStatus(data.receiver_id);
+				console.log(receiverStatus);
+	
+				if (data.receiver_id === currentUser.user_id && receiverStatus) {
+					newMessage.classList.add('chat-message');
+					newMessage.textContent = `${data.timestamp} ${data.username} sent you privately: ${data.content}`;
+	
+					messageList.insertBefore(newMessage, messageList.firstChild);
+					
+					const chatMessages = document.getElementById('chat-messages');
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+				} else if (!receiverStatus && data.user_id === currentUser.user_id) {
+					console.log('User is offline, message not sent.');
+					newMessage.classList.add('chat-message');
+					newMessage.textContent = `${data.timestamp} DM not delivered to : ${data.receiver_username} (reason : offline).`;
+	
+					messageList.insertBefore(newMessage, messageList.firstChild);
+					
+					const chatMessages = document.getElementById('chat-messages');
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+				}
+			} else if (data.type === 'user_status_update') {
+				updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
+			}
+		})();
 	};
 
 	chatSocket.onclose = function(e) {
@@ -83,13 +117,11 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 			<p>${username}</p>
 		</span>
 		<button class="mute-user-button" data-user-id="${user_id}">
-			<img src="/assets/images/chat/chat_icon.png" alt="mute">
+			<img src="../assets/images/chat/chat_icon.png" alt="mute">
 		</button>
 	`;
 
 	usersContainer.insertAdjacentElement('beforeend', newUser);
-
-	//changeUserStatus(user, is_connected);
 
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
 		await muteUser(event);
@@ -121,26 +153,80 @@ export async function renderChatApp() {
 	`;
 
 	document.getElementById('chat-input').focus();
-	document.getElementById('chat-input').onkeyup = function(e) {
-		if (KeyboardEvent.keyCode === 13) {
+	document.getElementById('chat-input').onkeydown = function(e) {
+		if (e.key === 'Enter') {
 			document.getElementById('send-chat-message').click();
 		}
 	};
 
-	document.getElementById('send-chat-message').onclick = function(e) {
+	document.getElementById('send-chat-message').onclick = async function(e) {
 		const messageInputDom = document.getElementById('chat-input');
 		const message = messageInputDom.value;
+
+		if (!message.trim()) {
+			return;
+		} else { 
+			parseMessage(message);
+			messageInputDom.value = '';
+		};
+	}
+}
+
+async function parseMessage(message) {
+	if (!message.startsWith('/')) {
 		chatSocket.send(JSON.stringify({
 			'type': 'chat_message',
 			'content': message,
 			'user_id': currentUser.user_id,
 			'username': currentUser.username
 		}));
-		messageInputDom.value = '';
-	};
+	} else if (message.startsWith('/')) {
+		const parts = message.split(' ');
+		if (parts.length < 2) {
+			chatSocket.send(JSON.stringify({
+				'type': 'chat_message',
+				'content': message,
+				'user_id': currentUser.user_id,
+				'username': currentUser.username
+			}));
+		} else { 
+			const cmd = parts[0].slice(1);
+			const username = parts[1];
+			const messageContent = parts.slice(2).join(' ');
+			console.log('messageContent: ', messageContent);
+
+			if (cmd === 'private') {
+				console.log('Sending private message to:', username);
+				const response = await fetch('/api/user/get_users/');
+				const usersData = await response.json();
+
+				for (const user of usersData.users) {
+					if (user.username === username) {
+						chatSocket.send(JSON.stringify({
+							'type': 'private_message',
+							'content': messageContent,
+							'user_id': currentUser.user_id,
+							'username': currentUser.username,
+							'receiver_id': user.user_id,
+							'receiver_username': user.username
+						}));
+						return ;
+					}
+				}
+			} else {
+			chatSocket.send(JSON.stringify({
+				'type': 'chat_message',
+				'content': message,
+				'user_id': currentUser.user_id,
+				'username': currentUser.username
+				}));
+			};
+		};
+	}
+	return ;
 }
 
-async function updateUserStatus(other_id, isConnected) {
+async function updateUserStatus(other_id, isConnected, timestamp, content) {
 	console.log('Updating user status:', other_id, isConnected);
 	try {
 		const response = await fetch('/api/user/get_users/');
@@ -153,15 +239,46 @@ async function updateUserStatus(other_id, isConnected) {
 			} else if (statusElement) {
 				statusElement.querySelector('.status-indicator').className = `status-indicator ${isConnected ? 'online' : 'offline'}`;
 				console.log(`Updated status for user ${other_id} to ${isConnected ? "Online" : "Offline"}`);
-			} else {
-				const usersContainer = document.getElementById('usersContainer');
+			} else if (currentUser.user_id !== other_id) {
+				const usersContainer = document.getElementById('users-content');
 				if (usersContainer) {
 					addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
 				}
 			}
+			
+			const messageList = document.getElementById('message-content');
+			const newMessage = document.createElement('li');
+
+			newMessage.classList.add('chat-message');
+			newMessage.textContent = `${timestamp} : ${content}`;
+
+			messageList.insertBefore(newMessage, messageList.firstChild);
+			
+			const chatMessages = document.getElementById('chat-messages');
+			chatMessages.scrollTop = chatMessages.scrollHeight;
 			break ;
-		}
+		} 
 	} catch (error) {
-		console.error('Error loading users:', error);
+		console.error('Error loading users:', error.message);
 	}
 }
+
+async function getUserStatus(user_id) {
+	try {
+		const response = await fetch('/api/user/get_users/');
+		const usersData = await response.json();
+
+		for (const user of usersData.users) {
+			if (user.user_id === user_id) {
+				return user.is_connected;
+			}
+		}
+		return false;
+	} catch (error) {
+		console.error('Error loading users:', error.message);
+	}
+}
+
+// async function changeUserChatList() {
+
+// }
