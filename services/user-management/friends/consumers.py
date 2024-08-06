@@ -76,6 +76,7 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 					'general',
 					{
 						'type': 'user_status_update',
+						'content': f'{user.username} has joined the chat',
 						'user_id': user.id,
 						'username': user.username,
 						'is_connected': True
@@ -92,6 +93,7 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 					'general',
 					{
 						'type': 'user_status_update',
+						'content': f'{user.username} has left the chat',
 						'user_id': user.id,
 						'username': user.username,
 						'is_connected': False
