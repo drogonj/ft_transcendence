@@ -25,11 +25,12 @@ export function launchClientMatchMaking() {
     ws.onmessage = function (event) {
         const data = JSON.parse(event.data);
 
-        if (data.type === "connectTo")
+        if (data.type === "connectTo") {
             document.getElementById("matchMakingCancel").disabled = "disabled"
             document.getElementById("mainTitle").textContent = "Player found ! Setting up the game.."
             ws.close();
             launchClientGame()
+        }
     }
     ws.onerror = onError;
 }

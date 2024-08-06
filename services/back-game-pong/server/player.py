@@ -23,8 +23,8 @@ class Player:
 		data = {'type': data_type, 'values': data_values}
 		try:
 			self.__socket.write_message(json.dumps(data))
-		except WebSocketClosedError:
-			print("Client is already disconnected.")
+		except (WebSocketClosedError, AttributeError):
+			print("Message can't be send: Client is disconnected.")
 
 	def dumps_player_for_socket(self):
 		return {
@@ -46,7 +46,7 @@ class Player:
 		return True
 
 	def bind_socket_to_player(self, socket):
-		self.__socket = socket
+		self.set_socket(socket)
 		available_players.remove(self)
 
 	def increase_score(self):
@@ -81,6 +81,9 @@ class Player:
 
 	def set_username(self, username):
 		self.__username = username
+
+	def set_socket(self, socket):
+		self.__socket = socket
 
 
 def get_player_with_user_id(user_id):

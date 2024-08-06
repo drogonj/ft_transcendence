@@ -73,6 +73,11 @@ class Game:
 			if player.get_socket() == client:
 				self.__players.remove(player)
 
+	def disconnect_player_with_socket(self, client):
+		for player in self.__players:
+			if player.get_socket() == client:
+				player.set_socket(None)
+
 	def mark_point(self, ball):
 		side = reverse_side(ball.get_ball_side())
 
@@ -99,7 +104,8 @@ class Game:
 		send_to_redis(create_data_to_send(self.__players))
 		self.send_message_to_game("renderPage", {"url": "/game-end"})
 		for player in self.__players:
-			player.kill_connection()
+			if player.get_socket():
+				player.kill_connection()
 
 	def trigger_game_launch(self):
 		if len(self.__players) == 2:
@@ -128,7 +134,10 @@ class Game:
 		return False
 
 	def is_game_containing_players(self):
-		return len(self.__players) > 0
+		for player in self.__players:
+			if player.get_socket() is not None:
+				return True
+		return False
 
 
 def get_game_with_id(game_id):
@@ -143,10 +152,10 @@ def get_game_with_client(client):
 			return game
 
 
-def remove_player_from_client(client):
+def disconnect_handle(client):
 	game = get_game_with_client(client)
 
-	game.remove_player_with_client(client)
+	game.disconnect_player_with_socket(client)
 	game.set_game_state(True)
 
 	if not game.is_game_containing_players():
