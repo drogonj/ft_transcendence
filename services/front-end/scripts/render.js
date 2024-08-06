@@ -513,6 +513,7 @@ export async function renderGameWaiting() {
         </div>
     `;
     document.getElementById('matchMakingCancel').addEventListener('click', (event) => {
+        closeWebSocket();
         event.preventDefault();
         navigateTo('/home', true);
     });
