@@ -43,12 +43,12 @@ async def check_game_server_health():
 
 async def send_users_to_server():
     selected_users = get_two_users()
-    await get_game_server().send("createGame", {"username1": selected_users[0].get_username(),
-                                                "username2": selected_users[1].get_username()})
+    await get_game_server().send("createGame", {"userId1": selected_users[0].get_user_id(),
+                                                "userId2": selected_users[1].get_user_id()})
 
     side = "Left"
     for user in selected_users:
-        await get_game_server().send("createPlayer", {"username": user.get_username(), "side": side})
+        await get_game_server().send("createPlayer", {"userId": user.get_user_id(), "side": side})
         side = "Right"
 
     for user in selected_users:
@@ -86,14 +86,13 @@ class MatchMakingWebSocket(WebSocketHandler):
         if socket['type'] == 'createUser':
             user = User(self, socket_values)
             users_in_queue.append(user)
-            print(f"{user.get_username()} is bind to a client in the matchmaking server")
+            print(f"User with id {user.get_user_id()} is bind to a client in the matchmaking server")
 
     def on_close(self):
         print(f"[-] A user leave the matchmaking server.")
         user = self.get_user_from_socket()
         if user:
             users_in_queue.remove(user)
-
 
     def get_user_from_socket(self):
         for user in users_in_queue:

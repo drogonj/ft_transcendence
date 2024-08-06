@@ -8,10 +8,10 @@ from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from server.game import Game, get_game_with_client, remove_player_from_client, bind_player_to_game
-from server.player import Player, get_player_with_username
+from server.player import Player, get_player_with_user_id
 
 
-# Server will send websocket as json with the followed possible key
+# Server will send websocket as json with the followed possible keys
 # type : Type of data: such as moveBall, movePlayer, createPlayer ...
 # values: The values, need to be sent according to the type, send as dictionary
 
@@ -39,11 +39,11 @@ class EchoWebSocket(WebSocketHandler):
         elif socket["type"] == "createGame":
             Game(0, socket_values)
         elif socket["type"] == "bindSocket":
-            player = get_player_with_username(socket["values"]["username"])
+            player = get_player_with_user_id(socket["values"]["userId"])
             player.bind_socket_to_player(self)
+            player.set_username(socket["values"]["username"])
             bind_player_to_game(player)
-
-
+            print(f"The player {player.get_username()} is connected and bind.")
 
     def on_close(self):
         print("[-] A client leave the server")
