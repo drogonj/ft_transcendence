@@ -26,6 +26,11 @@ django.setup()
 users_in_queue = []
 
 
+async def ping_users():
+    for user in users_in_queue:
+        await user.send_message_to_user("ping", {})
+
+
 async def bind_to_game_server():
     print("Try connecting to the game server..")
     try:
@@ -61,6 +66,7 @@ async def main_check_loop():
         if not await check_game_server_health():
             await gen.sleep(3)
             continue
+        await ping_users()
         if random.randrange(0, 10) == 0:
             print("Looking for two users..")
         if len(users_in_queue) > 1:

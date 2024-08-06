@@ -92,7 +92,7 @@ class Game:
 		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 
 	async def launch_max_time(self):
-		await asyncio.sleep(5)
+		await asyncio.sleep(120)
 		self.__is_game_end = True
 
 	def game_end(self):

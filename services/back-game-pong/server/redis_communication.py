@@ -1,12 +1,12 @@
 import redis
+import pickle
 
 
 r = redis.Redis(host='redis', port=6379, decode_responses=True)
 
 
 def send_to_redis(data):
-    return
-    r.publish("game_events", data)
+    r.publish("game_events", pickle.dumps(data))
 
 
 def create_data_to_send(players):
