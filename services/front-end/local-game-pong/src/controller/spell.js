@@ -12,6 +12,7 @@ import {coolDownRun} from "./header.js";
 const spells = [];
 
 export default function loadSpell() {
+
 	spells.push(new BallSlayer());
 	spells.push(new BallFreeze());
 	spells.push(new BallPush());
