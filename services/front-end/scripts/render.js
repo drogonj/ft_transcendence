@@ -184,7 +184,7 @@ export async function renderHome() {
                         </div>
                         <p>${currentUser.username}</p>
                         <div id="profile-card-trophy">
-                            <p>${currentUser.trophy}</p>
+                            <p>${currentUser.trophies}</p>
                             <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -192,10 +192,10 @@ export async function renderHome() {
                                 <path class="circle-bg" d="M18 2.0845
                                     a 15.9155 15.9155 0 0 1 0 31.831
                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                <path class="circle" stroke-dasharray="${currentUser.winrate}, 100" d="M18 2.0845
                                      a 15.9155 15.9155 0 0 1 0 31.831
                                      a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <text x="18" y="20.35" class="percentage">30%</text>
+                                <text x="18" y="20.35" class="percentage">${currentUser.winrate}%</text>
                             </svg>
                             <p>winrate</p>
                         </div>
@@ -310,7 +310,7 @@ export async function renderUserProfile(userId) {
                 <h2>Stats</h2>
                 <div class="profile-box">
                     <div id="profile-card-trophy">
-                            <p>${userData.trophy}</p>
+                            <p>${userData.trophies}</p>
                             <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -318,18 +318,18 @@ export async function renderUserProfile(userId) {
                                 <path class="circle-bg" d="M18 2.0845
                                     a 15.9155 15.9155 0 0 1 0 31.831
                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                <path class="circle" stroke-dasharray="${userData.winrate}, 100" d="M18 2.0845
                                      a 15.9155 15.9155 0 0 1 0 31.831
                                      a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <text x="18" y="20.35" class="percentage">30%</text>
+                                <text x="18" y="20.35" class="percentage">${userData.winrate}%</text>
                             </svg>
                             <p>winrate</p>
                         </div>
                     <div id="stats-text-container">
-                        <p><span>Victory: </span>3</p>
-                        <p><span>Defeat: </span>7</p>
-                        <p><span>Goals: </span>37</p>
-                        <p><span>Tournaments Won: </span>1</p>
+                        <p><span>Victory: </span>${userData.victories}</p>
+                        <p><span>Defeat: </span>${userData.defeats}</p>
+                        <p><span>Goals: </span>${userData.goals}</p>
+                        <p><span>Tournaments Won: </span>${userData.tournaments_won}</p>
                     </div>
                 </div>
               </section>
@@ -421,7 +421,7 @@ export async function renderSelfProfile() {
                 <div class="profile-box">
 
                     <div id="profile-card-trophy">
-                            <p>${currentUser.trophy}</p>
+                            <p>${currentUser.trophies}</p>
                             <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -429,18 +429,18 @@ export async function renderSelfProfile() {
                                 <path class="circle-bg" d="M18 2.0845
                                     a 15.9155 15.9155 0 0 1 0 31.831
                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                <path class="circle" stroke-dasharray="${currentUser.winrate}, 100" d="M18 2.0845
                                      a 15.9155 15.9155 0 0 1 0 31.831
                                      a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <text x="18" y="20.35" class="percentage">30%</text>
+                                <text x="18" y="20.35" class="percentage">${currentUser.winrate}%</text>
                             </svg>
                             <p>winrate</p>
                         </div>
                     <div id="stats-text-container">
-                        <p><span>Victory: </span>3</p>
-                        <p><span>Defeat: </span>7</p>
-                        <p><span>Goals: </span>37</p>
-                        <p><span>Tournaments Won: </span>1</p>
+                        <p><span>Victory: </span>${currentUser.victories}</p>
+                        <p><span>Defeat: </span>${currentUser.defeats}</p>
+                        <p><span>Goals: </span>${currentUser.goals}</p>
+                        <p><span>Tournaments Won: </span>${currentUser.tournaments_won}</p>
                     </div>
                 </div>
               </section>

@@ -348,6 +348,11 @@ export async function handleUserSearch(event) {
                         </span>
                         <img id="invitation-sent-img" src="/assets/images/friends/invitation_sent.png" alt="invitation-sent">
                         `;
+                    userField.addEventListener('click', function() {
+                        const userId = userField.getAttribute('data-user-id');
+                        const uri = '/profile/' + user.id+ '/';
+                        navigateTo(uri, true);
+                    });
                 });
             } else {
                 userField.innerHTML += `
