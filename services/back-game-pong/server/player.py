@@ -10,6 +10,7 @@ class Player:
 	def __init__(self, socket_values):
 		self.__socket = None
 		self.__username = socket_values["username"]
+		self.__user_id = socket_values["userId"]
 		self.__score = 0
 		self.__paddle_side = socket_values["side"]
 		self.__top_position = 50
@@ -73,7 +74,7 @@ class Player:
 		return self.__socket
 
 
-def get_player_with_username(username):
+def get_player_with_user_id(user_id):
 	for player in available_players:
-		if player.get_username() == username:
+		if player.get_user_id() == user_id:
 			return player
