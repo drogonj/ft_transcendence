@@ -1,44 +1,90 @@
 #!/bin/bash
-vault server -config=/vault/config/config.hcl &
 
-# Attendre que Vault démarre
-sleep 10
+vault_to_network_address() {
+  local vault_node_name=$1
+  case $vault_node_name in
+    vault_1) echo "http://vault_1:8200" ;;
+    vault_2) echo "http://vault_2:8200" ;;
+    vault_3) echo "http://vault_3:8200" ;;
+    vault_4) echo "http://vault_4:8200" ;;
+    *) echo "Unknown vault node name: $vault_node_name" ;;
+  esac
+}
 
-export VAULT_ADDR='https://127.0.0.1:8200'
-export VAULT_CACERT='/vault/certs/ca.pem'
-export VAULT_SKIP_VERIFY=true
+start_vault() {
+  local vault_node_name=$1
 
-# Attendre que Vault1 soit prêt
-until curl -s -o /dev/null -w "%{http_code}" https://vault1:8200/v1/sys/health --cacert $VAULT_CACERT --insecure | grep "200" > /dev/null; do
-    echo "Waiting for vault1..."
-    sleep 5
-done
+  local vault_network_address
+  vault_network_address=$(vault_to_network_address "$vault_node_name")
+  local vault_config_file="/vault/config/$vault_node_name.hcl"
+  local vault_log_file="/vault/logs/$vault_node_name.log"
 
-# Joindre le cluster si ce n'est pas déjà fait
-if ! vault operator raft list-peers | grep -q "vault2"; then
-    echo "Joining Raft cluster..."
-    vault operator raft join -tls-skip-verify https://vault1:8200
-fi
+  printf "\n%s" \
+    "[$vault_node_name] starting Vault server @ $vault_network_address" \
+    ""
 
-# Vérifier si Vault est déjà initialisé
-if vault status 2>&1 | grep -q "Vault is sealed"; then
-    echo "Vault is sealed. Unsealing..."
-    if [ -f /vault/data/init.json ]; then
-        UNSEAL_KEY=$(jq -r '.unseal_keys_b64[0]' /vault/data/init.json)
-        vault operator unseal $UNSEAL_KEY
-    else
-        echo "Error: init.json not found. Cannot unseal Vault."
-        exit 1
+  if [[ "$vault_node_name" != "vault_1" ]] ; then
+    if [[ -e "/vault/token/root_token-vault_1" ]] ; then
+      VAULT_TOKEN=$(cat "/vault/token/root_token-vault_1")
+
+      printf "\n%s" \
+        "Using [vault_1] root token ($VAULT_TOKEN) to retrieve transit key for auto-unseal"
+      printf "\n"
     fi
-elif ! vault status > /dev/null 2>&1; then
-    echo "Error: Vault is not initialized. This should not happen for secondary nodes."
-    exit 1
-else
-    echo "Vault is already initialized and unsealed."
+  fi
+
+  VAULT_TOKEN=$VAULT_TOKEN VAULT_API_ADDR=$vault_network_address vault server -log-level=trace -config "$vault_config_file" > "$vault_log_file" 2>&1 &
+}
+
+start_vault "vault_2"
+
+sleep 3
+
+vault operator init -recovery-shares=1 -recovery-threshold=1 -format=json > /vault/token/init2.json
+
+RECOVERY_KEY=$(jq -r '.recovery_keys_b64[0]' /vault/token/init2.json)
+echo $RECOVERY_KEY > /vault/token/recovery-key
+ROOT_TOKEN=$(jq -r '.root_token' /vault/token/init2.json)
+VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init2.json)
+echo $VAULT_TOKEN > /vault/token/root_token-vault_2
+
+echo "Recovery key: $RECOVERY_KEY"
+echo "Root token: $ROOT_TOKEN"
+export VAULT_TOKEN
+# vault login $ROOT_TOKEN
+if ! vault secrets list | grep -q '^secret/'; then
+    echo "Enabling KV v2 secret engine at path 'secret/'"
+    vault secrets enable -path=secret kv-v2
 fi
 
-# Vérifier le statut de Vault
-vault status
+vault kv put secret/myapp/database \
+    DJANGO_KEY="$DJANGO_KEY" \
+    DJANGO_SUPERUSER_USERNAME="$DJANGO_SUPERUSER_USERNAME" \
+    DJANGO_SUPERUSER_PASSWORD="$DJANGO_SUPERUSER_PASSWORD" \
+    DJANGO_SUPERUSER_EMAIL="$DJANGO_SUPERUSER_EMAIL" \
+    POSTGRES_DB="$POSTGRES_DB" \
+    POSTGRES_USER="$POSTGRES_USER" \
+    POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+    POSTGRES_HOST="$POSTGRES_HOST" \
+    POSTGRES_PORT="$POSTGRES_PORT" \
+    OAUTH_UID="$OAUTH_UID" \
+    OAUTH_SECRET="$OAUTH_SECRET" \
+    OAUTH_URI="$OAUTH_URI" \
+    OAUTH_STATE="$OAUTH_STATE" \
+    WEBSITE_URL="$WEBSITE_URL"
 
-# Garder le conteneur en vie
+cat <<EOF > /vault/config/django-policy.hcl
+path "secret/data/myapp/*" {
+  capabilities = ["read"]
+}
+EOF
+
+vault policy write django-policy /vault/config/django-policy.hcl
+vault audit enable file file_path=/var/log/vault_audit.log
+DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
+echo "$DJANGO_TOKEN" > /vault/token/token
+vault kv get secret/myapp/database
+echo "Vault initialized and configured"
+tail -f /dev/null
+
 tail -f /dev/null

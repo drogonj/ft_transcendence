@@ -25,8 +25,6 @@ services:
     depends_on:
       redis:
         condition: service_started
-      vault:
-        condition: service_healthy
     env_file:
       - .env
 
@@ -58,37 +56,101 @@ services:
       timeout: 5s
       retries: 5
 
-  vault:
-    container_name: vault
-    build: ./services/vault/
-    restart: always
-    hostname: 'vault'
-    environment:
-      VAULT_ADDR: 'https://127.0.0.1:8200'  # Changé de 'https://vault:8200'
-      VAULT_CACERT: '/vault/ssl/ca.crt'
-      VAULT_CLIENT_CERT: '/vault/ssl/vault.crt'
-      VAULT_CLIENT_KEY: '/vault/ssl/vault.key'
-      TZ: 'Europe/Paris'
-      VAULT_SKIP_IP_AUTO_CONFIG: 'true'
-    ports:
-      - '8200:8200'
+  vault_1:
+    build: ./services/vault1/
+    container_name: vault_1
+    expose:
+      - 8200
+      - 8201
     volumes:
-      - './services/vault/logs:/vault/logs'
-      - './services/vault/plugins:/vault/plugins'
-      - './services/vault/ssl:/vault/ssl'
-      - './services/vault/file:/vault/file'
-      - './services/vault/config:/vault/config'
-      - './services/vault/data:/vault/data'
-      - './services/vault/token:/vault/token'
+      - 'vault-token:/vault/token/'
     cap_add:
       - IPC_LOCK
+    environment:
+      - VAULT_ADDR=http://vault_1:8200
+    command: sleep infinity
     networks:
-      - network  # Assurez-vous que ce réseau est défini
+      - network
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  vault_2:
+    build: ./services/vault2/
+    container_name: vault_2
+    expose:
+      - 8200
+      - 8201
+    volumes:
+      - 'vault-token:/vault/token/'
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_ADDR=http://vault_2:8200
+    command: sleep infinity
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      vault_1:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  vault_3:
+    build: ./services/vault3/
+    container_name: vault_3
+    expose:
+      - 8200
+      - 8201
+    volumes:
+      - 'vault-token:/vault/token/'
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_ADDR=http://vault_3:8200
+    command: sleep infinity
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      vault_2:
+        condition: service_healthy
+
+  vault_4:
+    build: ./services/vault4/
+    container_name: vault_4
+    expose:
+      - 8200
+      - 8201
+    volumes:
+      - 'vault-token:/vault/token/'
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_ADDR=http://vault_4:8200
+    command: sleep infinity
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      vault_2:
+        condition: service_healthy
+
 
   back-game:
     container_name: back-game-pong
@@ -108,8 +170,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      vault:
-        condition: service_healthy
     volumes:
       - redis:/var/lib/redis
     networks:
@@ -120,6 +180,7 @@ networks:
     driver: bridge
 
 volumes:
+  nginx:
   django:
+  vault-token:
   redis:
-  vault-data:

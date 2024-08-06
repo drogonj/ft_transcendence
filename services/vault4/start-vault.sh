@@ -36,14 +36,14 @@ start_vault() {
   VAULT_TOKEN=$VAULT_TOKEN VAULT_API_ADDR=$vault_network_address vault server -log-level=trace -config "$vault_config_file" > "$vault_log_file" 2>&1 &
 }
 
-start_vault "vault_3"
+start_vault "vault_4"
 sleep 3
+
 export VAULT_TOKEN=$(cat /vault/token/root_token-vault_2)
 echo "Joining Raft cluster..."
 vault operator raft join http://vault_2:8200
 sleep 3
-vault status
-vault kv list kv/secret
 
-echo "Vault 3 setup complete."
+vault status
+echo "Vault 4 setup complete."
 tail -f /dev/null

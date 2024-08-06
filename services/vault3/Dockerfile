@@ -1,24 +1,13 @@
 FROM hashicorp/vault:latest
 
-RUN apk add --no-cache jq bash curl
-EXPOSE 8200 8201 8202
+RUN apk add --no-cache bash curl openssl jq
 
-# Copier les fichiers de configuration et le script de démarrage
-COPY config.hcl /vault/config/config.hcl
+RUN mkdir -p /vault/ssl /vault/config /vault/data/ /vault/logs /vault/plugins /vault/data/vault_3
+
+COPY config/vault_3.hcl /vault/config/vault_3.hcl
 COPY start-vault.sh /usr/local/bin/start-vault.sh
-RUN mkdir -p vault/data
 
-# Copier les certificats
-COPY certs/ca.pem /vault/certs/ca.pem
-COPY certs/vault3.pem /vault/certs/vault.pem
-COPY certs/vault3.key /vault/certs/vault.key
-
-# Définir les permissions appropriées
-RUN chmod +x /usr/local/bin/start-vault.sh && \
-    chmod 644 /vault/certs/ca.pem /vault/certs/vault.pem && \
-    chmod 600 /vault/certs/vault.key
-
-# Debug: Check if the file exists
-RUN ls -l /usr/local/bin/start-vault.sh
+RUN chmod +x /usr/local/bin/start-vault.sh
+RUN chown -R vault:vault /vault /vault/data/ /vault/data/vault_3
 
 ENTRYPOINT ["/usr/local/bin/start-vault.sh"]

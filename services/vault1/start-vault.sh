@@ -1,32 +1,46 @@
 #!/bin/bash
+
 pkill vault
 rm -rf /vault/data/*
 
-# Démarrer Vault
-vault server -config=/vault/config/config.hcl &
+echo "Starting Vault server with config /vault/config/vault_1.hcl..."
+vault server -config=/vault/config/vault_1.hcl &
 
-# Attendre que Vault démarre
-sleep 10
+echo "Waiting for Vault server to start..."
+sleep 2
 
-export VAULT_ADDR='https://127.0.0.1:8200'
-export VAULT_CACERT='/vault/certs/ca.pem'
-export VAULT_SKIP_VERIFY=true
+echo "Initializing Vault..."
+vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/token/init1.json
 
-# Initialiser Vault si ce n'est pas déjà fait
-if ! vault status > /dev/null 2>&1; then
-    echo "Initializing Vault..."
-    vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/data/init.json
-fi
+echo "Extracting unseal key and root token..."
+UNSEAL_KEY=$(jq -r '.unseal_keys_b64[0]' /vault/token/init1.json)
+VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init1.json)
+echo $VAULT_TOKEN > /vault/token/root_token-vault_1
 
-# Déverrouiller Vault
-if vault status | grep -q "Sealed: true"; then
-    echo "Unsealing Vault..."
-    UNSEAL_KEY=$(jq -r '.unseal_keys_b64[0]' /vault/data/init.json)
-    vault operator unseal $UNSEAL_KEY
-fi
+echo "Unsealing Vault..."
+vault operator unseal $UNSEAL_KEY
 
-# Vérifier le statut de Vault
-vault status
+echo "Logging in with root token..."
+vault login $VAULT_TOKEN
 
-# Garder le conteneur en vie
+echo "Enabling transit secrets engine..."
+vault secrets enable transit
+
+echo "Creating unseal key for auto-unseal..."
+vault write -f transit/keys/unseal_key
+echo "Creating policy for auto-unseal..."
+vault policy write unseal_key - <<EOF
+path "transit/encrypt/unseal_key" {
+   capabilities = [ "update" ]
+}
+
+path "transit/decrypt/unseal_key" {
+   capabilities = [ "update" ]
+}
+EOF
+
+echo "Creating token with unseal policy..."
+vault token create -policy="unseal_key" -orphan -period=24h -format=json > /vault/token/unseal_token.json
+# vault unwrap -field=token $(cat /vault/data/wrapping-token.txt)
+echo "Setup complete. Keeping the container running..."
 tail -f /dev/null
