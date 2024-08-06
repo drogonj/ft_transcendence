@@ -29,8 +29,3 @@ class MessageFromChat(models.Model):
 	content = models.TextField()
 	user_id = models.IntegerField()
 	username = models.CharField(max_length=255)
-
-class MuteUserList(models.Model):
-	user_id = models.IntegerField()
-	username = models.CharField(max_length=255)
-	is_muted = models.BooleanField()

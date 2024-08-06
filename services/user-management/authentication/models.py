@@ -63,6 +63,8 @@ class Account(AbstractBaseUser):
     trophy              = models.IntegerField(default=100)
     winrate             = models.DecimalField(default=50.0, max_digits=3, decimal_places=1)
 
+    muted_users         = models.ManyToManyField('self', symmetrical=False, related_name='muted_by')
+
     objects = MyAccountManager()
 
     USERNAME_FIELD = 'username'
