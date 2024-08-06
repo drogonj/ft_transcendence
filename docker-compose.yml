@@ -11,6 +11,8 @@ services:
       - django:/tmp_static/
     networks:
       - network
+    env_file:
+      - .env
     entrypoint: sh -c "sh /entrypoint.sh"
 
   user-management:
@@ -155,11 +157,20 @@ services:
   back-game:
     container_name: back-game-pong
     build: services/back-game-pong/
-    ports:
-      - "2605:2605"
+    expose:
+      - "2605"
     env_file: .env
     networks:
      - network
+
+  back-matchmaking:
+    container_name: back-matchmaking-pong
+    build: services/back-matchmaking-pong/
+    expose:
+      - "2607"
+    env_file: .env
+    networks:
+      - network
 
   redis:
     container_name: redis

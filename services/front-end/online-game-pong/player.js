@@ -2,6 +2,7 @@ import {keyDown} from "./listeners.js";
 import {sendMessageToServer} from "./websocket.js";
 import {getSpellWithId} from "./spell.js";
 import {addSpellsToHeader} from "./header.js";
+import {getGameId} from "./game.js";
 
 const players = [];
 let clientSide;
@@ -79,7 +80,7 @@ Player.prototype.increaseScore = function () {
 function startPlayerLoop() {
 	for (const [key, value] of Object.entries(playerKeys)) {
 		if (keyDown.has(value))
-			sendMessageToServer("movePlayer", {"direction": key})
+			sendMessageToServer("movePlayer", {"direction": key, "clientSide": getClientSide(), "gameId": getGameId()})
 	}
 	setTimeout(startPlayerLoop, 5);
 }

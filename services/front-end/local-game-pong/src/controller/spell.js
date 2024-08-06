@@ -33,6 +33,14 @@ export function Spell(cooldown, spellName, description, icon) {
 	this.spellCoolDownHtml = this.spellHtml.getElementsByClassName("spellCd")[0];
 }
 
+Spell.prototype.executor = function(playerPaddle) {
+	if (this.isOnCooldown)
+		return false;
+	coolDownRun(this);
+	playerPaddle.statistics.increaseUsedSpells();
+	this.performExecutor(playerPaddle)
+}
+
 export function getSpellWithName(spellName) {
 	return spells.get(spellName);
 }
@@ -41,13 +49,6 @@ export function getSpells(paddleDirection) {
 	if (paddleDirection === -1)
 		return spells.slice(0, 4);
 	return spells.slice(4, spells.length);
-}
-
-export function spellLaunchController(spell) {
-	if (spell.isOnCooldown)
-		return false;
-	coolDownRun(spell);
-	return true;
 }
 
 export function setSpellDelay(delay) {

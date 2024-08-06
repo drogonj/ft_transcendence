@@ -1,9 +1,17 @@
 clean:
+<<<<<<< HEAD
 	@sudo docker compose down
 	@sudo docker container prune -f
 	@sudo docker image prune -fa
 	@sudo docker network prune -f
 	@sudo docker volume prune -fa
+=======
+	@docker compose down
+	@docker container prune -f
+	@docker image prune -fa
+	@docker network prune -f
+	@docker volume prune -fa
+>>>>>>> origin
 	
 fullclean: clean
 	@docker image rm $$(docker image ls -q) || true

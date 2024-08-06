@@ -166,29 +166,97 @@ def search_users(request):
     query = request.GET.get('q')
     if query:
         users = User.objects.filter(Q(username__icontains=query))
-        user_data = [{
-            'username': user.username,
-            'id': user.id,
-            'avatar': user.profil_image.url,
-            'pending_request': True if FriendshipRequest.objects.filter(from_user=request.user).exists() else False
-             }
-            for user in users
-            if user.username != request.user.username
-            and not Friendship.objects.filter(from_user=user, to_user=request.user).exists()]
+
+        user_data = []
+        for user in users:
+            # Vérifiez les demandes d'amitié et les amitiés existantes
+            has_friendship_request = FriendshipRequest.objects.filter(
+                from_user=request.user, to_user=user
+            ).exists()
+            has_friendship = Friendship.objects.filter(
+                Q(from_user=request.user, to_user=user) |
+                Q(from_user=user, to_user=request.user)
+            ).exists()
+
+            # Ajouter l'utilisateur seulement s'il n'est pas l'utilisateur actuel et si aucune amitié n'existe déjà
+            if user.username != request.user.username and not has_friendship:
+                user_data.append({
+                    'username': user.username,
+                    'id': user.id,
+                    'avatar': user.profil_image.url,
+                    'pending_request': has_friendship_request
+                })
     else:
         user_data = []
+
     return JsonResponse({'users': user_data})
 
-class ListAllUsersView(View):
+class GetAllUsersDataView(View):
 	def get(self, request):
 		users = User.objects.all()
 		user_data = [
 			{
 				'username': user.username,
-				'id': user.id,
+				'user_id': user.id,
 				'avatar': user.profil_image.url if user.profil_image else None,
 				'is_connected': user.is_connected,
 			}
 			for user in users
 		]
 		return JsonResponse({'users': user_data})
+
+class GetOneUserDataView(View):
+	def get(self, request, user_id):
+		try:
+			user = User.objects.get(id=user_id)
+			user_data = {
+				'username': user.username,
+				'is_connected': user.is_connected,
+			}
+			return JsonResponse(user_data)
+		except User.DoesNotExist:
+			return JsonResponse({'error': 'User not found'}, status=404)
+
+class IsUserMutedView(View):
+	def get(self, request, user_id, target_user_id):
+		try:
+			user = User.objects.get(id=user_id)
+			is_muted = target_user_id in user.muted_users.values_list('id', flat=True)
+			return JsonResponse({'is_muted': is_muted})
+		except User.DoesNotExist:
+			return JsonResponse({'is_muted': False})
+
+class GetMuteListView(View):
+	def get(self, request, user_id):
+		try:
+			user = User.objects.get(id=user_id)
+			muted_users = user.muted_users.values_list('id', flat=True)
+			user_data = {
+				'muted_users': list(muted_users),
+			}
+			return JsonResponse(user_data)
+		except User.DoesNotExist:
+			return JsonResponse({'error': 'User not found'}, status=404)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MuteToggleView(View):
+	def post(self, request, user_id):
+		try:
+			user = User.objects.get(id=user_id)
+			data = json.loads(request.body.decode('utf-8'))
+			muted = data.get('muted', False)
+			current_user = request.user
+
+			if not current_user.is_authenticated:
+				return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+			if muted:
+				if user.id not in current_user.muted_users.values_list('id', flat=True):
+					current_user.muted_users.add(user)
+			else:
+				if user in current_user.muted_users.all():
+					current_user.muted_users.remove(user)
+
+			return JsonResponse({'success': True})
+		except User.DoesNotExist:
+			return JsonResponse({'error': 'User not found'}, status=404)

@@ -5,9 +5,9 @@ let friendSocket;
 let friendSocketRunning = false;
 
 export async function connectFriendsWebsocket() {
-    friendSocket = new WebSocket('wss://localhost:8080/ws/friend-requests/');
+    friendSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/friend-requests/`);
 
-    friendSocket.onopen = function(e) {
+    friendSocket.onopen = function(e) {5
         friendSocketRunning = true;
         console.log("WebSocket connection established.");
     };
@@ -21,23 +21,23 @@ export async function connectFriendsWebsocket() {
         const from_user = data.username;
 
         const route =  window.location.pathname + window.location.search;
-        if (route === '/home' || route === '/home/') {
-            if (type === 'friend_request_notification') {
-                const avatar = data.avatar
-                addFriendshipRequestToMenu(user_id, from_user, avatar)
-            } else if (type === 'accepted_friendship_request_notification') {
-                const avatar = data.avatar
-                const is_connected = data.is_connected
-                addFriendToMenu(user_id, from_user, avatar, is_connected)
-            } else if (type === 'canceled_friendship_notification') {
-                const divId = "friend-" + user_id;
-                const element = document.getElementById(divId);
-                element.remove();
-            } else if (type === 'friend_connected_notification') {
-                changeFriendStatus(user_id, true);
-            } else if (type === 'friend_disconnected_notification') {
-                changeFriendStatus(user_id, false)
-            }
+        ifif: if (type === 'friend_request_notification') {
+            const avatar = data.avatar
+            addFriendshipRequestToMenu(user_id, from_user, avatar)
+        } else if (type === 'accepted_friendship_request_notification') {
+            const avatar = data.avatar
+            const is_connected = data.is_connected
+            addFriendToMenu(user_id, from_user, avatar, is_connected)
+        } else if (type === 'canceled_friendship_notification') {
+            const divId = "friend-" + user_id;
+            const element = document.getElementById(divId);
+            if (!element)
+                break ifif;
+            element.remove();
+        } else if (type === 'friend_connected_notification') {
+            changeFriendStatus(user_id, true);
+        } else if (type === 'friend_disconnected_notification') {
+            changeFriendStatus(user_id, false)
         }
     };
 
@@ -61,9 +61,14 @@ export async function disconnectFriendsWebsocket() {
 
 export function changeFriendStatus(userId, is_connected) {
     let friendElement = document.getElementById(`friend-${userId}`);
+
+    if (!friendElement)
+        return;
+
     if (friendElement) {
         const statusIndicator = friendElement.querySelector('.status-indicator');
         const statusIndicatorText = friendElement.querySelector('.status-indicator-text');
+        const ul = friendElement.parentElement;
 
         if (statusIndicator) {
             statusIndicator.classList.remove('offline', 'online');
@@ -72,6 +77,12 @@ export function changeFriendStatus(userId, is_connected) {
 
         if (statusIndicatorText) {
             statusIndicatorText.textContent = is_connected ? 'online' : 'offline';
+        }
+
+        if (is_connected) {
+            ul.prepend(friendElement)
+        } else {
+            ul.appendChild(friendElement)
         }
     }
 }
@@ -177,6 +188,9 @@ export async function declineFriendshipRequest(event) {
 export function addFriendToMenu(user, username, avatar, is_connected) {
     const friendsContainer = document.getElementById('friends-content');
 
+    if (!friendsContainer)
+        return;
+
     // Create a new li element for the friend
     const newFriend = document.createElement('li');
     newFriend.id = `friend-${user}`;
@@ -192,7 +206,7 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
             <p>${username}</p>
         </span>
         <button class="delete-friend-button" data-friend-id="${user}">
-            <img src="../assets/images/friends/red_cross.png" alt="delete">
+            <img src="/assets/images/friends/red_cross.png" alt="delete">
         </button>
     `;
 
@@ -238,6 +252,9 @@ export async function loadFriends() {
 export function addFriendshipRequestToMenu(user, username, avatar) {
     const friendshipRequestsContainer = document.getElementById('requests-content');
 
+    if (!friendshipRequestsContainer)
+        return;
+
     // Create a new li element for the new friendship request
     const newFriendshipRequest = document.createElement('li');
     newFriendshipRequest.id = `friendship-request-${user}`;
@@ -251,10 +268,10 @@ export function addFriendshipRequestToMenu(user, username, avatar) {
             <p>${username}</p>
         </span>
         <button class="accept-friendship-request-button" data-friend-id="${user}" data-friend-avatar="${avatar}">
-            <img src="../assets/images/friends/green_check.png" alt="accept">
+            <img src="/assets/images/friends/green_check.png" alt="accept">
         </button>
         <button class="decline-friendship-request-button" data-friend-id="${user}">
-            <img src="../assets/images/friends/red_cross.png" alt="cancel">
+            <img src="/assets/images/friends/red_cross.png" alt="cancel">
         </button>
     `;
 
@@ -317,7 +334,7 @@ export async function handleUserSearch(event) {
             if (user.pending_request === false) {
                 userField.innerHTML += `
                 <button class="add-friend-button" data-user-username="${user.username}" data-user-id="${user.id}">
-                    <img src="../assets/images/friends/green_cross.png" alt="add">
+                    <img src="/assets/images/friends/green_cross.png" alt="add">
                 </button>
                 `;
                 userField.querySelector('.add-friend-button').addEventListener('click', async (event) => {
@@ -329,12 +346,12 @@ export async function handleUserSearch(event) {
                         <span class="profile-link" data-user-id="${user.id}">
                             <p>${user.username}</p>
                         </span>
-                        <img id="invitation-sent-img" src="../assets/images/friends/invitation_sent.png" alt="invitation-sent">
+                        <img id="invitation-sent-img" src="/assets/images/friends/invitation_sent.png" alt="invitation-sent">
                         `;
                 });
             } else {
                 userField.innerHTML += `
-                <img id="invitation-sent-img" src="../assets/images/friends/invitation_sent.png" alt="invitation-sent">
+                <img id="invitation-sent-img" src="/assets/images/friends/invitation_sent.png" alt="invitation-sent">
                 `;
             }
 

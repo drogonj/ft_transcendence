@@ -1,73 +1,76 @@
 
 .friend-menu-container {
     position: fixed;
-    right: 5px;
     bottom: 0;
+    right: 0;
 }
 
 .friend-menu-button {
-    background-color: #ff0266;
+    background-color: rgb(43 38 109 / 31%);;
     color: white;
     border: none;
     margin: 0;
-    padding: 12px;
-    width: min(325px, 54vw); /* Match the width with the button */
-    border-radius: 5px 5px 0 0;
+    font-size: max(0.65vw, 0.65vh);
+    padding: 4%;
+    width: max(15vw, 20vh);
     cursor: pointer;
     text-align: center;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
     transition: ease-in 0.1s;
+    border-radius: 5px 5px 0 0;
 }
 
 .friend-menu-button:hover {
-    background-color: #c70652;
+    background-color: #00000052;
 }
 
 .friend-menu {
     list-style: none;
     padding: 0;
     position: absolute;
-    bottom: 35px; /* Adjust based on your button height */
-    background-color: #c5c8de;
-    box-shadow: 0 0 10px rgba(129, 66, 199, 0.69);
+    bottom: max(1.8vw, 1.8vh); /* Adjust based on your button height */
+    background-color: #00000082;
+    box-shadow: 0 0 10px rgb(151 151 151 / 27%);
     border-radius: 5px 5px 0 0;
     overflow: hidden;
-    max-height: 0;
     transition: max-height 0.3s ease-out;
-    width: min(325px, 54vw); /* Match the width with the button */
+    width: max(15vw, 20vh);
+    max-height: 0;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
-    height: 500px; /* Fixed height for the menu */
+    height: 40vh; /* Fixed height for the menu */
     overflow-y: auto; /* Add vertical scroll if content overflows */
+    scrollbar-width: thin;
+    scrollbar-color: #00000040 #0000002b;
 }
 
 .friend-menu-header {
     display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background-color: #d3d5e3;
-    border-bottom: 1px solid #ccc;
+    padding: 0.15vw;
+    border-bottom: 1px solid #ccc0;
 }
 
 .friend-menu-header button {
-    background-color: #ff0266;
+    font-size: max(0.6vw, 0.8vh);
+    background-color: #2d31696e;
     color: white;
     border: none;
-    padding: 10px 10px;
+    margin: 1%;
+    padding: 1% 5%;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: max(0.3vh, 0.3vw);
     transition: ease-in 0.1s;
 }
 
 .friend-menu-header button:hover {
-    background-color: #c70652;
+    background-color: #00000047;
 }
 
 
 .friend-menu-content {
     display: none; /* Hide content by default */
     list-style-type: none;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 2%;
+    padding-right: 2%;
 }
 
 .friend-menu-content.active {
@@ -78,13 +81,13 @@
     display: flex; /* Use flexbox to align items */
     align-items: center; /* Center items vertically */
     justify-content: space-between; /* Distribute space evenly */
-    height: 50px;
-    padding: 10px;
-    margin-top: 5px;
-    border-bottom: 1px solid #ccc;
+    height: max(2.5vw, 3vh);
+    padding: 3%;
+    margin-top: 1.5%;
+    font-size: max(0.7vw, 1vh);
     text-align: left; /* Align text to the left */
     border-radius: 5px;
-    background: #e1e2eb;
+    background: #ffffff2b;
     transition: ease-in 0.1s;
 }
 
@@ -93,12 +96,12 @@
 }
 
 .friend-menu li:hover {
-    background-color: #cecfdb;
+    background: #ffffff42;
 }
 
 .avatar-container {
-    width: 40px; /* Fixed size for avatar container */
-    height: 40px; /* Fixed size for avatar container */
+    width: max(2.25vw, 2.25vh); /* Fixed size for avatar container */
+    aspect-ratio: 1 / 1;
     border-radius: 50%; /* Make the container circular */
     overflow: hidden; /* Hide overflow */
     flex-shrink: 0; /* Prevent shrinking */
@@ -114,13 +117,13 @@
 .friend-menu li span {
     margin: 0;
     flex-grow: 1; /* Allow text to grow */
-    padding-left: 10px; /* Space between avatar and text */
+    padding-left: 5%; /* Space between avatar and text */
 }
 
 .friend-menu li span p {
-    max-width: 100px;
+    max-width: max(5vw, 8vh);
     overflow: hidden;
-    background: linear-gradient(to right,  #ff0266 0%,rgba(0,0,0,1) 80%,rgba(0,0,0,0) 100%);
+    background: linear-gradient(to right,  #ffffff 0%,rgb(255 255 255) 80%,rgba(0,0,0,0) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent
 }
@@ -130,13 +133,14 @@
     border: none;
     padding: 0;
     cursor: pointer;
-    margin-right: 15px;
+    margin-right: 10px;
 }
 
 .friend-menu li button img {
-    width: 15px;
-    height: 15px;
+    width: max(0.65vw, 0.65vh);
+    aspect-ratio: 1 / 1;
     transition: ease-in 0.1s;
+    opacity: 0.75;
 }
 
 .friend-menu li button img:hover {
@@ -145,11 +149,11 @@
 
 .status-indicator {
     position: relative; /* Change to relative for proper positioning within parent element */
-    width: 10px; /* Increase size for better visibility */
-    height: 10px; /* Increase size for better visibility */
+    width: max(0.3vw, 0.3vh);
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     display: inline-block; /* Ensure it's inline for proper layout */
-    margin-right: 10px; /* Add some margin for spacing */
+    margin-right: 2%; /* Add some margin for spacing */
 }
 
 .status-indicator.online {
@@ -161,79 +165,87 @@
 }
 
 .status-indicator-text {
-    margin-right: 10px;
+    margin-right: 5%;
     font-size: 0.75em;
-    color: #1e1f26;
+    color: #ffffff;
     display: inline-block; /* Ensure text and indicator are inline */
     vertical-align: middle; /* Align text vertically with the indicator */
-    margin-left: 5px; /* Add some margin for spacing */
 }
 
 #search-user-form {
+    display: flex; /* Use flexbox to align children */
+    align-items: center; /* Vertically align items */
     width: 100%;
 }
 
 #search-user-form #search-query {
+    flex-grow: 1;
     width: 95%;
-    background: #e1e2eb;
-    border: none;
+    background: #ffffff3d;
     outline: none;
-    padding: 15px 10px 10px;
-    border-radius: 4px;
-    color: black;
+    padding: max(0.75vh, 0.75vw) 5%;
+    border-radius: 2px;
+    color: white;
     font-weight: 500;
-    font-size: 1em;
+    font-size: max(0.6vw, 0.6vh);
     transition: 0.3s;
-    border: 1px solid #dbd8cf;
-    box-shadow: 0 0 10px #e1e2eb
+    border: 1px solid #dbd8cf47;
+    box-shadow: 0 0 0.5rem #e1e2eb9e;
 }
 
 #search-user-form input:focus,
 #search-bar form input:hover,
 #search-bar form input:valid {
-    background: #ebebeb
+    background: #ebebeb61
 }
 
-#search-user-form i
-{
-    position: absolute;
-    transform: translateY(-45px);
-    padding: 15px;
-    font-style: normal;
-    color: black;
-    transition: 0.5s;
-    pointer-events: none;
-    font-size: 1em;
-}
-#search-user-form input:focus ~ i,
-#search-user-form input:valid ~ i
-{
-    display: none;
-}
+/*#search-user-form i*/
+/*{*/
+/*    position: fixed; !* Use relative positioning within the flex container *!*/
+/*    bottom: auto; !* Remove fixed bottom positioning *!*/
+/*    padding: 0 max(0.75vw, 0.75vh);*/
+/*    font-style: normal;*/
+/*    color: #efe4e4;*/
+/*    transition: 0.5s;*/
+/*    pointer-events: none;*/
+/*    font-size: max(0.6vw, 0.7vh);*/
+/*    align-self: center; !* Ensure the icon is vertically centered *!*/
+/*}*/
+/*#search-user-form input:focus ~ i,*/
+/*#search-user-form input:valid ~ i*/
+/*{*/
+/*    display: none;*/
+/*}*/
 
 #search-user-form input[type="submit"]
 {
     position: absolute;
-    border-radius: 10px;
-    transform: translateY(-35px);
-    right: 20px;
-    padding: 7px;
-    border-width: 1px;
+    font-size: max(0.6vw, 0.7vh);
+    border-radius: 0.25rem;
+    right: 10%;
+    padding: 2%;
     outline: none;
-    color: #343434;
+    color: #ffffff;
     cursor: pointer;
     border: none;
     transition-duration: 0.5s;
 }
 
 #search-user-form input[type="submit"]:hover {
-    background: #ff0266;
+    background: #00000057;
     color: whitesmoke;
 }
 
 #invitation-sent-img {
-    width: 25px;
-    height: 25px;
+    width: max(1.25vw, 1.25vh);
+    aspect-ratio: 1 / 1;
+    transition: ease-in 0.1s;
+}
+
+#search-results p {
+    color: white;
+    margin-left: max(0.5vh, 0.5vw);
+    font-size: max(0.6vw, 0.75vh);
 }
 
 .profile-link {

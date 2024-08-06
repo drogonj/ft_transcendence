@@ -27,6 +27,7 @@ db_secrets = vault_client.read_secret('myapp/database')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = db_secrets.get("DJANGO_KEY")
+WEBSITE_URL = db_secrets.get("WEBSITE_URL", "localhost")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -95,7 +96,7 @@ WSGI_APPLICATION = 'user-management.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": db_secrets.get("POSTGRES_DB"),        
         "USER": db_secrets.get("POSTGRES_USER"),
         "PASSWORD": db_secrets.get("POSTGRES_PASSWORD"),
@@ -103,7 +104,6 @@ DATABASES = {
         "PORT": db_secrets.get("POSTGRES_PORT"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -138,7 +138,11 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'",)
 CSP_STYLE_SRC = ("'self'",)
 CSP_IMG_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'", "ws://localhost:8080", "wss://localhost:8080")
+CSP_CONNECT_SRC = (
+    "'self'",  # Autoriser les connexions vers le même domaine
+    f"ws://{WEBSITE_URL}",  # Autoriser les connexions WebSocket non sécurisées
+    f"wss://{WEBSITE_URL}"  # Autoriser les connexions WebSocket sécurisées
+)
 
 
 # Internationalization
@@ -178,10 +182,10 @@ CORS_ALLOW_CREDENTIALS = True
 LOGIN_RATELIMIT_USER = True
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://127.0.0.1:8080',
-    'https://localhost:8080',
+    f"http://{WEBSITE_URL}",
+    f"https://{WEBSITE_URL}"
 ]
 CORS_ALLOWED_ORIGINS = [
-    'https://127.0.0.1:8080',
-    'https://localhost:8080',
+    f"http://{WEBSITE_URL}",
+    f"https://{WEBSITE_URL}"
 ]

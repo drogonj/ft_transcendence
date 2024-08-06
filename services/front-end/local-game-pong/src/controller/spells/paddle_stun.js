@@ -1,4 +1,4 @@
-import {setSpellDelay, Spell, spellLaunchController} from "../spell.js";
+import {setSpellDelay, Spell} from "../spell.js";
 import {getOpponentPaddle} from "../player.js";
 import {setCssProperty} from "../../view/style_view.js";
 import {newImage} from "../utils/utils.js";
@@ -7,9 +7,10 @@ export default function PaddleStun() {
 	Spell.call(this, 15, "Paddle Stun", "DESCRIPTION", newImage("../../assets/images/paddle_stun.png"));
 }
 
-PaddleStun.prototype.executor = function (playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
+PaddleStun.prototype = Object.create(Spell.prototype);
+PaddleStun.prototype.constructor = PaddleStun;
+
+PaddleStun.prototype.performExecutor = function (playerPaddle) {
 	const targetPaddle = getOpponentPaddle(playerPaddle);
 	const saveMoveSpeed = targetPaddle.moveStep
     targetPaddle.moveStep = 0;

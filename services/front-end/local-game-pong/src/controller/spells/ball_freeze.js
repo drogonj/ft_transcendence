@@ -1,4 +1,4 @@
-import {Spell, spellLaunchController} from "../spell.js";
+import {Spell} from "../spell.js";
 import {getAllBallInSide} from "../ball.js";
 import {setCssProperty} from "../../view/style_view.js";
 import {newImage} from "../utils/utils.js";
@@ -8,9 +8,10 @@ export default function BallFreeze() {
 	Spell.call(this, 5, "Ball Freeze", "DESCRIPTION", newImage("../../assets/images/ball_freeze.png"));
 }
 
-BallFreeze.prototype.executor = function(playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
+BallFreeze.prototype = Object.create(Spell.prototype);
+BallFreeze.prototype.constructor = BallFreeze;
+
+BallFreeze.prototype.performExecutor = function(playerPaddle) {
 	const side = playerPaddle.paddleDirection === 1 ? 1 : 0;
 	let ballInSide = getAllBallInSide(side)
 	ballInSide.forEach((ball) => {
