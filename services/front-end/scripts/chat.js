@@ -1,8 +1,10 @@
 import { navigateTo, app } from './contentLoader.js';
 import { currentUser } from './auth.js';
+import { csrfToken } from './auth.js';
 
 let chatSocket = null;
 let chatSocketRunning = false;
+let mutedUserIds = [];
 
 // Quelques points verifier:
 // Attention a la prise en compte de ADMIN et de son ID dans le chat et les rooms (choix de config)
@@ -93,7 +95,9 @@ export async function loadUsers() {
 
 		for (const user of usersData.users) {
 			if (user.user_id !== 1 && user.user_id !== currentUser.user_id) {
-				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
+				const response2 = await fetch(`api/user/is_muted/${currentUser.user_id}/${user.user_id}/`);
+				const muteList = await response2.json();
+				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected, muteList.is_muted);
 			}
 		}
 
@@ -102,7 +106,7 @@ export async function loadUsers() {
 	}
 }
 
-async function addUserToMenu(user_id, username, avatar, is_connected) {
+async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) {
 	const usersContainer = document.getElementById('users-content');
 
 	const newUser = document.createElement('li');
@@ -116,16 +120,81 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 		<span class="profile-link" data-user-id="${user_id}">
 			<p>${username}</p>
 		</span>
-		<button class="mute-user-button" data-user-id="${user_id}">
-			<img src="../assets/images/chat/chat_icon.png" alt="mute">
-		</button>
+        <button class="mute-user-button ${is_muted ? 'muted' : ''}" data-user-id="${user_id}">
+            <img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
+        </button>
 	`;
 
 	usersContainer.insertAdjacentElement('beforeend', newUser);
 
+	// newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
+	// 	const userId = event.currentTarget.getAttribute('data-user-id');
+	// 	const userElement = document.getElementById(`user-${userId}`);
+
+	// 	if (!userElement) {
+	// 		console.error(`User element with ID user-${userId} not found.`);
+	// 		return;
+	// 	}
+
+	// 	const muteButton = userElement.querySelector('.mute-user-button');
+	// 	const muteIcon = muteButton.querySelector('img');
+
+	// 	if (muteButton.classList.contains('muted')) {
+	// 		muteButton.classList.remove('muted');
+	// 		mutedUserIds = mutedUserIds.filter(id => id !== userId);
+	// 		muteIcon.src = '/assets/images/chat/chat_icon.png';
+	// 	} else {
+	// 		muteButton.classList.add('muted');
+	// 		mutedUserIds.push(userId);
+	// 		muteIcon.src = '/assets/images/chat/mute_icon.png';
+	// 	}
+	// });
+
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
-		await muteUser(event);
+		const userId = event.currentTarget.getAttribute('data-user-id');
+		const userElement = document.getElementById(`user-${userId}`);
+	
+		if (!userElement) {
+			console.error(`User element with ID user-${userId} not found.`);
+			return;
+		}
+	
+		const muteButton = userElement.querySelector('.mute-user-button');
+		const muteIcon = muteButton.querySelector('img');
+	
+		const isMuted = muteButton.classList.contains('muted');
+	
+		try {
+			const response = await fetch(`/api/user/mute_toggle/${userId}/`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': csrfToken
+				},
+				body: JSON.stringify({ muted: !isMuted })
+			});
+	
+			if (!response.ok) {
+				throw new Error(`Network response was not ok. Status: ${response.status}`);
+			}
+	
+			const responseData = await response.json();
+			console.log('Response data:', responseData);
+
+			if (isMuted) {
+				muteButton.classList.remove('muted');
+				mutedUserIds = mutedUserIds.filter(id => id !== userId);
+				muteIcon.src = '/assets/images/chat/chat_icon.png';
+			} else {
+				muteButton.classList.add('muted');
+				mutedUserIds.push(userId);
+				muteIcon.src = '/assets/images/chat/mute_icon.png';
+			}
+		} catch (error) {
+			console.error('Error updating mute state:', error);
+		}
 	});
+	
 
 	newUser.querySelector('.profile-link').addEventListener('click', async function (event) {
 		 const userId = this.getAttribute('data-user-id');
@@ -278,7 +347,3 @@ async function getUserStatus(user_id) {
 		console.error('Error loading users:', error.message);
 	}
 }
-
-// async function changeUserChatList() {
-
-// }
