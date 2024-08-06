@@ -1,6 +1,7 @@
 import asyncio
 from .ball import Ball
 from .utils import reverse_side
+from .redis_communication import send_to_redis, create_data_to_send
 
 
 games = []
@@ -91,28 +92,12 @@ class Game:
 		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 
 	async def launch_max_time(self):
-		await asyncio.sleep(120)
+		await asyncio.sleep(5)
 		self.__is_game_end = True
 
 	def game_end(self):
-		data = {
-			"player1": {
-				"playerID": "s",
-				"playerScore": "s",
-				"winner": 0,
-				"tournament": 1
-			},
-			"player2": {
-				"playerID": "s",
-				"playerScore": "s",
-				"winner": 1
-			},
-		}
+		send_to_redis(create_data_to_send(self.__players))
 		self.send_message_to_game("renderPage", {"url": "/game-end"})
-		data["player_one"] = {
-
-		}
-
 		for player in self.__players:
 			player.kill_connection()
 

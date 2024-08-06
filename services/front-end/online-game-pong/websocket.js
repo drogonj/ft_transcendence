@@ -10,7 +10,7 @@ export default function launchClientGame(socketValues) {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onopen = function () {
         console.log("WebSocket NatchMaking is open now.");
-        sendMessageToServer("bindSocket", {"userId": currentUser.user_id})
+        sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
     };
     ws.onmessage = onReceive;
     ws.onerror = onError;
