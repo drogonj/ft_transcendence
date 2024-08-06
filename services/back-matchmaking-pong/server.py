@@ -86,7 +86,7 @@ class MatchMakingWebSocket(WebSocketHandler):
         if socket['type'] == 'createUser':
             user = User(self, socket_values)
             users_in_queue.append(user)
-            print(f"{user.get_user_id()} is bind to a client in the matchmaking server")
+            print(f"User with id {user.get_user_id()} is bind to a client in the matchmaking server")
 
     def on_close(self):
         print(f"[-] A user leave the matchmaking server.")
