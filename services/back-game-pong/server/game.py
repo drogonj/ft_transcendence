@@ -1,6 +1,7 @@
 import asyncio
 from .ball import Ball
 from .utils import reverse_side
+from .redis_communication import send_to_redis, create_data_to_send
 
 
 games = []
@@ -10,7 +11,7 @@ class Game:
 	def __init__(self, game_id, socket_values):
 		self.__game_id = game_id
 		self.__players = []
-		self.__usernames = [socket_values["username1"], socket_values["username2"]]
+		self.__user_ids = [socket_values["userId1"], socket_values["userId2"]]
 		self.__balls = [Ball()]
 		self.__is_game_end = False
 		games.append(self)
@@ -72,6 +73,11 @@ class Game:
 			if player.get_socket() == client:
 				self.__players.remove(player)
 
+	def disconnect_player_with_socket(self, client):
+		for player in self.__players:
+			if player.get_socket() == client:
+				player.set_socket(None)
+
 	def mark_point(self, ball):
 		side = reverse_side(ball.get_ball_side())
 
@@ -95,9 +101,11 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
+		send_to_redis(create_data_to_send(self.__players))
 		self.send_message_to_game("renderPage", {"url": "/game-end"})
 		for player in self.__players:
-			player.kill_connection()
+			if player.get_socket():
+				player.kill_connection()
 
 	def trigger_game_launch(self):
 		if len(self.__players) == 2:
@@ -107,8 +115,8 @@ class Game:
 		self.__players.append(player)
 		self.trigger_game_launch()
 
-	def get_usernames(self):
-		return self.__usernames
+	def get_user_ids(self):
+		return self.__user_ids
 
 	def get_player(self, side):
 		return self.__players[0] if self.__players[0].get_side() == side else self.__players[1]
@@ -126,7 +134,10 @@ class Game:
 		return False
 
 	def is_game_containing_players(self):
-		return len(self.__players) > 0
+		for player in self.__players:
+			if player.get_socket() is not None:
+				return True
+		return False
 
 
 def get_game_with_id(game_id):
@@ -141,10 +152,10 @@ def get_game_with_client(client):
 			return game
 
 
-def remove_player_from_client(client):
+def disconnect_handle(client):
 	game = get_game_with_client(client)
 
-	game.remove_player_with_client(client)
+	game.disconnect_player_with_socket(client)
 	game.set_game_state(True)
 
 	if not game.is_game_containing_players():
@@ -153,7 +164,7 @@ def remove_player_from_client(client):
 
 def bind_player_to_game(player):
 	for game in games:
-		for username in game.get_usernames():
-			if username == player.get_username():
+		for user_id in game.get_user_ids():
+			if user_id == player.get_user_id():
 				game.add_player_to_game(player)
 				return
