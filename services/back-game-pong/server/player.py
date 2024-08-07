@@ -28,6 +28,7 @@ class Player:
 
 	def dumps_player_for_socket(self):
 		return {
+			"usedId": self.__user_id,
 			"moveSpeed": self.__move_speed,
 			"paddleTopPosition": str(self.__top_position) + "%",
 			"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]

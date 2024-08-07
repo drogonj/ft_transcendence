@@ -1,5 +1,5 @@
 import {keyDown} from "./listeners.js"
-import {moveStep, moveSpeed, paddleSize, maxScore, aiActive} from "./settings.js";
+import {moveStep, moveSpeed, paddleSize, maxScore, aiActive, spellsActive} from "./settings.js";
 import {
 	movePlayerPaddleUp,
 	movePlayerPaddleDown,
@@ -28,12 +28,14 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.moveStep = 1;
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
-	this.playerSpells = getSpells(paddleDirection);
-	this.playerSpells.push(new PaddleStun());
+	if (spellsActive) {
+		this.playerSpells = getSpells(paddleDirection);
+		this.playerSpells.push(new PaddleStun());
+		addSpellsToHeader(this.paddleHeader, this.playerSpells);
+	}
 	this.statistics = new Statistics();
 	setPaddleSize(this, paddleSize);
 	displayPlayerPaddle(this);
-	addSpellsToHeader(this.paddleHeader, this.playerSpells);
 }
 
 Player.prototype.paddleCanMoveUp = function() {
@@ -77,7 +79,12 @@ function leftPlayerTriggerKeys(leftPaddle) {
 	} else if (keyDown.has('KeyS')) {
 		if (leftPaddle.paddleCanMoveDown())
 			movePlayerPaddleDown(leftPaddle);
-	} else if (keyDown.has('Digit1')) {
+	}
+
+	if (!spellsActive)
+		return;
+
+	if (keyDown.has('Digit1')) {
 		leftPaddle.playerSpells[0].executor(leftPaddle);
 	} else if (keyDown.has('Digit2')) {
 		leftPaddle.playerSpells[1].executor(leftPaddle);
@@ -95,7 +102,12 @@ function rightPlayerTriggerKeys(rightPaddle) {
 	} else if (keyDown.has('ArrowDown')) {
 		if (rightPaddle.paddleCanMoveDown())
 			movePlayerPaddleDown(rightPaddle);
-	} else if (keyDown.has('Numpad1')) {
+	}
+
+	if (!spellsActive)
+		return;
+
+	if (keyDown.has('Numpad1')) {
 		rightPaddle.playerSpells[0].executor(rightPaddle);
 	} else if (keyDown.has('Numpad2')) {
 		rightPaddle.playerSpells[1].executor(rightPaddle);

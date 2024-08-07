@@ -84,6 +84,8 @@ class Game:
 		socket_values.update(ball.dumps_ball_for_socket())
 		self.delete_ball(ball)
 		self.send_message_to_game("displayScore", socket_values)
+		if self.have_player_with_max_score():
+			self.set_game_state(True)
 		self.create_ball()
 
 	def delete_ball(self, ball):
@@ -134,6 +136,12 @@ class Game:
 	def is_game_containing_players(self):
 		for player in self.__players:
 			if player.get_socket() is not None:
+				return True
+		return False
+
+	def have_player_with_max_score(self):
+		for player in self.__players:
+			if player.get_score() >= 10:
 				return True
 		return False
 

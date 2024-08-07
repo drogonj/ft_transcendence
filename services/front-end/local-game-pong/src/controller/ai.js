@@ -1,6 +1,7 @@
 import {getBallWithIndex} from "./ball.js";
 import {getRightPaddle} from "./player.js";
 import {movePlayerPaddleDown, movePlayerPaddleUp} from "../view/player_view.js";
+import {spellsActive} from "./settings.js";
 
 let ballPosition;
 let ballVelocity;
@@ -37,6 +38,9 @@ export function triggerAIKeys() {
 		if (paddle.paddleCanMoveDown())
 			movePlayerPaddleDown(paddle);
 	}
+
+	if (!spellsActive)
+		return;
 
 	if (Math.floor(Math.random() * 200) === 0) {
 		const spell = getRandomSpell();

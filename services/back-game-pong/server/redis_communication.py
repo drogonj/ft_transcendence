@@ -12,10 +12,4 @@ def create_data_to_send(players):
     for index, player in enumerate(players):
         data["player" + str(index)]["playerId"] = player.get_user_id()
         data["player" + str(index)]["playerScore"] = player.get_score()
-
-    if players[0].get_score() > players[1].get_score():
-        data["player0"]["winner"] = 1
-    else:
-        data["player1"]["winner"] = 1
-
     return data
