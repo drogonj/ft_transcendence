@@ -49,7 +49,7 @@
     margin-top: max(0.2vw, 0.2vh);
     text-align: left;
     border-radius: 5px;
-    gap: 0 max(1vh, 0.3vw);
+
     background-color: #e1e2eb85;
     transition: ease-in 0.1s;
 }
@@ -64,8 +64,8 @@
 
 .users-list li span {
     margin: 0;
-    flex-grow: 1; /* Allow text to grow */
-    padding-left: max(0.5vh, 0.6vw); /* Space between avatar and text */
+    /* flex-grow: 1; */ /* Allow text to grow */
+    /* padding-left: max(0.5vh, 0.6vw); */ /* Space between avatar and text */
 }
 
 .users-list li span p {

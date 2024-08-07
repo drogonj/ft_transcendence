@@ -441,6 +441,11 @@ a {
     font-size: max(1.75vh, 0.5vw);
 }
 
+.profile-box #profile-username {
+    text-align: center;
+    font-size: max(1.2vh, 0.3vw);
+}
+
 .profile-box #avatar-display {
     align-self: center;
     width: max(6vh, 4vw);
