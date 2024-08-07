@@ -583,9 +583,6 @@ export async function renderGameSettings() {
         
             <output class="menuItem">Max score</output>
             <input id="inputMaxScore" class="menuItem slider" type="range" min="10" max="100" value="25">
-            
-            <output class="menuItem">AI difficulty</output>
-            <input id="inputMaxScore" class="menuItem slider" type="range" min="1" max="3" value="2">
         
             <output class="menuItem">Enable AI</output>
         

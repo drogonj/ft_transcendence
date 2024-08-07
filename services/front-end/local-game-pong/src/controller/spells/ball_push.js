@@ -5,7 +5,7 @@ import {newImage} from "../utils/utils.js";
 
 
 export default function BallPush() {
-	Spell.call(this, 5, "Ball Push", "DESCRIPTION", newImage("../../assets/images/ball_push.png"));
+	Spell.call(this, 5, "Ball Push", "right", "DESCRIPTION", newImage("../../assets/images/ball_push.png"));
 }
 
 BallPush.prototype = Object.create(Spell.prototype);

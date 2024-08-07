@@ -11,7 +11,7 @@ import {displayPlayerPoint} from "../view/player_view.js";
 import {timerDecrease} from "./header.js";
 import {displayStatistics} from "../view/statistics_view.js";
 import {navigateTo} from "../../../scripts/contentLoader.js";
-import launchAi from "./ai.js";
+import launchAi, {stopAiLoops} from "./ai.js";
 import {aiActive} from "./settings.js";
 
 let globalLoop;
@@ -19,6 +19,7 @@ let globalLoop;
 export function launchGame() {
 	stopBallLoop();
 	stopPlayerLoop();
+	stopAiLoops();
 	clearTimeout(globalLoop);
 	startBallLoop();
 	startPlayersLoop();

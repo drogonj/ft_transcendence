@@ -21,12 +21,13 @@ export default function loadSpell() {
 	shuffle(spells);
 }
 
-export function Spell(cooldown, spellName, description, icon) {
+export function Spell(cooldown, spellName, sideEffect, description, icon) {
 	this.cooldown = cooldown;
 	this.spellName = spellName;
 	this.description = description;
 	this.icon = icon;
 	this.isOnCooldown = false;
+	this.sideEffect = sideEffect;
 	this.spellHtml = createSpellDiv(this);
 	this.spellCoolDownHtml = this.spellHtml.getElementsByClassName("spellCd")[0];
 }
@@ -37,6 +38,16 @@ Spell.prototype.executor = function(playerPaddle) {
 	coolDownRun(this);
 	playerPaddle.statistics.increaseUsedSpells();
 	this.performExecutor(playerPaddle)
+}
+
+Spell.prototype.canBeLaunchOnTargetBall = function (targetBall) {
+	if (this.sideEffect === "all")
+		return true;
+	else if (this.sideEffect === "right" && targetBall.getBallDirection() < 0)
+		return true;
+	else if (this.sideEffect === "left" && targetBall.getBallDirection() > 0)
+		return true;
+	return false;
 }
 
 export function getSpellWithName(spellName) {
