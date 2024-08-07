@@ -586,6 +586,13 @@ export async function renderGameSettings() {
             <output class="menuItem">Max score</output>
             <input id="inputMaxScore" class="menuItem slider" type="range" min="10" max="100" value="25">
         
+        <output class="menuItem">Enable spells</output>
+        
+            <label class="container menuItem" >
+                <input id="activeSpells" type="checkbox" checked/>
+                <span class="checkmark"></span>
+            </label>
+        
             <output class="menuItem">Enable AI</output>
         
             <label class="container menuItem">

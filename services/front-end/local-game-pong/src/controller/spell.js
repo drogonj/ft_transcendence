@@ -7,11 +7,14 @@ import PaddleSize from "./spells/paddle_size.js";
 import {shuffle} from "./utils/utils.js";
 import {createSpellDiv} from "../view/spell_view.js";
 import {coolDownRun} from "./header.js";
+import {spellsActive} from "./settings.js";
 
 const spells = [];
 
 export default function loadSpell() {
 	spells.length = 0;
+	if (!spellsActive)
+		return;
 	spells.push(new BallSlayer());
 	spells.push(new BallFreeze());
 	spells.push(new BallPush());
