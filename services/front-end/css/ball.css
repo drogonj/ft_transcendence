@@ -1,5 +1,5 @@
 .ball {
-    background-color: var(--bg-secondary);
+    background-color: #DAE1E7FF;
     border-radius: 50%;
     position: absolute;
     left: 49.2%;

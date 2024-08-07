@@ -15,7 +15,8 @@ import {
     handleUserSearch,
 } from './friends.js';
 
-import { loadUsers, renderChatApp } from './chat.js';
+import { renderChatApp } from './chat.js';
+import { loadUsers } from './users.js';
 import {closeWebSocket, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
 
@@ -513,6 +514,7 @@ export async function renderGameWaiting() {
         </div>
     `;
     document.getElementById('matchMakingCancel').addEventListener('click', (event) => {
+        closeWebSocket();
         event.preventDefault();
         navigateTo('/home', true);
     });
@@ -544,8 +546,8 @@ export async function renderGameEnd() {
                 <div id="rightPlayer" class="statsValues">
                 </div>
             </section>
-            <div id="buttonContinue">
-                <button class="button">Continue</button>
+            <div id="buttonContinueDiv">
+                <button id="buttonContinue" class="friend-menu-button">Continue</button>
             </div>
         </div>
     `;
@@ -584,6 +586,13 @@ export async function renderGameSettings() {
             <output class="menuItem">Max score</output>
             <input id="inputMaxScore" class="menuItem slider" type="range" min="10" max="100" value="25">
         
+            <output class="menuItem">Enable AI</output>
+        
+            <label class="container menuItem">
+                <input id="activeAi" type="checkbox" />
+                <span class="checkmark"></span>
+            </label>
+        
             <output class="menuItem">Respawn only if all balls gone</output>
         
             <label class="container menuItem">
@@ -591,7 +600,7 @@ export async function renderGameSettings() {
                 <span class="checkmark"></span>
             </label>
     
-            <button id="buttonPlay" class="menuItem button">Play</button>
+            <button id="buttonPlay" class="friend-menu-button">Play</button>
         </div>
     `;
     document.getElementById('buttonPlay').addEventListener('click', (event) => {

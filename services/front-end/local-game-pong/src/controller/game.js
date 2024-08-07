@@ -4,19 +4,28 @@ import {
 	getOpponentPaddle,
 	getRightPaddle,
 	havePlayersMaxScore,
-	startPlayersLoop
+	startPlayersLoop, stopPlayerLoop
 } from "./player.js";
-import {startBallLoop} from "./ball.js";
+import {startBallLoop, stopBallLoop} from "./ball.js";
 import {displayPlayerPoint} from "../view/player_view.js";
 import {timerDecrease} from "./header.js";
 import {displayStatistics} from "../view/statistics_view.js";
 import {navigateTo} from "../../../scripts/contentLoader.js";
+import launchAi, {stopAiLoops} from "./ai.js";
+import {aiActive} from "./settings.js";
 
+let globalLoop;
 
 export function launchGame() {
+	stopBallLoop();
+	stopPlayerLoop();
+	stopAiLoops();
+	clearTimeout(globalLoop);
 	startBallLoop();
 	startPlayersLoop();
 	startGlobalGameLoop();
+	if (aiActive)
+		launchAi();
 }
 
 export function isGameEnd() {
@@ -49,5 +58,5 @@ function startGlobalGameLoop() {
 	for (const player of getAllPaddles())
 		player.getStatistics().increaseTimeWithoutTakingGoals()
 	timerDecrease();
-	setTimeout(startGlobalGameLoop, 1000);
+	globalLoop = setTimeout(startGlobalGameLoop, 1000);
 }

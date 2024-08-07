@@ -5,7 +5,7 @@ import {newImage} from "../utils/utils.js";
 
 
 export default function BallSlayer() {
-	Spell.call(this, 10, "Ball Slayer", "DESCRIPTION", newImage("../../assets/images/ball_slayer.png"));
+	Spell.call(this, 10, "Ball Slayer", "right", "DESCRIPTION", newImage("../../assets/images/ball_slayer.png"));
 }
 
 BallSlayer.prototype = Object.create(Spell.prototype);

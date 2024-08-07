@@ -8,6 +8,7 @@ export let respawnIfAllBallsGone;
 export let ballSize;
 export let paddleSize;
 export let maxScore;
+export let aiActive;
 
 export default function loadSettings(inputsHtml) {
 	moveSpeed = inputsHtml[0].value - 10;
@@ -18,7 +19,6 @@ export default function loadSettings(inputsHtml) {
 	maxBallAngle = inputsHtml[5].value * Math.PI / 180
 	maxTime = inputsHtml[6].value;
 	maxScore = inputsHtml[7].value;
-	respawnIfAllBallsGone = inputsHtml[8].checked;
-	//renderPageWithName("pong-game.html")
-	//document.body.style.cursor = "none";
+	aiActive = inputsHtml[8].checked;
+	respawnIfAllBallsGone = inputsHtml[9].checked;
 }

@@ -1,5 +1,5 @@
 import {keyDown} from "./listeners.js"
-import {moveStep, moveSpeed, paddleSize, maxScore} from "./settings.js";
+import {moveStep, moveSpeed, paddleSize, maxScore, aiActive} from "./settings.js";
 import {
 	movePlayerPaddleUp,
 	movePlayerPaddleDown,
@@ -10,10 +10,13 @@ import {getRandomNumber} from "./utils/math_utils.js";
 import {getSpells} from "./spell.js";
 import {addSpellsToHeader} from "../view/header_view.js";
 import Statistics from "./statistics.js";
+import PaddleStun from "./spells/paddle_stun.js";
 
+let playerLoop;
 const players = [];
 
 export default function loadPlayers() {
+	players.length = 0;
 	players.push(new Player(document.getElementsByClassName("playerPaddle")[0], -1, document.getElementById("headerLeft")));
 	players.push(new Player(document.getElementsByClassName("playerPaddle")[1], 1, document.getElementById("headerRight")));
 }
@@ -26,6 +29,7 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
 	this.playerSpells = getSpells(paddleDirection);
+	this.playerSpells.push(new PaddleStun());
 	this.statistics = new Statistics();
 	setPaddleSize(this, paddleSize);
 	displayPlayerPaddle(this);
@@ -60,39 +64,48 @@ Player.prototype.getStatistics = function () {
 }
 
 export function startPlayersLoop() {
-	if (keyDown.has('KeyW')) {
-		if (getLeftPaddle().paddleCanMoveUp())
-			movePlayerPaddleUp(getLeftPaddle())
-	} else if (keyDown.has('KeyS')) {
-		if (getLeftPaddle().paddleCanMoveDown())
-			movePlayerPaddleDown(getLeftPaddle());
-	} else if (keyDown.has('Digit1')) {
-		getLeftPaddle().playerSpells[0].executor(getLeftPaddle());
-	} else if (keyDown.has('Digit2')) {
-		getLeftPaddle().playerSpells[1].executor(getLeftPaddle());
-	} else if (keyDown.has('Digit3')) {
-		getLeftPaddle().playerSpells[2].executor(getLeftPaddle());
-	} else if (keyDown.has('Digit4')) {
-		getLeftPaddle().playerSpells[3].executor(getLeftPaddle());
-	}
-
-	if (keyDown.has('ArrowUp')) {
-		if (getRightPaddle().paddleCanMoveUp())
-			movePlayerPaddleUp(getRightPaddle())
-	} else if (keyDown.has('ArrowDown')) {
-		if (getRightPaddle().paddleCanMoveDown())
-			movePlayerPaddleDown(getRightPaddle());
-	} else if (keyDown.has('Numpad1')) {
-		getRightPaddle().playerSpells[0].executor(getRightPaddle());
-	} else if (keyDown.has('Numpad2')) {
-		getRightPaddle().playerSpells[1].executor(getRightPaddle());
-	} else if (keyDown.has('Numpad3')) {
-		getRightPaddle().playerSpells[2].executor(getRightPaddle());
-	} else if (keyDown.has('Numpad4')) {
-		getRightPaddle().playerSpells[3].executor(getRightPaddle());
-	}
-	setTimeout(startPlayersLoop, moveSpeed);
+	leftPlayerTriggerKeys(getLeftPaddle());
+	if (!aiActive)
+ 		rightPlayerTriggerKeys(getRightPaddle());
+	playerLoop = setTimeout(startPlayersLoop, moveSpeed);
 }
+
+function leftPlayerTriggerKeys(leftPaddle) {
+	if (keyDown.has('KeyW')) {
+		if (leftPaddle.paddleCanMoveUp())
+			movePlayerPaddleUp(leftPaddle)
+	} else if (keyDown.has('KeyS')) {
+		if (leftPaddle.paddleCanMoveDown())
+			movePlayerPaddleDown(leftPaddle);
+	} else if (keyDown.has('Digit1')) {
+		leftPaddle.playerSpells[0].executor(leftPaddle);
+	} else if (keyDown.has('Digit2')) {
+		leftPaddle.playerSpells[1].executor(leftPaddle);
+	} else if (keyDown.has('Digit3')) {
+		leftPaddle.playerSpells[2].executor(leftPaddle);
+	} else if (keyDown.has('Digit4')) {
+		leftPaddle.playerSpells[3].executor(leftPaddle);
+	}
+}
+
+function rightPlayerTriggerKeys(rightPaddle) {
+	if (keyDown.has('ArrowUp')) {
+		if (rightPaddle.paddleCanMoveUp())
+			movePlayerPaddleUp(rightPaddle)
+	} else if (keyDown.has('ArrowDown')) {
+		if (rightPaddle.paddleCanMoveDown())
+			movePlayerPaddleDown(rightPaddle);
+	} else if (keyDown.has('Numpad1')) {
+		rightPaddle.playerSpells[0].executor(rightPaddle);
+	} else if (keyDown.has('Numpad2')) {
+		rightPaddle.playerSpells[1].executor(rightPaddle);
+	} else if (keyDown.has('Numpad3')) {
+		rightPaddle.playerSpells[2].executor(rightPaddle);
+	} else if (keyDown.has('Numpad4')) {
+		rightPaddle.playerSpells[3].executor(rightPaddle);
+	}
+}
+
 
 export function getLeftPaddle() {
 	return players[0];
@@ -114,4 +127,8 @@ export function getOpponentPaddle(paddle) {
 
 export function havePlayersMaxScore() {
 	return getRightPaddle().statistics.getScore() >= maxScore || getLeftPaddle().statistics.getScore() >= maxScore;
+}
+
+export function stopPlayerLoop() {
+	clearTimeout(playerLoop);
 }

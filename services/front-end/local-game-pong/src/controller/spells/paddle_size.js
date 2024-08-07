@@ -5,7 +5,7 @@ import {newImage} from "../utils/utils.js";
 import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
 
 export default function PaddleSize() {
-	Spell.call(this, 17, "Paddle Size", "DESCRIPTION", newImage("../../assets/images/paddle_size.png"));
+	Spell.call(this, 17, "Paddle Size", "all", "DESCRIPTION", newImage("../../assets/images/paddle_size.png"));
 }
 
 PaddleSize.prototype = Object.create(Spell.prototype);
