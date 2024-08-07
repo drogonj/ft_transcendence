@@ -8,10 +8,11 @@ class MatchAdmin(admin.ModelAdmin):
         'score0',
         'score1',
         'winner',
+        'date'
     )
     search_fields = (
         'player0',
-        'player1',
+        'player1'
     )
 
     readonly_fields = (
@@ -20,6 +21,7 @@ class MatchAdmin(admin.ModelAdmin):
         'score0',
         'score1',
         'winner',
+        'date'
     )
 
 admin.site.register(Match, MatchAdmin)

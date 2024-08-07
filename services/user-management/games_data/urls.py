@@ -1,4 +1,6 @@
 from django.urls import path, re_path
-from django.conf.urls.static import static
-from django.conf import settings
 from . import views
+
+urlpatterns = [
+    path('api/user/get_matches/<int:user_id>/', views.GetUserMatchesView.as_view(), name='get_matches'),
+]

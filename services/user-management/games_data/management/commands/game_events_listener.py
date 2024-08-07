@@ -41,11 +41,22 @@ class Command(BaseCommand):
                 data = json.loads(message['data'])
                 self.handle_game_event(data)
 
+    def updatePlayerStats(self, player, opponent, match):
+        if player==match.winner:
+            player.victories+=1
+            player.trophies+=10
+            player.tournaments_won+=1 if match.tournament==True else 0
+        elif opponent==match.winner:
+            player.defeats+=1
+            if player.trophies - 10 >= 0:
+                player.trophies-=10
+        player.winrate = round((player.victories / (player.victories + player.defeats)) * 100, 2)
+        player.goals += match.score0 if player==match.player0 else match.score1
+        player.save()
+
     def handle_game_event(self, data):
-        # Traitez l'événement ici
         logger.info('--- Received game event: {}'.format(data))
 
-        # Vérifiez la présence des clés dans le dictionnaire
         if 'player0' not in data or 'player1' not in data:
             logger.info('--- Invalid game stats')
             return
@@ -54,20 +65,25 @@ class Command(BaseCommand):
         player1_data = data['player1']
 
         try:
-            # Récupérez les instances d'utilisateur à partir des IDs
             p1 = User.objects.get(id=player0_data['playerId'])
             p2 = User.objects.get(id=player1_data['playerId'])
 
-            # Créez un objet Match
+            tournament = data.get('tournament', False)
+
             match = Match.objects.create(
                 player0=p1,
                 player1=p2,
                 score0=player0_data['playerScore'],
                 score1=player1_data['playerScore'],
-                winner=p1 if player0_data['playerScore'] > player1_data['playerScore'] else p2
+                winner=p1 if player0_data['playerScore'] > player1_data['playerScore'] else (p2 if player0_data['playerScore'] < player1_data['playerScore'] else None),
+                tournament=tournament
             )
 
             match.save()
             logger.info('--- Match data stored successfully')
-        except Exception as e:
-            logger.error('--- Failed to store match data', exc_info=e)
+
+            self.updatePlayerStats(p1, p2, match)
+            self.updatePlayerStats(p2, p1, match)
+
+        except:
+            logger.error('--- Failed to store match data')
