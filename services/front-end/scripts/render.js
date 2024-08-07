@@ -185,7 +185,7 @@ export async function renderHome() {
                         </div>
                         <p>${currentUser.username}</p>
                         <div id="profile-card-trophy">
-                            <p>${currentUser.trophy}</p>
+                            <p>${currentUser.trophies}</p>
                             <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -193,10 +193,10 @@ export async function renderHome() {
                                 <path class="circle-bg" d="M18 2.0845
                                     a 15.9155 15.9155 0 0 1 0 31.831
                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                <path class="circle" stroke-dasharray="${currentUser.winrate}, 100" d="M18 2.0845
                                      a 15.9155 15.9155 0 0 1 0 31.831
                                      a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <text x="18" y="20.35" class="percentage">30%</text>
+                                <text x="18" y="20.35" class="percentage">${currentUser.winrate}%</text>
                             </svg>
                             <p>winrate</p>
                         </div>
@@ -286,6 +286,29 @@ export async function renderConfirmRegistration() {
     });
 }
 
+async function fetchMatchesHistory(userId) {
+    try {
+        console.log('oui')
+        const response = await fetch(`/api/user/get_matches/${userId}/`);
+        const data = await response.json();
+
+        let container = document.getElementById('match-history-container');
+
+        for (const match of data.matches) {
+            const element = document.createElement('span');
+            element.className = 'match';
+            element.innerHTML = `
+                <p class="usernames">${match.self_username} vs ${match.opponent_username}</p>
+                <p class="scores">${match.self_score} : ${match.opponent_score}</p>
+                <p class="datetime">${match.date}</p>
+            `;
+            container.insertAdjacentElement('afterbegin', element);
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
 export async function renderUserProfile(userId) {
     const response = await fetch(`/api/user/profile/${userId}/`);
 
@@ -311,7 +334,7 @@ export async function renderUserProfile(userId) {
                 <h2>Stats</h2>
                 <div class="profile-box">
                     <div id="profile-card-trophy">
-                            <p>${userData.trophy}</p>
+                            <p>${userData.trophies}</p>
                             <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -319,18 +342,18 @@ export async function renderUserProfile(userId) {
                                 <path class="circle-bg" d="M18 2.0845
                                     a 15.9155 15.9155 0 0 1 0 31.831
                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                <path class="circle" stroke-dasharray="${userData.winrate}, 100" d="M18 2.0845
                                      a 15.9155 15.9155 0 0 1 0 31.831
                                      a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <text x="18" y="20.35" class="percentage">30%</text>
+                                <text x="18" y="20.35" class="percentage">${userData.winrate}%</text>
                             </svg>
                             <p>winrate</p>
                         </div>
                     <div id="stats-text-container">
-                        <p><span>Victory: </span>3</p>
-                        <p><span>Defeat: </span>7</p>
-                        <p><span>Goals: </span>37</p>
-                        <p><span>Tournaments Won: </span>1</p>
+                        <p><span>Victory: </span>${userData.victories}</p>
+                        <p><span>Defeat: </span>${userData.defeats}</p>
+                        <p><span>Goals: </span>${userData.goals}</p>
+                        <p><span>Tournaments Won: </span>${userData.tournaments_won}</p>
                     </div>
                 </div>
               </section>
@@ -338,16 +361,7 @@ export async function renderUserProfile(userId) {
               <section class="profile-section">
                 <h2>Match History</h2>
                 <div class="profile-box">
-                  <div id="match-history-container">
-                      <span class="match">
-                        <p class="usernames">${userData.username} vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
-                        <p class="scores">12 : 3</p>
-                      </span>
-                      <span class="match">
-                        <p class="usernames">${userData.username} vs ADMIN</p>
-                        <p class="scores">12 : 3</p>
-                      </span>
-                  </div>
+                  <div id="match-history-container"></div>
                 </div>
               </section>
         </div>
@@ -355,6 +369,7 @@ export async function renderUserProfile(userId) {
         <div class="friend-menu-container"></div>
         `;
 
+        await fetchMatchesHistory(userData.user_id);
         await addFriendshipMenu();
 
         document.getElementById('home-button').addEventListener('click', function (event) {
@@ -422,7 +437,7 @@ export async function renderSelfProfile() {
                 <div class="profile-box">
 
                     <div id="profile-card-trophy">
-                            <p>${currentUser.trophy}</p>
+                            <p>${currentUser.trophies}</p>
                             <img alt="trophy" src="/assets/images/trophy.png">
                         </div>
                         <div class="single-chart">
@@ -430,18 +445,18 @@ export async function renderSelfProfile() {
                                 <path class="circle-bg" d="M18 2.0845
                                     a 15.9155 15.9155 0 0 1 0 31.831
                                     a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                <path class="circle" stroke-dasharray="${currentUser.winrate}, 100" d="M18 2.0845
                                      a 15.9155 15.9155 0 0 1 0 31.831
                                      a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                <text x="18" y="20.35" class="percentage">30%</text>
+                                <text x="18" y="20.35" class="percentage">${currentUser.winrate}%</text>
                             </svg>
                             <p>winrate</p>
                         </div>
                     <div id="stats-text-container">
-                        <p><span>Victory: </span>3</p>
-                        <p><span>Defeat: </span>7</p>
-                        <p><span>Goals: </span>37</p>
-                        <p><span>Tournaments Won: </span>1</p>
+                        <p><span>Victory: </span>${currentUser.victories}</p>
+                        <p><span>Defeat: </span>${currentUser.defeats}</p>
+                        <p><span>Goals: </span>${currentUser.goals}</p>
+                        <p><span>Tournaments Won: </span>${currentUser.tournaments_won}</p>
                     </div>
                 </div>
               </section>
@@ -449,16 +464,7 @@ export async function renderSelfProfile() {
               <section class="profile-section">
                 <h2>Match History</h2>
                 <div class="profile-box">
-                  <div id="match-history-container">
-                      <span class="match">
-                        <p class="usernames">YOU vs ADMIIIIIIIIIIIIIIIIIIIIIIIIIIIN</p>
-                        <p class="scores">12 : 3</p>
-                      </span>
-                      <span class="match">
-                        <p class="usernames">YOU vs ADMIN</p>
-                        <p class="scores">12 : 3</p>
-                      </span>
-                  </div>
+                  <div id="match-history-container"></div>
                 </div>
               </section>
         </div>
@@ -466,6 +472,7 @@ export async function renderSelfProfile() {
         <div class="friend-menu-container"></div>
         `;
 
+        await fetchMatchesHistory(currentUser.user_id);
         await addFriendshipMenu();
 
         const uploadAvatar = document.getElementById('upload-avatar');

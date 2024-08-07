@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'authentication',
     'friends',
+    'games_data',
 ]
 
 AUTHENTICATION_BACKENDS = (

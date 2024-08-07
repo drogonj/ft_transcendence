@@ -3,9 +3,7 @@ from .ball import Ball
 from .utils import reverse_side
 from .redis_communication import send_to_redis, create_data_to_send
 
-
 games = []
-
 
 class Game:
 	def __init__(self, game_id, socket_values):
