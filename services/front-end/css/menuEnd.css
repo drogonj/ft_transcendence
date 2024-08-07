@@ -4,17 +4,16 @@
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%,-50%);
-	background-color: var(--bg-primary);
-	color: var(--primary);
+	background-color: rgb(0 0 0 / 22%);
+	color: #DAE1E7;
 	font-size: 1.5vw;
 	border-radius: 3%;
-	border: 0.5vmin solid white;
 }
 
 #statistics {
 	display: flex;
-	border-top: 2px solid white;
-	border-bottom: 2px solid white;
+	/*border-top: 2px solid white;
+	border-bottom: 2px solid white;*/
 }
 
 .playerHeader img {
@@ -22,7 +21,7 @@
 	width: 45%;
 }
 
-#buttonContinue {
+#buttonContinueDiv {
 	height: 100%;
 	display: flex;
 	justify-content: center;
@@ -45,17 +44,23 @@
 
 #statsName {
 	width: 50%;
-	background-color: #1A2130;
+	padding-left: 2%;
+    box-sizing: border-box;
 }
 
 .statsValues {
-	background-color: #1A2130;
+	/*background-color: #1A2130;*/
 	width: 25%;
 	text-align: center;
 }
 
-#statsName :nth-child(2n),
-#rightPlayer :nth-child(2n),
-#leftPlayer :nth-child(2n) {
-	background-color: var(--bg-three);
+#statsName :nth-child(odd),
+#rightPlayer :nth-child(odd),
+#leftPlayer :nth-child(odd) {
+	background-color: rgb(0 0 0 / 50%);
+}
+
+#buttonContinue {
+	width: auto;
+	font-size: 3vmin;
 }

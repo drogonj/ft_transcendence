@@ -1,14 +1,14 @@
 #header {
-    background-color: var(--bg-primary);
+    background-color: rgb(0 0 0 / 22%);
     height: 12%;
     width: 100%;
-    border: 2vmin solid var(--bg-secondary);
+    border: 2vmin solid #DAE1E7FF;
     border-bottom-width: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 7vmin;
-    color: var(--bg-secondary);
+    color: #DAE1E7FF;
     box-sizing: border-box;
 }
 
