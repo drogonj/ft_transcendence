@@ -15,7 +15,8 @@ import {
     handleUserSearch,
 } from './friends.js';
 
-import { loadUsers, renderChatApp } from './chat.js';
+import { renderChatApp } from './chat.js';
+import { loadUsers } from './users.js';
 import {closeWebSocket, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
 
