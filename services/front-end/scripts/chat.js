@@ -7,10 +7,8 @@ let chatSocketRunning = false;
 
 // Quelques points verifier:
 // Attention a la prise en compte de ADMIN et de son ID dans le chat et les rooms (choix de config)
-// Deplacer les GetAllUsersDataView(View) dans Authentication et modifier les routes (urls.py) (optionnel)
 // Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
 // ==> REDIS:6379/1 pour le cache (voir si besoin d'une adresse 0 et/ou definir si juste redis:6379 pour DB)
-// Commencer la partie muted users (voir si on mute les messages ou les users)
 
 export async function connectChatWebsocket(user_id) {
 	if (chatSocket)
@@ -61,7 +59,7 @@ export async function connectChatWebsocket(user_id) {
 export async function blockUser(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
-
+ 
 	newMessage.classList.add('chat-message');
 	newMessage.textContent = `${data.timestamp} DM not delivered to : ${data.receiver_username} (reason : muted).`;
 
