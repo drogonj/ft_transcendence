@@ -1,13 +1,13 @@
 FROM hashicorp/vault:latest
 
-RUN apk add --no-cache bash curl openssl jq
+RUN apk add --no-cache bash curl openssl jq su-exec
 
 RUN mkdir -p /vault/ssl /vault/config /vault/data/ /vault/logs /vault/plugins
 
 COPY config/vault_1.hcl /vault/config/vault_1.hcl
 COPY start-vault.sh /usr/local/bin/start-vault.sh
-RUN chmod +x /usr/local/bin/start-vault.sh
-RUN chown -R vault:vault /vault /vault/data
-RUN chown -R vault:vault /vault/data
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chown -R vault:vault /vault/
+RUN chmod +x /usr/local/bin/start-vault.sh /usr/local/bin/entrypoint.sh
 
-ENTRYPOINT ["/usr/local/bin/start-vault.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

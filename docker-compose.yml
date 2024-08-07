@@ -61,16 +61,12 @@ services:
   vault_1:
     build: ./services/vault1/
     container_name: vault_1
-    expose:
-      - 8200
-      - 8201
     volumes:
       - 'vault-token:/vault/token/'
     cap_add:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=http://vault_1:8200
-    command: sleep infinity
     networks:
       - network
     healthcheck:
@@ -82,16 +78,12 @@ services:
   vault_2:
     build: ./services/vault2/
     container_name: vault_2
-    expose:
-      - 8200
-      - 8201
     volumes:
       - 'vault-token:/vault/token/'
     cap_add:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=http://vault_2:8200
-    command: sleep infinity
     networks:
       - network
     healthcheck:
@@ -105,19 +97,16 @@ services:
     env_file:
       - .env
 
+
   vault_3:
     build: ./services/vault3/
     container_name: vault_3
-    expose:
-      - 8200
-      - 8201
     volumes:
-      - 'vault-token:/vault/token/'
+      - vault-token:/vault/token/
     cap_add:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=http://vault_3:8200
-    command: sleep infinity
     networks:
       - network
     healthcheck:
@@ -128,20 +117,18 @@ services:
     depends_on:
       vault_2:
         condition: service_healthy
+    ports:
+      - "8200:8200"
 
   vault_4:
     build: ./services/vault4/
     container_name: vault_4
-    expose:
-      - 8200
-      - 8201
     volumes:
-      - 'vault-token:/vault/token/'
+      - vault-token:/vault/token/
     cap_add:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=http://vault_4:8200
-    command: sleep infinity
     networks:
       - network
     healthcheck:

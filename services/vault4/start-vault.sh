@@ -43,7 +43,6 @@ export VAULT_TOKEN=$(cat /vault/token/root_token-vault_2)
 echo "Joining Raft cluster..."
 vault operator raft join http://vault_2:8200
 sleep 3
-
 vault status
 echo "Vault 4 setup complete."
 tail -f /dev/null

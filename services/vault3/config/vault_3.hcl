@@ -9,7 +9,6 @@ storage "raft" {
    }
 }
 
-
 listener "tcp" {
    address = "0.0.0.0:8200"
    cluster_address = "vault_3:8201"

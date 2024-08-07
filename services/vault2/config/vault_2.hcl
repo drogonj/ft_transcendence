@@ -1,6 +1,12 @@
 storage "raft" {
   path    = "/vault/data/vault_2"
   node_id = "vault_2"
+   retry_join {
+   leader_api_addr = "http://vault_3:8200"
+}
+retry_join {
+   leader_api_addr = "http://vault_4:8200"
+}
 }
 
 listener "tcp" {
@@ -12,7 +18,7 @@ listener "tcp" {
 seal "transit" {
    address            = "http://vault_1:8200"
    # token is read from VAULT_TOKEN env
-   # token              = ""
+   # token              = "YOUR_AUTO_UNSEAL_TOKEN"
    disable_renewal    = "false"
 
    // Key configuration

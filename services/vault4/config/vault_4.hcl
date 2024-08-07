@@ -29,3 +29,4 @@ seal "transit" {
 ui = true
 disable_mlock = true
 cluster_addr = "http://vault_4:8201"
+api_addr = "http://vault_4:8200"

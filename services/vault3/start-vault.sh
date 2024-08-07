@@ -43,7 +43,8 @@ echo "Joining Raft cluster..."
 vault operator raft join http://vault_2:8200
 sleep 3
 vault status
-vault kv list kv/secret
+sleep 3
+vault kv list secret/
 
 echo "Vault 3 setup complete."
 tail -f /dev/null
