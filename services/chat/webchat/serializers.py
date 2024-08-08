@@ -16,7 +16,7 @@ class MessageFromAuthSerializer(serializers.ModelSerializer):
 		model = MessageFromAuth
 		fields = ['id', 'type', 'content', 'user_id', 'username', 'is_connected']
 
-class MessageFromChatSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = MessageFromChat
-		fields = ['id', 'type', 'content', 'user_id', 'username', 'timestamp']
+# class MessageFromChatSerializer(serializers.ModelSerializer):
+# 	class Meta:
+# 		model = MessageFromChat
+# 		fields = ['id', 'type', 'content', 'user_id', 'username', 'timestamp']
