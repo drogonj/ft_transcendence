@@ -85,6 +85,9 @@ class Player:
 	def set_socket(self, socket):
 		self.__socket = socket
 
+	def set_spells(self, spells):
+		self.__spells = spells
+
 
 def get_player_with_user_id(user_id):
 	for player in available_players:
