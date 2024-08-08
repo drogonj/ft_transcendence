@@ -16,7 +16,7 @@ class Player:
 		self.__top_position = 50
 		self.__paddle_size = 20
 		self.__move_speed = 5
-		self.__spells = 0
+		self.__spells = []
 		available_players.append(self)
 
 	def send_message_to_player(self, data_type, data_values):
@@ -30,7 +30,7 @@ class Player:
 		return {
 			"moveSpeed": self.__move_speed,
 			"paddleTopPosition": str(self.__top_position) + "%",
-			"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
+			"playerSpells": ["ballPush", "paddleSize"]
 		}
 
 	def kill_connection(self):
@@ -78,6 +78,15 @@ class Player:
 
 	def get_score(self):
 		return self.__score
+
+	def get_spell_with_id(self, spell_id):
+		for spell in self.__spells:
+			if spell.get_spell_id() == spell_id:
+				return spell
+		return None
+
+	def get_spell_number(self, number):
+		return self.__spells[number]
 
 	def set_username(self, username):
 		self.__username = username

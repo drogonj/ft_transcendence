@@ -1,4 +1,4 @@
-import {setTopPositionToPlayer} from "./player.js";
+import {getPlayerWithSide, setTopPositionToPlayer} from "./player.js";
 import {createBall, moveBalls} from "./ball.js";
 import {launchGame, markPoint} from "./game.js";
 import {currentUser} from "../scripts/auth.js";
@@ -63,7 +63,7 @@ function onReceive(event) {
     else if (data.type === "movePlayer")
         setTopPositionToPlayer(data.values);
     else if (data.type === "launchSpell")
-        console.log("launchSpell");
+        getPlayerWithSide(data["values"]["playerSide"].launchSpell(data["values"]["spellId"]));
     else if (data.type === "createBall")
         createBall(data.values);
     else if (data.type === "displayScore")

@@ -9,10 +9,10 @@ let clientSide;
 const playerKeys = {
 		"moveUp": "ArrowUp",
 		"moveDown": "ArrowDown",
-		"spell1": "Digit1",
-		"spell2": "Digit2",
-		"spell3": "Digit3",
-		"spell4": "Digit4"
+		"spell0": "Digit1",
+		"spell1": "Digit2",
+		"spell2": "Digit3",
+		"spell3": "Digit4"
 }
 
 export function createPlayers(socketValues) {
@@ -79,8 +79,12 @@ Player.prototype.increaseScore = function () {
 
 function startPlayerLoop() {
 	for (const [key, value] of Object.entries(playerKeys)) {
-		if (keyDown.has(value))
-			sendMessageToServer("movePlayer", {"direction": key, "clientSide": getClientSide(), "gameId": getGameId()})
+		if (keyDown.has(value)) {
+			if (key.includes("move"))
+				sendMessageToServer("movePlayer", {"direction": key, "clientSide": getClientSide(), "gameId": getGameId()})
+			else
+				sendMessageToServer("launchSpell", {"playerSide": clientSide, "spellNumber": key.charAt(key.length - 1), "gameId": getGameId()})
+		}
 	}
 	setTimeout(startPlayerLoop, 5);
 }

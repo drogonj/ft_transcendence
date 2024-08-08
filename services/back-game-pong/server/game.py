@@ -2,6 +2,7 @@ import asyncio
 from .ball import Ball
 from .utils import reverse_side
 from .redis_communication import send_to_redis, create_data_to_send
+from .spell.spell_registry import SpellRegistry
 
 
 games = []
@@ -17,6 +18,8 @@ class Game:
 		games.append(self)
 
 	def launch_game(self):
+		SpellRegistry.set_spells_to_players(self.__players)
+
 		self.send_message_to_game("renderPage", {"url": "/game-online"})
 
 		socket_values = {}
@@ -67,6 +70,15 @@ class Game:
 			return
 		player.move_paddle(step)
 		self.send_message_to_game("movePlayer", {"targetPlayer": player_side, "topPosition": f"{player.get_top_position()}%"})
+
+	def launch_spell(self, socket_values):
+		print(socket_values["playerSide"], socket_values["spellNumber"])
+		player = self.get_player(socket_values["playerSide"])
+		spell = player.get_spell_number(int(socket_values["spellNumber"]))
+		print(type(spell))
+		print(f"try to launch {spell.get_spell_id()} from {player.get_side()}")
+		spell.executor(player)
+
 
 	def remove_player_with_client(self, client):
 		for player in self.__players:
