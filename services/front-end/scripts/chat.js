@@ -231,3 +231,22 @@ async function sendChatMessage(message) {
 		'username': currentUser.username
 	}));
 }
+
+// async function saveMessages(user_id, message) {
+// 	try {
+// 		const response = await fetch(`/api/user/messages/${user_id}/`, {
+// 			method: 'POST',
+// 			headers: {
+// 				'Content-Type': 'application/json',
+// 				'X-CSRFToken': csrfToken
+// 			},
+// 			body: JSON.stringify({ savedMessages: message })
+// 		});
+
+// 		if (!response.ok) {
+// 			throw new Error(`Network response was not ok. Status: ${response.status}`);
+// 		}
+// 	} catch (error) {
+// 			console.error('Error updating mute state:', error.message);
+// 	};
+// }
