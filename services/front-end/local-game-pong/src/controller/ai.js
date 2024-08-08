@@ -39,10 +39,7 @@ export function triggerAIKeys() {
 			movePlayerPaddleDown(paddle);
 	}
 
-	if (!spellsActive)
-		return;
-
-	if (Math.floor(Math.random() * 200) === 0) {
+	if (spellsActive && Math.floor(Math.random() * 200) === 0) {
 		const spell = getRandomSpell();
 		const ball = getBallWithIndex(0);
 		if (ball && spell.canBeLaunchOnTargetBall(ball) && ball.ballActiveSpell === null)
