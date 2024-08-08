@@ -15,8 +15,7 @@ import {
     handleUserSearch,
 } from './friends.js';
 
-import { renderChatApp } from './chat.js';
-import { loadUsers } from './users.js';
+import { addChatMenu } from './chat.js';
 import {closeWebSocket, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
 
@@ -213,13 +212,10 @@ export async function renderHome() {
                     </div>
                     
                     <div class="friend-menu-container"></div>
+					<div class="chat-menu-container"></div>
                 `;
 
-    // Render chat
-    await renderChatApp(currentUser.user_id, currentUser.username);
-    // Load users
-    await loadUsers(currentUser.user_id);
-
+    await addChatMenu();
     await addFriendshipMenu();
 
     document.getElementById('profile-button').addEventListener('click', (event) => {
