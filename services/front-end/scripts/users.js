@@ -22,7 +22,6 @@ export async function loadUsers() {
 	}
 }
 
-
 async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) {
 	const usersContainer = document.getElementById('users-content');
 
@@ -55,7 +54,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) 
 	
 		const muteButton = userElement.querySelector('.mute-user-button');
 		const muteIcon = muteButton.querySelector('img');
-	
 		const isMuted = muteButton.classList.contains('muted');
 	
 		try {
@@ -89,7 +87,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) 
 		}
 	});
 	
-
 	newUser.querySelector('.profile-link').addEventListener('click', async function (event) {
 		 const userId = this.getAttribute('data-user-id');
 		 const uri = '/profile/' + userId + '/';
@@ -98,7 +95,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) 
 }
 
 export async function updateUserStatus(other_id, isConnected, timestamp, content) {
-	console.log('Updating user status:', other_id, isConnected);
 	try {
 		const response = await fetch('/api/user/get_users/');
 		const usersData = await response.json();
@@ -110,28 +106,31 @@ export async function updateUserStatus(other_id, isConnected, timestamp, content
 			} else if (statusElement) {
 				statusElement.querySelector('.status-indicator').className = `status-indicator ${isConnected ? 'online' : 'offline'}`;
 				console.log(`Updated status for user ${other_id} to ${isConnected ? "Online" : "Offline"}`);
+				await sendUpdateStatusToChat(timestamp, content);
 			} else if (currentUser.user_id !== other_id) {
 				const usersContainer = document.getElementById('users-content');
 				if (usersContainer) {
 					addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
+					await sendUpdateStatusToChat(timestamp, content);
 				}
 			}
-			
-			const messageList = document.getElementById('message-content');
-			const newMessage = document.createElement('li');
-
-			newMessage.classList.add('chat-message');
-			newMessage.textContent = `${timestamp} : ${content}`;
-
-			messageList.insertBefore(newMessage, messageList.firstChild);
-			
-			const chatMessages = document.getElementById('chat-messages');
-			chatMessages.scrollTop = chatMessages.scrollHeight;
-			break ;
 		} 
 	} catch (error) {
 		console.error('Error loading users:', error.message);
 	}
+}
+
+export async function sendUpdateStatusToChat(timestamp, content) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.textContent = `${timestamp} : ${content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 export async function getUserStatus(user_id) {
@@ -151,13 +150,25 @@ export async function getUserStatus(user_id) {
 }
 
 export async function isUserMuted(user_id) {
-	console.log('Checking if user is muted:', user_id);
 	try {
 		const response = await fetch(`/api/user/is_muted/${currentUser.user_id}/${user_id}`);
 		const data = await response.json();
 
-		console.log('is user muted ? ', data.is_muted);
+		console.log(`is ${currentUser.username} muted (${currentUser.user_id})? ${data.is_muted} `);
 		return data.is_muted;
+	} catch (error) {
+		console.error('Error loading muted users:', error.message);
+	}
+}
+
+export async function getMuteListOf(user_id) {
+	try {
+		const response = await fetch(`api/user/get_mutelist/${user_id}`);
+		const data = await response.json();
+
+		const isMuted = data.muted_users.includes(currentUser.user_id);
+
+		return isMuted;
 	} catch (error) {
 		console.error('Error loading muted users:', error.message);
 	}

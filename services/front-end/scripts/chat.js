@@ -1,6 +1,5 @@
-import { app } from './contentLoader.js';
 import { currentUser } from './auth.js';
-import { updateUserStatus, getUserStatus, isUserMuted } from './users.js';
+import { loadUsers, updateUserStatus, getMuteListOf, isUserMuted } from './users.js';
 
 let chatSocket = null;
 let chatSocketRunning = false;
@@ -26,20 +25,23 @@ export async function connectChatWebsocket(user_id) {
 		(async () => {
 			const data = JSON.parse(e.data);
 			console.log(data);
-			console.log(currentUser.user_id);	
 
 			const muted = await isUserMuted(data.user_id);
 
-			if (data.type === 'chat_message' && !muted)
-				chat_message(data);
-			else if (data.type === 'private_message') {
-				if  (!muted)
-					private_message(data);
-				else if (muted && currentUser.user_id === data.user_id)
-					blockUser(data);
-			}
-			else if (data.type === 'user_status_update')
+			if (data.type === 'user_status_update')
 				updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
+			else if (data.type === 'private_message') {
+				const isSenderMuted = await getMuteListOf(data.receiver_id);
+				console.log(`sender has muted you: ${muted}`);
+				if  (!muted && !isSenderMuted && data.receiver_id !== data.user_id)
+					private_message(data);
+				else if (isSenderMuted && currentUser.user_id === data.user_id)
+					muted_message(data);
+				else if (data.receiver_id === data.user_id )
+					troll_message(data);
+			}
+			else if (data.type === 'chat_message' && !muted)
+				chat_message(data);
 		})();
 	};
 
@@ -56,7 +58,40 @@ export async function connectChatWebsocket(user_id) {
 	};
 }
 
-export async function blockUser(data) {
+export async function troll_message(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+	const random = Math.floor(Math.random() * 5);
+	let content = [];
+
+	if (data.user_id === currentUser.user_id) {
+		content = [
+			'Ain\'t you a narcissist?',
+			'Dude, you need some help... seriously.',
+			'Ain\'t you a bit lonely?',
+			'Get out, find some friends!',
+			'I mean... you could just... not do that?',
+		]
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.timestamp} ${content[random]}`;
+	} else {
+		content = [
+			'God bless this poor soul.',
+			'Guys, please, just talk to him/her!',
+			'Seems like nobody loves him/her.',
+			'You know what to do!',
+			'Just leave quielty...',
+		]
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.timestamp} ${data.username} talk to him/herself: ${content[random]}`;
+	}
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+export async function muted_message(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
  
@@ -86,21 +121,18 @@ export async function private_message(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
-	const receiverStatus = await getUserStatus(data.receiver_id);
-	console.log(receiverStatus);
-
-	if (data.receiver_id === currentUser.user_id && receiverStatus) {
+	if (data.receiver_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} ${data.username} sent you privately: ${data.content}`;
+		newMessage.textContent = `${data.timestamp} DM from ${data.username} : ${data.content}`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
-	} else if (!receiverStatus && data.user_id === currentUser.user_id) {
-		console.log('User is offline, message not sent.');
+	}
+	if (data.user_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} DM not delivered to : ${data.receiver_username} (reason : offline).`;
+		newMessage.textContent = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
@@ -109,23 +141,28 @@ export async function private_message(data) {
 	}
 }
 
-export async function renderChatApp() {
+export async function addChatMenu() {
 	await connectChatWebsocket(currentUser.user_id);
-	app.innerHTML += `
-		<div id="users-list" class="users-list">
-		<div class="users-title">Users</div>
-			<ul id="users-content" class="users-content active"></ul>
-		</div>
-		<div id="chat-menu" class="chat-menu">
-			<div id="chat-messages" class="chat-messages">
-				<ul id="message-content" class="message-content active"></ul>
+    const chatContainer = document.querySelector('.chat-menu-container');
+    chatContainer.innerHTML = `
+		<div id="chat-menu-container" class="chat-menu-container">
+			<div id="users-list" class="users-list">
+			<div class="users-title">Users</div>
+				<ul id="users-content" class="users-content active"></ul>
 			</div>
-			<div id="chat-input-container" class="chat-input-container">
-				<input id="chat-input" type="text" placeholder="Type a message...">
-				<button id="send-chat-message" class="send-chat-message">Send</button>
+			<div id="chat-menu" class="chat-menu">
+				<div id="chat-messages" class="chat-messages">
+					<ul id="message-content" class="message-content active"></ul>
+				</div>
+				<div id="chat-input-container" class="chat-input-container">
+					<input id="chat-input" type="text" placeholder="Type a message...">
+					<button id="send-chat-message" class="send-chat-message">Send</button>
+				</div>
 			</div>
 		</div>
 	`;
+
+	await loadUsers();
 
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeydown = function(e) {
