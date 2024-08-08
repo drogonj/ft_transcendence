@@ -23,9 +23,3 @@ class MessageFromAuth(models.Model):
 	user_id = models.IntegerField()
 	username = models.CharField(max_length=255)
 	is_connected = models.BooleanField()
-
-# class MessageFromChat(models.Model):
-# 	type = models.CharField(max_length=255)
-# 	content = models.TextField(max_length=500)
-# 	user_id = models.IntegerField()
-# 	username = models.CharField(max_length=255)

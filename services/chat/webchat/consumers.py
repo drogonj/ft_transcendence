@@ -1,6 +1,6 @@
 import json, requests
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Message, MessageFromAuth, PrivateMessage, MessageFromChat
+from .models import Message, MessageFromAuth, PrivateMessage
 from asgiref.sync import sync_to_async
 from django.utils.timezone import now
 
