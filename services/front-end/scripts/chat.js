@@ -4,10 +4,18 @@ import { loadUsers, updateUserStatus, getMuteListOf, isUserMuted } from './users
 let chatSocket = null;
 let chatSocketRunning = false;
 
-// Quelques points verifier:
+// TODO LIST:
 // Attention a la prise en compte de ADMIN et de son ID dans le chat et les rooms (choix de config)
 // Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
 // ==> REDIS:6379/1 pour le cache (voir si besoin d'une adresse 0 et/ou definir si juste redis:6379 pour DB)
+// 
+// CHAT CONTAINER :
+// - Creer un nouveau system de gestion container try/catch :POST
+// - Ajoute dans : document.addEventListener('DOMContentLoaded', async function () la connectChatWebsocket
+// - Recuperer les donnes aussi et les postes dans la table user de chat (creation models users_chat)
+// - ajouter une variable list pour chaque user
+// - Suscribe/PUB : https://redis.io/docs/latest/develop/interact/pubsub/
+
 
 export async function connectChatWebsocket(user_id) {
 	if (chatSocket)
