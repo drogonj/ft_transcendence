@@ -15,7 +15,7 @@ const spells = {
     "ballClone": BallClone,
     "paddleSize": PaddleSize,
     "ballInvisible": BallInvisible,
-	"paddleStrun": PaddleStun,
+	"paddleStun": PaddleStun,
 }
 
 export function Spell(cooldown, spellName, description, spellId, icon) {
@@ -57,4 +57,13 @@ function createSpellDiv(spell) {
 	newDiv.appendChild(spell.icon);
 	newDiv.appendChild(coolDownDiv);
 	return newDiv;
+}
+
+export function launchSpell(socket_values) {
+	if (socket_values["spellAction"] === "executor")
+				spell.executor(this);
+			else if (socket_values["spellAction"] === "onHit")
+				spell.onHit(this);
+			else if (socket_values["spellAction"] === "destructor")
+				spell.destructor(this);
 }

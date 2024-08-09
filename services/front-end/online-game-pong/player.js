@@ -64,10 +64,15 @@ Player.prototype.loadPlayerSpells = function (spellIdArray) {
 	return spells;
 }
 
-Player.prototype.launchSpell = function (spellId) {
+Player.prototype.launchSpell = function (socket_values) {
 	for (const spell of this.playerSpells) {
-		if (spell.spellId === spellId) {
-			spell.executor(this);
+		if (spell.spellId === socket_values["spellId"]) {
+			if (socket_values["spellAction"] === "executor")
+				spell.executor(this);
+			else if (socket_values["spellAction"] === "onHit")
+				spell.onHit(this);
+			else if (socket_values["spellAction"] === "destructor")
+				spell.destructor(this);
 			break;
 		}
 	}

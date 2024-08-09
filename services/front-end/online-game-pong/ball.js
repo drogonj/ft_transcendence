@@ -49,6 +49,10 @@ export function getBallWithId(ballId) {
     }
 }
 
+export function getBallsWithIds(ballIds) {
+    return balls.filter(ball => ballIds.includes(ball.ballId));
+}
+
 export function moveBalls(socketValues) {
     socketValues["targetBalls"].forEach((ball) => {
         const targetBall = getBallWithId(ball["ballId"]);

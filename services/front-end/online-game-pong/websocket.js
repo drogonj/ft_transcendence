@@ -63,7 +63,7 @@ function onReceive(event) {
     else if (data.type === "movePlayer")
         setTopPositionToPlayer(data.values);
     else if (data.type === "launchSpell")
-        getPlayerWithSide(data["values"]["playerSide"].launchSpell(data["values"]["spellId"]));
+        getPlayerWithSide(data["values"]["playerSide"].launchSpell(data["values"]));
     else if (data.type === "createBall")
         createBall(data.values);
     else if (data.type === "displayScore")

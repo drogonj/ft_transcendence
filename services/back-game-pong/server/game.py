@@ -75,7 +75,6 @@ class Game:
 		print(socket_values["playerSide"], socket_values["spellNumber"])
 		player = self.get_player(socket_values["playerSide"])
 		spell = player.get_spell_number(int(socket_values["spellNumber"]))
-		print(type(spell))
 		print(f"try to launch {spell.get_spell_id()} from {player.get_side()}")
 		spell.executor(player)
 
