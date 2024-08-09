@@ -1,24 +1,21 @@
-import {Spell, spellLaunchController} from "../spell.js";
-import {newImage} from "../game.js";
-/*import {getAllBallInSide} from "../ball.js";
-import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
-import {newImage} from "../utils/utils.js";*/
+import {Spell} from "../spell.js";
+import {newImage, removeCssProperty, setCssProperty} from "../game.js";
+import {coolDownRun} from "../header.js";
+import {getBallsWithIds} from "../ball.js";
 
 
 export default function BallPush() {
 	Spell.call(this, 5, "Ball Push", "DESCRIPTION", "ballPush", newImage("../../assets/images/ball_push.png"));
 }
 
-BallPush.prototype.executor = function(playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
-	const side = playerPaddle.paddleDirection === 1 ? 1 : 0;
-	let ballInSide = getAllBallInSide(side)
+BallPush.prototype.executor = function(socketValues) {
+	console.log("exectur bullpush");
+	coolDownRun(this);
+	const ballInSide = getBallsWithIds(socketValues["ballIds"]);
 	ballInSide.forEach((ball) => {
 		setCssProperty(ball.ballHtml.style, "--change-color1", "#FF0800");
 		setCssProperty(ball.ballHtml.style, "--change-color2", "#660000");
 		setCssProperty(ball.getBallStyle(), "animation", "changeColor 0.3s linear infinite");
-		ball.setActiveSpell(this);
 	});
 }
 

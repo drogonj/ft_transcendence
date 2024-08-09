@@ -7,6 +7,7 @@ import BallClone from "./spells/ball_clone.js";
 import PaddleSize from "./spells/paddle_size.js";
 import {coolDownRun} from "./header.js";
 import {setCssProperty} from "./game.js";
+import {getPlayerWithSide} from "./player.js";
 
 const spells = {
     "ballSlayer": BallSlayer,
@@ -60,10 +61,15 @@ function createSpellDiv(spell) {
 }
 
 export function launchSpell(socket_values) {
-	if (socket_values["spellAction"] === "executor")
-				spell.executor(this);
-			else if (socket_values["spellAction"] === "onHit")
-				spell.onHit(this);
-			else if (socket_values["spellAction"] === "destructor")
-				spell.destructor(this);
+	const launcherPlayer = getPlayerWithSide(socket_values["playerSide"]);
+	const spell = launcherPlayer.getPlayerSpellWithId(socket_values["spellId"]);
+	console.log(socket_values)
+	if (socket_values["spellAction"] === "executor") {
+		console.log("go in executor")
+		spell.executor(socket_values);
+	}
+	else if (socket_values["spellAction"] === "onHit")
+		spell.onHit(socket_values);
+	else if (socket_values["spellAction"] === "destructor")
+		spell.destructor(socket_values);
 }

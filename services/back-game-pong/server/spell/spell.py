@@ -14,7 +14,7 @@ class Spell:
         if self.__is_on_cooldown:
             return
         #statsincrease
-        player.send_message_to_player("launchSpell", {"spellId": self.__spell_id, "playerSide": player.get_side()})
+        player.send_message_to_player("launchSpell", {"spellId": self.__spell_id, "playerSide": player.get_side(), "spellAction": "executor"})
         self.perform_executor()
         asyncio.create_task(self.spell_cooldown_run())
 

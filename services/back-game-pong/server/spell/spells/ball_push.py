@@ -7,3 +7,9 @@ class BallPush(Spell):
 
     def perform_executor(self):
         print("ballpush executor")
+
+    def on_hit(self):
+        print("ballpush hit")
+
+    def destructor(self):
+        print("ballpush destructor")

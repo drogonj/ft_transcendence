@@ -82,6 +82,13 @@ Player.prototype.increaseScore = function () {
 	this.score++;
 }
 
+Player.prototype.getPlayerSpellWithId = function (spellId) {
+	for (const spell of this.playerSpells) {
+		if (spell.spellId === spellId)
+			return spell;
+	}
+}
+
 function startPlayerLoop() {
 	for (const [key, value] of Object.entries(playerKeys)) {
 		if (keyDown.has(value)) {
