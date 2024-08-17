@@ -71,6 +71,12 @@ class Ball:
     def get_bot_position(self):
         return self.__top_position + 3
 
+    def get_vx(self):
+        return self.__vx
+
+    def get_vy(self):
+        return self.__vy
+
     def get_left_position(self):
         return self.__left_position
 
@@ -80,5 +86,28 @@ class Ball:
     def get_ball_side(self):
         return "Left" if self.__left_position <= 50 else "Right"
 
+    def get_ball_direction(self):
+        return "Left" if self.__vx > 0 else "Right"
+
     def get_id(self):
         return self.__ball_id
+
+    def get_active_spell(self):
+        return self.__active_spell
+
+    def have_active_spell(self):
+        return self.__active_spell is not None
+
+    def set_active_spell(self, spell):
+        if self.__active_spell is not None:
+            self.__active_spell.destructor()
+        self.__active_spell = spell
+
+    def set_vx(self, value):
+        self.__vx = value
+
+    def set_vy(self, value):
+        self.__vy = value
+
+    def remove_active_spell(self):
+        self.__active_spell = None

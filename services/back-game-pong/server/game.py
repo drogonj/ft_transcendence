@@ -51,6 +51,8 @@ class Game:
 				elif ball.trigger_ball_inside_player(self.__players):
 					target_player = self.get_player("Left") if ball.get_ball_side() == "Left" else self.get_player("Right")
 					ball.calcul_ball_traj(target_player)
+					if ball.have_active_spell():
+						ball.get_active_spell().on_hit(ball, self)
 				ball.move_ball()
 				balls_to_send.append(ball.dumps_ball_for_socket())
 			self.send_message_to_game("moveBall", {"targetBalls": balls_to_send})
@@ -75,9 +77,8 @@ class Game:
 		print(socket_values["playerSide"], socket_values["spellNumber"])
 		player = self.get_player(socket_values["playerSide"])
 		spell = player.get_spell_number(int(socket_values["spellNumber"]))
-		print(f"try to launch {spell.get_spell_id()} from {player.get_side()}")
-		spell.executor(player)
-
+		#print(f"try to launch {spell.get_spell_id()} from {player.get_side()}")
+		spell.executor(player, self)
 
 	def remove_player_with_client(self, client):
 		for player in self.__players:
@@ -95,6 +96,8 @@ class Game:
 		self.get_player(side).increase_score()
 		socket_values = {"targetPlayer": side}
 		socket_values.update(ball.dumps_ball_for_socket())
+		if ball.have_active_spell():
+			ball.get_active_spell().destructor(ball, self)
 		self.delete_ball(ball)
 		self.send_message_to_game("displayScore", socket_values)
 		self.create_ball()
@@ -134,6 +137,17 @@ class Game:
 
 	def get_id(self):
 		return self.__game_id
+
+	def get_ball_with_id(self, ball_id):
+		return self.__balls[0].get_id()
+
+	def get_balls_in_direction(self, direction):
+		balls = []
+		for ball in self.__balls:
+			if ball.get_ball_direction() == direction:
+				balls.append(ball)
+		return balls
+
 
 	def set_game_state(self, state):
 		self.__is_game_end = state

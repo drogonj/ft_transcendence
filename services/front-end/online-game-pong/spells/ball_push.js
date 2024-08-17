@@ -1,7 +1,7 @@
 import {Spell} from "../spell.js";
 import {newImage, removeCssProperty, setCssProperty} from "../game.js";
 import {coolDownRun} from "../header.js";
-import {getBallsWithIds} from "../ball.js";
+import {getBallsWithIds, getBallWithId} from "../ball.js";
 
 
 export default function BallPush() {
@@ -19,20 +19,22 @@ BallPush.prototype.executor = function(socketValues) {
 	});
 }
 
-BallPush.prototype.onHit = function(ball) {
-	if (!ball.ballHtml.style.animation.length) {
+BallPush.prototype.onHit = function(socketValues) {
+	const ball = getBallWithId(socketValues["ballIds"]);
+	/*if (!ball.ballHtml.style.animation.length) {
 		ball.ballVx /= 2;
 		ball.ballVy /= 2;
 		ball.removeActiveSpell();
 		return;
 	}
 	ball.ballVx *= 2;
-	ball.ballVy *= 2;
+	ball.ballVy *= 2;*/
 	removeCssProperty(ball.getBallStyle(), "animation");
 }
 
-BallPush.prototype.destructor = function (ball) {
-	ball.ballVx /= 2;
-	ball.ballVy /= 2;
+BallPush.prototype.destructor = function (socketValues) {
+	const ball = getBallWithId(socketValues["ballIds"][0]);
+	/*ball.ballVx /= 2;
+	ball.ballVy /= 2;*/
 	removeCssProperty(ball.getBallStyle(), "animation");
 }
