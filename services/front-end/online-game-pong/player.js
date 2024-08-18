@@ -111,3 +111,11 @@ export function setTopPositionToPlayer(socketValues) {
 
 	targetPlayer.setTopPosition(socketValues["topPosition"]);
 }
+
+export function getPlayersSpellWithId(spellId) {
+	for (const player of players) {
+		const spell = player.getPlayerSpellWithId(spellId);
+		if (spell)
+			return spell;
+	}
+}

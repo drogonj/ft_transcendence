@@ -22,7 +22,6 @@ class Spell:
 
     def executor(self, player, game):
         if self._is_on_cooldown:
-            print("On cd")
             return
         #statsincrease
         self.perform_executor(game, player)

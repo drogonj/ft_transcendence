@@ -24,13 +24,12 @@ export function timerDecrease() {
 }
 
 export function coolDownRun(spell) {
-	console.log(spell)
 	let remindTime = spell.cooldown;
 	setCssProperty(spell.spellCoolDownHtml.style, "display", "flex");
 	coolDownDisplay(remindTime, spell.spellCoolDownHtml);
 
 	const interval = setInterval(function () {
-		if (remindTime <= 0) {
+		if (remindTime <= 1) {
 			setCssProperty(spell.spellCoolDownHtml.style, "display", "none");
 			clearInterval(interval);
 			return;
