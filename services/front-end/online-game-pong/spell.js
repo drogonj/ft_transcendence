@@ -61,13 +61,9 @@ function createSpellDiv(spell) {
 }
 
 export function launchSpell(socket_values) {
-	const launcherPlayer = getPlayerWithSide(socket_values["playerSide"]);
-	const spell = launcherPlayer.getPlayerSpellWithId(socket_values["spellId"]);
-	console.log(socket_values)
-	if (socket_values["spellAction"] === "executor") {
-		console.log("go in executor")
+	const spell = getSpellWithId(socket_values["spellId"]);
+	if (socket_values["spellAction"] === "executor")
 		spell.executor(socket_values);
-	}
 	else if (socket_values["spellAction"] === "onHit")
 		spell.onHit(socket_values);
 	else if (socket_values["spellAction"] === "destructor")

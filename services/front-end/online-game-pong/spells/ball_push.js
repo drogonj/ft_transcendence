@@ -3,13 +3,11 @@ import {newImage, removeCssProperty, setCssProperty} from "../game.js";
 import {coolDownRun} from "../header.js";
 import {getBallsWithIds, getBallWithId} from "../ball.js";
 
-
 export default function BallPush() {
 	Spell.call(this, 5, "Ball Push", "DESCRIPTION", "ballPush", newImage("../../assets/images/ball_push.png"));
 }
 
 BallPush.prototype.executor = function(socketValues) {
-	console.log("exectur bullpush");
 	coolDownRun(this);
 	const ballInSide = getBallsWithIds(socketValues["ballIds"]);
 	ballInSide.forEach((ball) => {
@@ -21,20 +19,5 @@ BallPush.prototype.executor = function(socketValues) {
 
 BallPush.prototype.onHit = function(socketValues) {
 	const ball = getBallWithId(socketValues["ballIds"]);
-	/*if (!ball.ballHtml.style.animation.length) {
-		ball.ballVx /= 2;
-		ball.ballVy /= 2;
-		ball.removeActiveSpell();
-		return;
-	}
-	ball.ballVx *= 2;
-	ball.ballVy *= 2;*/
-	removeCssProperty(ball.getBallStyle(), "animation");
-}
-
-BallPush.prototype.destructor = function (socketValues) {
-	const ball = getBallWithId(socketValues["ballIds"][0]);
-	/*ball.ballVx /= 2;
-	ball.ballVy /= 2;*/
 	removeCssProperty(ball.getBallStyle(), "animation");
 }

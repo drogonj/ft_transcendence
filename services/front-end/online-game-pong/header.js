@@ -24,6 +24,7 @@ export function timerDecrease() {
 }
 
 export function coolDownRun(spell) {
+	console.log(spell)
 	let remindTime = spell.cooldown;
 	setCssProperty(spell.spellCoolDownHtml.style, "display", "flex");
 	coolDownDisplay(remindTime, spell.spellCoolDownHtml);

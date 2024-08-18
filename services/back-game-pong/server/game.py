@@ -23,18 +23,19 @@ class Game:
 		self.send_message_to_game("renderPage", {"url": "/game-online"})
 
 		socket_values = {}
+		player_left = self.get_player("Left")
+		player_right = self.get_player("Right")
+
 		socket_values["gameId"] = self.get_id()
 		socket_values["ballId"] = self.__balls[0].get_id()
+		socket_values["playerLeft"] = player_left.dumps_player_for_socket()
+		socket_values["playerRight"] = player_right.dumps_player_for_socket()
 
-		player = self.get_player("Left")
-		socket_values.update(player.dumps_player_for_socket())
 		socket_values["clientSide"] = "Left"
-		player.send_message_to_player("launchGame", socket_values)
+		player_left.send_message_to_player("launchGame", socket_values)
 
-		player = self.get_player("Right")
-		socket_values.update(player.dumps_player_for_socket())
 		socket_values["clientSide"] = "Right"
-		player.send_message_to_player("launchGame", socket_values)
+		player_right.send_message_to_player("launchGame", socket_values)
 
 		asyncio.create_task(self.main_loop())
 		asyncio.create_task(self.launch_max_time())

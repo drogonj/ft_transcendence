@@ -17,11 +17,8 @@ const playerKeys = {
 
 export function createPlayers(socketValues) {
 	clientSide = socketValues["clientSide"];
-	let side = "Left";
-	for (let i = 0; i < 2; i++) {
-		new Player(socketValues, side)
-		side = "Right";
-	}
+	new Player(socketValues["playerLeft"], "Left");
+	new Player(socketValues["playerRight"], "Right");
 	startPlayerLoop();
 }
 

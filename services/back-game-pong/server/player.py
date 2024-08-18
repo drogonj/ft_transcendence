@@ -15,7 +15,7 @@ class Player:
 		self.__paddle_side = socket_values["side"]
 		self.__top_position = 50
 		self.__paddle_size = 20
-		self.__move_speed = 5
+		self.__can_move = True
 		self.__spells = []
 		available_players.append(self)
 
@@ -27,10 +27,14 @@ class Player:
 			print("Message can't be send: Client is disconnected.")
 
 	def dumps_player_for_socket(self):
+		spells_id = []
+		for spell in self.__spells:
+			spells_id.append(spell.get_spell_id())
+
 		return {
-			"moveSpeed": self.__move_speed,
+			"paddleSide": self.__paddle_side,
 			"paddleTopPosition": str(self.__top_position) + "%",
-			"playerSpells": ["ballPush", "paddleSize"]
+			"playerSpells": spells_id
 		}
 
 	def kill_connection(self):
@@ -56,7 +60,8 @@ class Player:
 		return self.__score >= 10
 
 	def move_paddle(self, step):
-		self.__top_position += step
+		if self.__can_move:
+			self.__top_position += step
 
 	def get_username(self):
 		return self.__username
@@ -96,6 +101,9 @@ class Player:
 
 	def set_spells(self, spells):
 		self.__spells = spells
+
+	def set_can_move(self, value):
+		self.__can_move = value
 
 
 def get_player_with_user_id(user_id):
