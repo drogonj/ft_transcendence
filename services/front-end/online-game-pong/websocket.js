@@ -3,6 +3,7 @@ import {createBall, moveBalls} from "./ball.js";
 import {launchGame, markPoint} from "./game.js";
 import {currentUser} from "../scripts/auth.js";
 import {getHostNameFromURL, navigateTo} from "../scripts/contentLoader.js";
+import {launchSpell} from "./spell.js";
 
 let ws;
 
@@ -59,7 +60,7 @@ function onReceive(event) {
     else if (data.type === "movePlayer")
         setTopPositionToPlayer(data.values);
     else if (data.type === "launchSpell")
-        console.log("launchSpell");
+        launchSpell(data.values);
     else if (data.type === "createBall")
         createBall(data.values);
     else if (data.type === "displayScore")

@@ -15,8 +15,8 @@ class Player:
 		self.__paddle_side = socket_values["side"]
 		self.__top_position = 50
 		self.__paddle_size = 20
-		self.__move_speed = 5
-		self.__spells = 0
+		self.__can_move = True
+		self.__spells = []
 		available_players.append(self)
 
 	def send_message_to_player(self, data_type, data_values):
@@ -27,11 +27,15 @@ class Player:
 			print("Message can't be send: Client is disconnected.")
 
 	def dumps_player_for_socket(self):
+		spells_id = []
+		for spell in self.__spells:
+			spells_id.append(spell.get_spell_id())
+
 		return {
 			"usedId": self.__user_id,
-			"moveSpeed": self.__move_speed,
+			"paddleSide": self.__paddle_side,
 			"paddleTopPosition": str(self.__top_position) + "%",
-			"playerSpells": ["ballClone", "ballPush", "ballFreeze", "paddleSize"]
+			"playerSpells": spells_id
 		}
 
 	def kill_connection(self):
@@ -57,7 +61,8 @@ class Player:
 		return self.__score >= 10
 
 	def move_paddle(self, step):
-		self.__top_position += step
+		if self.__can_move:
+			self.__top_position += step
 
 	def get_username(self):
 		return self.__username
@@ -69,7 +74,7 @@ class Player:
 		return self.__top_position
 
 	def get_bot_position(self):
-		return self.__top_position + 20
+		return self.__top_position + self.__paddle_size
 
 	def get_side(self):
 		return self.__paddle_side
@@ -80,11 +85,32 @@ class Player:
 	def get_score(self):
 		return self.__score
 
+	def get_spell_with_id(self, spell_id):
+		for spell in self.__spells:
+			if spell.get_spell_id() == spell_id:
+				return spell
+		return None
+
+	def get_spell_number(self, number):
+		return self.__spells[number]
+
+	def get_paddle_size(self):
+		return self.__paddle_size
+
 	def set_username(self, username):
 		self.__username = username
 
 	def set_socket(self, socket):
 		self.__socket = socket
+
+	def set_spells(self, spells):
+		self.__spells = spells
+
+	def set_can_move(self, value):
+		self.__can_move = value
+
+	def set_paddle_size(self, value):
+		self.__paddle_size = value
 
 
 def get_player_with_user_id(user_id):

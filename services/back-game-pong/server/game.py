@@ -1,9 +1,12 @@
 import asyncio
 from .ball import Ball
-from .utils import reverse_side
+from .utils import reverse_side, get_random_number_with_decimal
 from .redis_communication import send_to_redis, create_data_to_send
+from .spell.spell_registry import SpellRegistry
+
 
 games = []
+
 
 class Game:
 	def __init__(self, game_id, socket_values):
@@ -15,21 +18,24 @@ class Game:
 		games.append(self)
 
 	def launch_game(self):
+		SpellRegistry.set_spells_to_players(self.__players)
+
 		self.send_message_to_game("renderPage", {"url": "/game-online"})
 
 		socket_values = {}
+		player_left = self.get_player("Left")
+		player_right = self.get_player("Right")
+
 		socket_values["gameId"] = self.get_id()
 		socket_values["ballId"] = self.__balls[0].get_id()
+		socket_values["playerLeft"] = player_left.dumps_player_for_socket()
+		socket_values["playerRight"] = player_right.dumps_player_for_socket()
 
-		player = self.get_player("Left")
-		socket_values.update(player.dumps_player_for_socket())
 		socket_values["clientSide"] = "Left"
-		player.send_message_to_player("launchGame", socket_values)
+		player_left.send_message_to_player("launchGame", socket_values)
 
-		player = self.get_player("Right")
-		socket_values.update(player.dumps_player_for_socket())
 		socket_values["clientSide"] = "Right"
-		player.send_message_to_player("launchGame", socket_values)
+		player_right.send_message_to_player("launchGame", socket_values)
 
 		asyncio.create_task(self.main_loop())
 		asyncio.create_task(self.launch_max_time())
@@ -46,6 +52,8 @@ class Game:
 				elif ball.trigger_ball_inside_player(self.__players):
 					target_player = self.get_player("Left") if ball.get_ball_side() == "Left" else self.get_player("Right")
 					ball.calcul_ball_traj(target_player)
+					if ball.have_active_spell():
+						ball.get_active_spell().on_hit(ball, self)
 				ball.move_ball()
 				balls_to_send.append(ball.dumps_ball_for_socket())
 			self.send_message_to_game("moveBall", {"targetBalls": balls_to_send})
@@ -66,6 +74,11 @@ class Game:
 		player.move_paddle(step)
 		self.send_message_to_game("movePlayer", {"targetPlayer": player_side, "topPosition": f"{player.get_top_position()}%"})
 
+	def launch_spell(self, socket_values):
+		player = self.get_player(socket_values["playerSide"])
+		spell = player.get_spell_number(int(socket_values["spellNumber"]))
+		spell.executor(player, self)
+
 	def remove_player_with_client(self, client):
 		for player in self.__players:
 			if player.get_socket() == client:
@@ -82,17 +95,27 @@ class Game:
 		self.get_player(side).increase_score()
 		socket_values = {"targetPlayer": side}
 		socket_values.update(ball.dumps_ball_for_socket())
+		if ball.have_active_spell():
+			ball.get_active_spell().destructor(ball, self)
 		self.delete_ball(ball)
 		self.send_message_to_game("displayScore", socket_values)
 		if self.have_player_with_max_score():
 			self.set_game_state(True)
-		self.create_ball()
+		if len(self.__balls) == 0:
+			self.create_ball()
 
 	def delete_ball(self, ball):
 		self.__balls.remove(ball)
 
 	def create_ball(self):
 		new_ball = Ball()
+		self.__balls.append(new_ball)
+		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
+
+	def create_ball_by_copy(self, ball_to_copy):
+		new_ball = ball_to_copy.deep_copy()
+		new_ball.set_vy(-ball_to_copy.get_vy())
+		new_ball.move_ball()
 		self.__balls.append(new_ball)
 		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 
@@ -123,6 +146,17 @@ class Game:
 
 	def get_id(self):
 		return self.__game_id
+
+	def get_ball_with_id(self, ball_id):
+		return self.__balls[0].get_id()
+
+	def get_balls_in_direction(self, direction):
+		balls = []
+		for ball in self.__balls:
+			if ball.get_ball_direction() == direction:
+				balls.append(ball)
+		return balls
+
 
 	def set_game_state(self, state):
 		self.__is_game_end = state
