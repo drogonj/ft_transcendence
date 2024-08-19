@@ -14,7 +14,7 @@ class Spell:
     def on_hit(self, ball, game):
         raise NotImplementedError("This method need to be implemented.")
 
-    def destructor(self, ball, game):
+    def destructor(self, ball):
         raise NotImplementedError("This method need to be implemented.")
 
     def send_spell_message_to_players(self, game, data_values):

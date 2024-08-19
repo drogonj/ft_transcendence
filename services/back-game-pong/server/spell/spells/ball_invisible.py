@@ -27,5 +27,5 @@ class BallInvisible(Spell):
         self.send_spell_message_to_players(game, data_values)
         ball.remove_active_spell()
 
-    def destructor(self, ball, game):
+    def destructor(self, ball):
         ball.remove_active_spell()

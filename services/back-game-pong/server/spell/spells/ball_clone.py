@@ -26,5 +26,5 @@ class BallClone(Spell):
         ball.remove_active_spell()
         game.create_ball_by_copy(ball)
 
-    def destructor(self, ball, game):
+    def destructor(self, ball):
         ball.remove_active_spell()

@@ -9,7 +9,7 @@ class Ball:
     def __init__(self):
         self.__ball_id = Ball.ball_index
         Ball.ball_index += 1
-        self.__vx = get_random_number_with_decimal(0.3, 1)
+        self.__vx = get_random_number_with_decimal(0.3, 0.7)
         self.__vy = get_random_number_with_decimal(0.3, 0.7)
         self.__top_position = 48.5
         self.__left_position = 49.2
@@ -107,7 +107,7 @@ class Ball:
 
     def set_active_spell(self, spell):
         if self.__active_spell is not None:
-            self.__active_spell.destructor()
+            self.__active_spell.destructor(self)
         self.__active_spell = spell
 
     def set_vx(self, value):

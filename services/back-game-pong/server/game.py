@@ -1,6 +1,6 @@
 import asyncio
 from .ball import Ball
-from .utils import reverse_side, get_random_number_with_decimal
+from .utils import reverse_side
 from .redis_communication import send_to_redis, create_data_to_send
 from .spell.spell_registry import SpellRegistry
 
@@ -96,7 +96,7 @@ class Game:
 		socket_values = {"targetPlayer": side}
 		socket_values.update(ball.dumps_ball_for_socket())
 		if ball.have_active_spell():
-			ball.get_active_spell().destructor(ball, self)
+			ball.get_active_spell().destructor(ball)
 		self.delete_ball(ball)
 		self.send_message_to_game("displayScore", socket_values)
 		if self.have_player_with_max_score():

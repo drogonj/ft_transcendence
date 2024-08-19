@@ -27,7 +27,7 @@ class BallFreeze(Spell):
         self.send_spell_message_to_players(game, data_values)
         ball.remove_active_spell()
 
-    def destructor(self, ball, game):
+    def destructor(self, ball):
         ball.set_vx(ball.get_vx() * 2)
         ball.set_vy(ball.get_vy() * 2)
         ball.remove_active_spell()

@@ -21,7 +21,7 @@ class BallPush(Spell):
 
     def on_hit(self, ball, game):
         if self._statement > 0:
-            self.destructor(ball, game)
+            self.destructor(ball)
             return
 
         ball.set_vx(ball.get_vx() * 2)
@@ -32,7 +32,7 @@ class BallPush(Spell):
         self.send_spell_message_to_players(game, data_values)
         self._statement += 1
 
-    def destructor(self, ball, game):
+    def destructor(self, ball):
         ball.set_vx(ball.get_vx() / 2)
         ball.set_vy(ball.get_vy() / 2)
         ball.remove_active_spell()
