@@ -1,14 +1,13 @@
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import validate_email, RegexValidator
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
+from PIL import Image, UnidentifiedImageError
 from django.core.files import File
 from django.utils import timezone
-from PIL import Image, UnidentifiedImageError
-import requests
+from django.db import models
 from io import BytesIO
-import uuid
-import os
+import requests, uuid, os
 
 class MyAccountManager(BaseUserManager):
     def create_user(self, intra_id, email, username, password, **extra_fields):
@@ -68,6 +67,7 @@ class Account(AbstractBaseUser):
     tournaments_won     = models.IntegerField(default=0)
 
     muted_users         = models.ManyToManyField('self', symmetrical=False, related_name='muted_by')
+    # saved_messages      = JSONField(default=list)
 
     objects = MyAccountManager()
 

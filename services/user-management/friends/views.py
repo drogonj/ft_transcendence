@@ -217,15 +217,6 @@ class GetOneUserDataView(View):
 		except User.DoesNotExist:
 			return JsonResponse({'error': 'User not found'}, status=404)
 
-class IsUserMutedView(View):
-	def get(self, request, user_id, target_user_id):
-		try:
-			user = User.objects.get(id=user_id)
-			is_muted = target_user_id in user.muted_users.values_list('id', flat=True)
-			return JsonResponse({'is_muted': is_muted})
-		except User.DoesNotExist:
-			return JsonResponse({'is_muted': False})
-
 class GetMuteListView(View):
 	def get(self, request, user_id):
 		try:
@@ -243,7 +234,7 @@ class MuteToggleView(View):
 	def post(self, request, user_id):
 		try:
 			user = User.objects.get(id=user_id)
-			data = json.loads(request.body.decode('utf-8'))
+			data = json.loads(request.body)
 			muted = data.get('muted', False)
 			current_user = request.user
 
@@ -260,3 +251,25 @@ class MuteToggleView(View):
 			return JsonResponse({'success': True})
 		except User.DoesNotExist:
 			return JsonResponse({'error': 'User not found'}, status=404)
+
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from .models import Account
+# @method_decorator(csrf_exempt, name='dispatch')
+# class SaveMessageView(APIView):
+# 	def post(self, request, user_id, content):
+# 		try:
+# 			account = get_object_or_404(Account, id=user_id)
+# 			data = json.loads(request.body)
+# 			new_message = data.get('savedMessages')
+
+# 			if new_message:
+# 				account.saved_messages.append(new_message)
+# 				account.save()
+# 				return Response({'status': 'success', 'message': 'Message saved successfully'}, status=status.HTTP_200_OK)
+# 			else:
+# 				return Response({'status': 'error', 'message': 'No message provided'}, status=status.HTTP_400_BAD_REQUEST)
+# 		except Exception as e:
+# 			return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
