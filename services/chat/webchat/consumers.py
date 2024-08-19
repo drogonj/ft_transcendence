@@ -1,6 +1,6 @@
 import json, requests
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Message, MessageFromAuth, PrivateMessage
+from .models import Message, PrivateMessage
 from asgiref.sync import sync_to_async
 from django.utils.timezone import now
 
@@ -54,33 +54,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		await self.close()
 
 	async def receive(self, text_data):
-		text_data_json = json.loads(text_data)
+		data = json.loads(text_data)
 
-		if text_data_json['type'] == 'user_status_update':
-			new_message = await sync_to_async(MessageFromAuth.objects.create)(
-				type = text_data_json['type'],
-				content = text_data_json['content'],
-				user_id = text_data_json['user_id'],
-				username = text_data_json['username'],
-				is_connected = text_data_json['is_connected']
-			)
+		if data['type'] == 'user_status_update':
 			await self.channel_layer.group_send(
 				self.room_name,
 				{
-					'type': new_message.type,
-					'content': new_message.content,
-					'user_id': new_message.user_id,
-					'username': new_message.username,
-					'is_connected': new_message.is_connected
+					'type': data['type'],
+					'content': data['content'],
+					'user_id': data['user_id'],
+					'username': data['username'],
+					'is_connected': data['is_connected']
 				}
 			)		
 
-		elif text_data_json['type'] == 'chat_message':
+		elif data['type'] == 'chat_message':
 			new_message = await sync_to_async(Message.objects.create)(
-				type = text_data_json['type'],
-				content = text_data_json['content'],
-				user_id = text_data_json['user_id'],
-				username = text_data_json['username'],
+				type = data['type'],
+				content = data['content'],
+				user_id = data['user_id'],
+				username = data['username'],
 				timestamp = now(),
 			)
 			await self.channel_layer.group_send(
@@ -94,15 +87,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				}
 			)
 
-		elif text_data_json['type'] == 'private_message':
+		elif data['type'] == 'private_message':
 			new_message = await sync_to_async(PrivateMessage.objects.create)(
-				type = text_data_json['type'],
-				content = text_data_json['content'],
-				user_id = text_data_json['user_id'],
-				username = text_data_json['username'],
+				type = data['type'],
+				content = data['content'],
+				user_id = data['user_id'],
+				username = data['username'],
 				timestamp = now(),
-				receiver_id = text_data_json['receiver_id'],
-				receiver_username = text_data_json['receiver_username']
+				receiver_id = data['receiver_id'],
+				receiver_username = data['receiver_username']
 			)
 			await self.channel_layer.group_send(
 				self.room_name,

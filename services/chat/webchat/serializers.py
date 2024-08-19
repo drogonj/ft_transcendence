@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Message, PrivateMessage, MessageFromAuth
+from .models import Message, PrivateMessage
 
 class MessageSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -10,8 +10,3 @@ class PrivateMessageSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = PrivateMessage
 		fields = ['id', 'type', 'content', 'user_id', 'username', 'timestamp', 'receiver_id', 'receiver_username']
-
-class MessageFromAuthSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = MessageFromAuth
-		fields = ['id', 'type', 'content', 'user_id', 'username', 'is_connected']

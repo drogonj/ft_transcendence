@@ -1,8 +1,7 @@
 import { currentUser } from './auth.js';
 import { csrfToken } from './auth.js';
 import { navigateTo } from './contentLoader.js';
-
-export var muteList = [];
+import { muteList, muteUser, unmuteUser } from './chat.js';
 
 export async function loadUsers() {
 	try {
@@ -10,24 +9,22 @@ export async function loadUsers() {
 		const usersData = await getUsers.json();
 
 		for (const user of usersData.users) {
-			if (user.user_id !== 1 && user.user_id !== currentUser.user_id) {
-				muteList = getMuteListOf(user);
-				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected, muteList);
-			}
+			if (user.user_id !== 1 && user.user_id !== currentUser.user_id)
+				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
 		}
 	} catch (error) {
 		console.error('Error loading users:', error);
 	}
 }
 
-async function addUserToMenu(user_id, username, avatar, is_connected, muteList) {
+async function addUserToMenu(user_id, username, avatar, is_connected) {
 	const usersContainer = document.getElementById('users-content');
 	let is_muted = false;
 
 	const newUser = document.createElement('li');
 	newUser.id = `user-${user_id}`;
 
-	if (muteList.includes(user_id)) {
+	if (muteList && muteList.includes(user_id.toString())) {
 		is_muted = true;
 	}
 
@@ -72,17 +69,14 @@ async function addUserToMenu(user_id, username, avatar, is_connected, muteList) 
 			if (!response.ok) {
 				throw new Error(`Network response was not ok. Status: ${response.status}`);
 			}
-	
-			const responseData = await response.json();
-			console.log('Response data:', responseData);
 
 			if (isMuted) {
 				muteButton.classList.remove('muted');
-				muteList = muteList.filter(id => id !== userId);
+				unmuteUser(userId);
 				muteIcon.src = '/assets/images/chat/chat_icon.png';
 			} else {
 				muteButton.classList.add('muted');
-				muteList.push(userId);
+				muteUser(userId);;
 				muteIcon.src = '/assets/images/chat/mute_icon.png';
 			}
 		} catch (error) {

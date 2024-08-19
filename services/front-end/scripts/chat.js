@@ -1,14 +1,15 @@
 import { currentUser } from './auth.js';
-import { loadUsers, updateUserStatus, getMuteListOf, muteList } from './users.js';
+import { loadUsers, updateUserStatus, getMuteListOf} from './users.js';
+
+export var muteList = [];
 
 var chatSocket = null;
 var chatSocketRunning = false;
 
 // TODO LIST: First at bottom
-// Attention a la prise en compte de ADMIN et de son ID dans le chat et les rooms (choix de config)
 // Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
 // ==> REDIS:6379/1 pour le cache (voir si besoin d'une adresse 0 et/ou definir si juste redis:6379 pour DB)
-// 
+
 // CHAT CONTAINER :
 // - Creer un nouveau system de gestion container try/catch :POST
 // - Ajoute dans : document.addEventListener('DOMContentLoaded', async function () la connectChatWebsocket
@@ -25,7 +26,7 @@ export async function connectChatWebsocket(user_id) {
 
 	chatSocket.onopen = function(e) {
 		chatSocketRunning = true;
-		console.log("Chat WebSocket connection established.");
+		console.log("Chat-WebSocket connection established.");
 	};
 
 	chatSocket.onmessage = function(e) {
@@ -34,17 +35,18 @@ export async function connectChatWebsocket(user_id) {
 			let muted = false;
 			console.log(data);
 
-			if (muteList.includes(data.user_id))
+			if (muteList && muteList.includes(data.user_id.toString()))
 				muted = true;
 
 			if (data.type === 'user_status_update')
 				updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
 			else if (data.type === 'private_message') {
-				const isSenderMuted = muteList.includes(receiver_id);
-				console.log(`sender has muted you: ${muted}`);
-				if  (!muted && !isSenderMuted && data.receiver_id !== data.user_id)
+				const receiverList = await getMuteListOf(data.receiver_id);
+				const amIMuted = receiverList.includes(currentUser.user_id);
+
+				if  (!muted && !amIMuted && data.receiver_id !== data.user_id)
 					private_message(data);
-				else if (isSenderMuted && currentUser.user_id === data.user_id)
+				else if (amIMuted && currentUser.user_id === data.user_id)
 					muted_message(data);
 				else if (data.receiver_id === data.user_id )
 					troll_message(data);
@@ -151,6 +153,7 @@ export async function private_message(data) {
 }
 
 export async function addChatMenu() {
+	muteList = await getMuteListOf(currentUser.user_id) || [];
 	await connectChatWebsocket(currentUser.user_id);
     const chatContainer = document.querySelector('.chat-menu-container');
     chatContainer.innerHTML = `
@@ -239,6 +242,14 @@ async function sendChatMessage(message) {
 		'user_id': currentUser.user_id,
 		'username': currentUser.username
 	}));
+}
+
+export async function muteUser(userId) {
+	muteList.push(userId);
+}
+
+export async function unmuteUser(userId) {
+	muteList = muteList.filter(id => id !== userId);
 }
 
 // async function saveMessages(user_id, message) {
