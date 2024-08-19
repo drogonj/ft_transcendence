@@ -243,7 +243,7 @@ class MuteToggleView(View):
 	def post(self, request, user_id):
 		try:
 			user = User.objects.get(id=user_id)
-			data = json.loads(request.body.decode('utf-8'))
+			data = json.loads(request.body)
 			muted = data.get('muted', False)
 			current_user = request.user
 

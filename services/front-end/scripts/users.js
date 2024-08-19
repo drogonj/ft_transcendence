@@ -2,31 +2,34 @@ import { currentUser } from './auth.js';
 import { csrfToken } from './auth.js';
 import { navigateTo } from './contentLoader.js';
 
-let mutedUserIds = [];
+export var muteList = [];
 
 export async function loadUsers() {
 	try {
-		const response = await fetch('/api/user/get_users/');
-		const usersData = await response.json();
+		const getUsers = await fetch('/api/user/get_users/');
+		const usersData = await getUsers.json();
 
 		for (const user of usersData.users) {
 			if (user.user_id !== 1 && user.user_id !== currentUser.user_id) {
-				const response2 = await fetch(`api/user/is_muted/${currentUser.user_id}/${user.user_id}/`);
-				const muteList = await response2.json();
-				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected, muteList.is_muted);
+				muteList = getMuteListOf(user);
+				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected, muteList);
 			}
 		}
-
 	} catch (error) {
 		console.error('Error loading users:', error);
 	}
 }
 
-async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) {
+async function addUserToMenu(user_id, username, avatar, is_connected, muteList) {
 	const usersContainer = document.getElementById('users-content');
+	let is_muted = false;
 
 	const newUser = document.createElement('li');
 	newUser.id = `user-${user_id}`;
+
+	if (muteList.includes(user_id)) {
+		is_muted = true;
+	}
 
 	newUser.innerHTML = `
 		<div class="status-indicator ${is_connected ? 'online' : 'offline'}"></div>
@@ -75,11 +78,11 @@ async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) 
 
 			if (isMuted) {
 				muteButton.classList.remove('muted');
-				mutedUserIds = mutedUserIds.filter(id => id !== userId);
+				muteList = muteList.filter(id => id !== userId);
 				muteIcon.src = '/assets/images/chat/chat_icon.png';
 			} else {
 				muteButton.classList.add('muted');
-				mutedUserIds.push(userId);
+				muteList.push(userId);
 				muteIcon.src = '/assets/images/chat/mute_icon.png';
 			}
 		} catch (error) {
@@ -149,26 +152,12 @@ export async function getUserStatus(user_id) {
 	}
 }
 
-export async function isUserMuted(user_id) {
-	try {
-		const response = await fetch(`/api/user/is_muted/${currentUser.user_id}/${user_id}`);
-		const data = await response.json();
-
-		console.log(`is ${currentUser.username} muted (${currentUser.user_id})? ${data.is_muted} `);
-		return data.is_muted;
-	} catch (error) {
-		console.error('Error loading muted users:', error.message);
-	}
-}
-
 export async function getMuteListOf(user_id) {
 	try {
-		const response = await fetch(`api/user/get_mutelist/${user_id}`);
+		const response = await fetch(`api/user/get_mutelist/${user_id}/`);
 		const data = await response.json();
 
-		const isMuted = data.muted_users.includes(currentUser.user_id);
-
-		return isMuted;
+		return data.muted_users;
 	} catch (error) {
 		console.error('Error loading muted users:', error.message);
 	}

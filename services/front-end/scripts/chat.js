@@ -1,10 +1,10 @@
 import { currentUser } from './auth.js';
-import { loadUsers, updateUserStatus, getMuteListOf, isUserMuted } from './users.js';
+import { loadUsers, updateUserStatus, getMuteListOf, muteList } from './users.js';
 
-let chatSocket = null;
-let chatSocketRunning = false;
+var chatSocket = null;
+var chatSocketRunning = false;
 
-// TODO LIST:
+// TODO LIST: First at bottom
 // Attention a la prise en compte de ADMIN et de son ID dans le chat et les rooms (choix de config)
 // Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
 // ==> REDIS:6379/1 pour le cache (voir si besoin d'une adresse 0 et/ou definir si juste redis:6379 pour DB)
@@ -15,7 +15,6 @@ let chatSocketRunning = false;
 // - Recuperer les donnes aussi et les postes dans la table user de chat (creation models users_chat)
 // - ajouter une variable list pour chaque user
 // - Suscribe/PUB : https://redis.io/docs/latest/develop/interact/pubsub/
-
 
 export async function connectChatWebsocket(user_id) {
 	if (chatSocket)
@@ -32,14 +31,16 @@ export async function connectChatWebsocket(user_id) {
 	chatSocket.onmessage = function(e) {
 		(async () => {
 			const data = JSON.parse(e.data);
+			let muted = false;
 			console.log(data);
 
-			const muted = await isUserMuted(data.user_id);
+			if (muteList.includes(data.user_id))
+				muted = true;
 
 			if (data.type === 'user_status_update')
 				updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
 			else if (data.type === 'private_message') {
-				const isSenderMuted = await getMuteListOf(data.receiver_id);
+				const isSenderMuted = muteList.includes(receiver_id);
 				console.log(`sender has muted you: ${muted}`);
 				if  (!muted && !isSenderMuted && data.receiver_id !== data.user_id)
 					private_message(data);
