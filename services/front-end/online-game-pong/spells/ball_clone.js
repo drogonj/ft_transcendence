@@ -1,18 +1,15 @@
-import {getSpellWithId, Spell} from "../spell.js";
-import {newImage} from "../game.js";
-import {getBallsWithIds} from "../ball.js";
-/*import {copyBall, getAllBallInSide} from "../ball.js";
-import {getRandomNumberWithDecimal} from "../utils/math_utils.js";
-import {removeCssProperty, setCssProperty} from "../../view/style_view.js";
-import {newImage} from "../utils/utils.js";*/
+import {Spell} from "../spell.js";
+import {newImage, removeCssProperty, setCssProperty} from "../game.js";
+import {getBallsWithIds, getBallWithId} from "../ball.js";
+import {coolDownRun} from "../header.js";
 
 
 export default function BallClone() {
 	Spell.call(this, 5, "Ball Clone", "DESCRIPTION", "ballClone", newImage("../../assets/images/ball_clone.png"));
 }
 
-BallClone.prototype.executor = function (spell, socketValues) {
-	coolDownRun(spell);
+BallClone.prototype.executor = function (socketValues) {
+	coolDownRun(this);
 	const balls = getBallsWithIds(socketValues["ballIds"]);
 	balls.forEach((ball) => {
 		setCssProperty(ball.ballHtml.style, "--change-color1", "#483D8B");
@@ -21,12 +18,12 @@ BallClone.prototype.executor = function (spell, socketValues) {
 	});
 }
 
-BallClone.prototype.onHit = function(ball) {
+BallClone.prototype.onHit = function(socketValues) {
+	const ball = getBallWithId(socketValues["ballIds"]);
 	removeCssProperty(ball.getBallStyle(), "animation");
-	const cloneBall = copyBall(ball);
-	cloneBall.ballVy = getRandomNumberWithDecimal(0.1, 0.7);
 }
 
-BallClone.prototype.destructor = function(ball) {
+BallClone.prototype.destructor = function(socketValues) {
+	const ball = getBallWithId(socketValues["ballIds"]);
 	removeCssProperty(ball.getBallStyle(), "animation");
 }

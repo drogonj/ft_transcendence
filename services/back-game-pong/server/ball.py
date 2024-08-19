@@ -1,5 +1,6 @@
 from .utils import get_random_number_with_decimal
 import math
+import copy
 
 
 class Ball:
@@ -13,6 +14,12 @@ class Ball:
         self.__top_position = 48.5
         self.__left_position = 49.2
         self.__active_spell = None
+
+    def deep_copy(self):
+        copy_ball = copy.deepcopy(self)
+        copy_ball.__ball_id = Ball.ball_index
+        Ball.ball_index += 1
+        return copy_ball
 
     def dumps_ball_for_socket(self):
         return {
@@ -60,10 +67,10 @@ class Ball:
         bounce_angle = normalized_relative_intersect_y * (40 * math.pi / 180)
 
         if player.get_side() == 'Left':
-            self.__vx = -math.cos(bounce_angle)
+            self.set_vx(-math.cos(bounce_angle))
         else:
-            self.__vx = math.cos(bounce_angle)
-        self.__vy = -math.sin(bounce_angle)
+            self.set_vx(math.cos(bounce_angle))
+        self.set_vy(-math.sin(bounce_angle))
 
     def get_top_position(self):
         return self.__top_position

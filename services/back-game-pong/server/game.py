@@ -1,6 +1,6 @@
 import asyncio
 from .ball import Ball
-from .utils import reverse_side
+from .utils import reverse_side, get_random_number_with_decimal
 from .redis_communication import send_to_redis, create_data_to_send
 from .spell.spell_registry import SpellRegistry
 
@@ -75,7 +75,6 @@ class Game:
 		self.send_message_to_game("movePlayer", {"targetPlayer": player_side, "topPosition": f"{player.get_top_position()}%"})
 
 	def launch_spell(self, socket_values):
-		print(socket_values["playerSide"], socket_values["spellNumber"])
 		player = self.get_player(socket_values["playerSide"])
 		spell = player.get_spell_number(int(socket_values["spellNumber"]))
 		#print(f"try to launch {spell.get_spell_id()} from {player.get_side()}")
@@ -101,13 +100,21 @@ class Game:
 			ball.get_active_spell().destructor(ball, self)
 		self.delete_ball(ball)
 		self.send_message_to_game("displayScore", socket_values)
-		self.create_ball()
+		if len(self.__balls) == 0:
+			self.create_ball()
 
 	def delete_ball(self, ball):
 		self.__balls.remove(ball)
 
 	def create_ball(self):
 		new_ball = Ball()
+		self.__balls.append(new_ball)
+		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
+
+	def create_ball_by_copy(self, ball_to_copy):
+		new_ball = ball_to_copy.deep_copy()
+		new_ball.set_vy(-ball_to_copy.get_vy())
+		new_ball.move_ball()
 		self.__balls.append(new_ball)
 		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 

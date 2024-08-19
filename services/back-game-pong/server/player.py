@@ -73,7 +73,7 @@ class Player:
 		return self.__top_position
 
 	def get_bot_position(self):
-		return self.__top_position + 20
+		return self.__top_position + self.__paddle_size
 
 	def get_side(self):
 		return self.__paddle_side
@@ -93,6 +93,9 @@ class Player:
 	def get_spell_number(self, number):
 		return self.__spells[number]
 
+	def get_paddle_size(self):
+		return self.__paddle_size
+
 	def set_username(self, username):
 		self.__username = username
 
@@ -104,6 +107,9 @@ class Player:
 
 	def set_can_move(self, value):
 		self.__can_move = value
+
+	def set_paddle_size(self, value):
+		self.__paddle_size = value
 
 
 def get_player_with_user_id(user_id):
