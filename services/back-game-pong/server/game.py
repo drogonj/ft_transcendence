@@ -58,7 +58,7 @@ class Game:
 				balls_to_send.append(ball.dumps_ball_for_socket())
 			self.send_message_to_game("moveBall", {"targetBalls": balls_to_send})
 			balls_to_send.clear()
-			await asyncio.sleep(0.02)
+			await asyncio.sleep(0.014)
 		self.game_end()
 
 	def send_message_to_game(self, data_type, data_values):
@@ -124,7 +124,8 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
-		send_to_redis(create_data_to_send(self.__players))
+		create_data_to_send(self.__players)
+		send_to_redis()
 		self.send_message_to_game("renderPage", {"url": "/game-end"})
 		for player in self.__players:
 			if player.get_socket():
