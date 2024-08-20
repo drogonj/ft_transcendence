@@ -175,6 +175,7 @@ export async function addChatMenu() {
 	`;
 
 	await loadUsers();
+	//await loadMessages();
 
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeydown = function(e) {
@@ -269,4 +270,36 @@ export async function unmuteUser(userId) {
 // 	} catch (error) {
 // 			console.error('Error updating mute state:', error.message);
 // 	};
+// }
+
+// async function loadMessages() {
+// 	try {
+// 		const response = await fetch('api/chat/all-messages/');
+// 		const data = await response.json();
+
+// 		let allMessages = [
+// 			...data.messages,
+// 			...data.private_messages,
+// 		] || [];
+
+// 		if (!allMessages)
+// 			return;
+		
+// 		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
+
+// 		const messageContainer = document.getElementById('message-content');
+// 		messageContainer.innerHTML = '';
+
+// 		allMessages.forEach(message => {
+// 			if (!muteList.includes(message.user_id)) {
+
+// 				if (message.type === 'private_message')
+// 					chat_message(message);
+// 				else if (message.type === 'chat_message')
+// 					chat_message(message);
+// 			}
+// 		});
+// 	} catch (error) {
+// 		console.error('Error loading messages:', error);
+// 	}
 // }
