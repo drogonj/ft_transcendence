@@ -4,7 +4,6 @@ services:
     build: services/front-end
     ports:
       - "8080:443"
-    restart: always
     depends_on:
       - user-management
     volumes:
@@ -15,6 +14,49 @@ services:
     env_file:
       - .env
     entrypoint: sh -c "sh /entrypoint.sh"
+    restart: on-failure
+
+  postgres-master-1:
+    container_name: postgres-master-1
+    build: ./services/postgres-master-1/
+    env_file: .env
+    expose:
+      - "5432"
+    networks:
+      - network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./services/postgres-master-1/00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
+    restart: on-failure
+
+#  postgres-replica-1:
+#    container_name: postgres-replica-1
+#    build: ./services/postgres-replica-1/
+#    ports:
+#      - "5433:5432"
+#    environment:
+#      PGUSER: replicator
+#      PGPASSWORD: replicator_password
+#    command: |
+#      bash -c "
+#      until pg_basebackup --pgdata=/var/lib/postgresql/data -R --slot=replication_slot --host=postgres-master-1 --port=5432 --username=replicator
+#      do
+#      echo 'Waiting for primary to connect...'
+#      sleep 1s
+#      done
+#      echo 'Backup done, starting replica...'
+#      chmod 0700 /var/lib/postgresql/data
+#      postgres
+#      "
+#    networks:
+#      - network
+#    depends_on:
+#      - postgres-master-1
+#    restart: on-failure
 
   user-management:
     container_name: user-management
@@ -31,6 +73,7 @@ services:
       - redis
     env_file:
       - .env
+    restart: on-failure
 
   chat:
     container_name: chat
@@ -45,20 +88,7 @@ services:
       - redis
     env_file:
       - .env
-
-  postgres:
-    container_name: postgres
-    build: ./services/postgres/
-    env_file: .env
-    expose:
-      - "5432"
-    networks:
-     - network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    restart: on-failure
 
   vault:
     build: ./services/vault/
@@ -84,7 +114,7 @@ services:
     environment:
       TZ: 'Europe/Paris'
       VAULT_SKIP_IP_AUTO_CONFIG: 'true'
-
+    restart: on-failure
 
   back-game:
     container_name: back-game-pong
@@ -94,6 +124,7 @@ services:
     env_file: .env
     networks:
      - network
+    restart: on-failure
 
   back-matchmaking:
     container_name: back-matchmaking-pong
@@ -103,6 +134,7 @@ services:
     env_file: .env
     networks:
       - network
+    restart: on-failure
 
   redis:
     container_name: redis
@@ -111,12 +143,13 @@ services:
     expose:
       - "6379"
     depends_on:
-      postgres:
+      postgres-master-1:
         condition: service_healthy
     volumes:
       - redis:/var/lib/redis
     networks:
       - network
+    restart: on-failure
 
 networks:
   network:

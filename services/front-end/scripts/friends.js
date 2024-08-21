@@ -1,14 +1,18 @@
 import { getCsrfToken, csrfToken } from "./auth.js";
 import { navigateTo } from "./contentLoader.js";
 
-let friendSocket;
-let friendSocketRunning = false;
+let friendSocket = null;
 
 export async function connectFriendsWebsocket() {
-    friendSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/friend-requests/`);
+    if (friendSocket !== null)
+        return;
 
-    friendSocket.onopen = function(e) {5
-        friendSocketRunning = true;
+    const tokenRequest = await fetch('/api/user/ws_token/');
+    const token = await tokenRequest.json();
+
+    friendSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/friend-requests/?uuid=${token.uuid}`);
+
+    friendSocket.onopen = function(e) {
         console.log("WebSocket connection established.");
     };
 
@@ -42,7 +46,6 @@ export async function connectFriendsWebsocket() {
     };
 
     friendSocket.onclose = function(event) {
-        friendSocketRunning = false;
         if (event.wasClean) {
             console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
         } else {

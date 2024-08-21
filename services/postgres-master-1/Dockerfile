@@ -1,8 +1,5 @@
 FROM postgres:16.3
 
-HEALTHCHECK --interval=5s --timeout=3s --retries=10 \
-  CMD pg_isready -U $POSTGRES_USER -d $POSTGRES_DB || exit 1
-
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y ssl-cert
 
@@ -14,7 +11,9 @@ RUN mkdir -p /etc/ssl/private/postgresql && \
     -keyout /etc/ssl/private/postgresql/postgresql.key -subj "/CN=postgres"
 
 RUN chown -R postgres:postgres /etc/postgresql /etc/ssl/private/postgresql /etc/ssl/certs/postgresql.crt && \
-    chmod 600 /etc/ssl/private/postgresql/postgresql.key
+    chmod 600 /etc/ssl/private/postgresql/postgresql.key && \
+    chmod 640 /etc/postgresql/postgresql.conf && \
+    chmod 640 /etc/postgresql/pg_hba.conf
 
 USER postgres
 
