@@ -66,7 +66,7 @@ class Account(AbstractBaseUser):
     goals               = models.IntegerField(default=0)
     tournaments_won     = models.IntegerField(default=0)
 
-    muted_users         = models.ManyToManyField('self', symmetrical=False, related_name='muted_by')
+    muted_users         = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='muted_by')
     # saved_messages      = JSONField(default=list)
 
     objects = MyAccountManager()

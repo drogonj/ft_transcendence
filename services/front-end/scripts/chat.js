@@ -4,7 +4,6 @@ import { loadUsers, updateUserStatus, getMuteListOf} from './users.js';
 export var muteList = [];
 
 var chatSocket = null;
-var chatSocketRunning = false;
 
 // TODO LIST: First at bottom
 // Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
@@ -25,7 +24,6 @@ export async function connectChatWebsocket(user_id) {
 	chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/${user_id}/`);
 
 	chatSocket.onopen = function(e) {
-		chatSocketRunning = true;
 		console.log("Chat-WebSocket connection established.");
 	};
 
@@ -35,7 +33,9 @@ export async function connectChatWebsocket(user_id) {
 			let muted = false;
 			console.log(data);
 
-			if (muteList && muteList.includes(data.user_id.toString()))
+			data.timestamp = formatTime(data.timestamp);
+
+			if (muteList && muteList.includes(data.user_id))
 				muted = true;
 
 			if (data.type === 'user_status_update')
@@ -57,7 +57,6 @@ export async function connectChatWebsocket(user_id) {
 	};
 
 	chatSocket.onclose = function(e) {
-		chatSocketRunning = false;
 		if (e.wasClean)
 			console.log(`[close] Chat Connection closed cleanly, code=${e.code} reason=${e.reason}`);
 		else
@@ -113,6 +112,8 @@ export async function muted_message(data) {
 	
 	const chatMessages = document.getElementById('chat-messages');
 	chatMessages.scrollTop = chatMessages.scrollHeight;
+
+	fet
 }
 
 export async function chat_message(data) {
@@ -175,6 +176,7 @@ export async function addChatMenu() {
 	`;
 
 	await loadUsers();
+	await loadMessages();
 
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeydown = function(e) {
@@ -206,7 +208,6 @@ async function parseMessage(message) {
 			console.log('messageContent: ', messageContent);
 
 			if (cmd === 'private') {
-				console.log('Sending private message to:', username);
 				const response = await fetch('/api/user/get_users/');
 				const usersData = await response.json();
 
@@ -252,21 +253,83 @@ export async function unmuteUser(userId) {
 	muteList = muteList.filter(id => id !== userId);
 }
 
-// async function saveMessages(user_id, message) {
-// 	try {
-// 		const response = await fetch(`/api/user/messages/${user_id}/`, {
-// 			method: 'POST',
-// 			headers: {
-// 				'Content-Type': 'application/json',
-// 				'X-CSRFToken': csrfToken
-// 			},
-// 			body: JSON.stringify({ savedMessages: message })
-// 		});
+async function loadMessages() {
+	try {
+		const response = await fetch('api/chat/all-messages/');
+		const data = await response.json();
 
-// 		if (!response.ok) {
-// 			throw new Error(`Network response was not ok. Status: ${response.status}`);
-// 		}
-// 	} catch (error) {
-// 			console.error('Error updating mute state:', error.message);
-// 	};
-// }
+		let allMessages = [
+			...data.messages,
+			...data.private_messages,
+		];
+
+		if (!allMessages || allMessages.length === 0) {
+			return;
+		}
+
+		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
+
+		allMessages.forEach(message => {
+			console.log('message:', message.user_id, typeof message.user_id);
+			console.log(muteList.includes(message.user_id));
+			if (!muteList.includes(message.user_id)) {
+				if (message.type === 'private_message')
+					load_private_message(message);
+				else if (message.type === 'chat_message')
+					load_message(message);
+			}
+		});
+	} catch (error) {
+		console.error('Error loading messages:', error);
+	}
+}
+
+export function formatTime(timestamp) {
+	const date = new Date(timestamp);
+
+	const hours = String(date.getHours()).padStart(2, '0');
+	const minutes = String(date.getMinutes()).padStart(2, '0');
+	const seconds = String(date.getSeconds()).padStart(2, '0');
+
+	return `${hours}:${minutes}:${seconds}`;
+}
+
+export async function load_message(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+	data.timestamp = formatTime(data.timestamp);
+
+	newMessage.classList.add('chat-message');
+	newMessage.textContent = `${data.timestamp} ${data.username} : ${data.content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+export async function load_private_message(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+	data.timestamp = formatTime(data.timestamp);
+
+
+	if (data.receiver_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.timestamp} DM from ${data.username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+	if (data.user_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+}

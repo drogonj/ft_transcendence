@@ -2,7 +2,7 @@ import json, requests
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Message, PrivateMessage
 from asgiref.sync import sync_to_async
-from django.utils.timezone import now
+from datetime import datetime
 
 # logging setup for info logs
 import logging
@@ -64,7 +64,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'content': data['content'],
 					'user_id': data['user_id'],
 					'username': data['username'],
-					'is_connected': data['is_connected']
+					'is_connected': data['is_connected'],
+					'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 				}
 			)		
 
@@ -74,8 +75,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				content = data['content'],
 				user_id = data['user_id'],
 				username = data['username'],
-				timestamp = now(),
-			)
+				timestamp = datetime.now(),
+			)	
 			await self.channel_layer.group_send(
 				self.room_name,
 				{
@@ -83,7 +84,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'content': new_message.content,
 					'user_id': new_message.user_id,
 					'username': new_message.username,
-					'timestamp': new_message.timestamp.strftime('%H:%M:%S'),
+					'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
 				}
 			)
 
@@ -93,7 +94,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				content = data['content'],
 				user_id = data['user_id'],
 				username = data['username'],
-				timestamp = now(),
+				timestamp = datetime.now(),
 				receiver_id = data['receiver_id'],
 				receiver_username = data['receiver_username']
 			)
@@ -104,7 +105,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'content': new_message.content,
 					'user_id': new_message.user_id,
 					'username': new_message.username,
-					'timestamp': new_message.timestamp.strftime('%H:%M:%S'),
+					'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
 					'receiver_id': new_message.receiver_id,
 					'receiver_username': new_message.receiver_username
 				}
@@ -117,12 +118,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'user_id': event['user_id'],
 			'username': event['username'],
 			'is_connected': event['is_connected'],
-			'timestamp': now().strftime('%H:%M:%S')
+			'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		}))
-		#log
+		#log-status_update
 		id = event['user_id']
+		username = event['username']
 		is_connected = event['is_connected']
-		logger.info(f'Received user status update from {id} : {is_connected}')
+		if is_connected:
+			logger.info(f'Received user status update from {id}-{username} : connected')
+		else:
+			logger.info(f'Received user status update from {id}-{username} : disconnected')
 
 	async def chat_message(self, event):
 		await self.send(text_data=json.dumps({
@@ -132,10 +137,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'username': event['username'],
 			'timestamp': event['timestamp']
 		}))
-		#log
+		#log-chat_message
+		id = event['user_id']
 		username = event['username']
 		content = event['content']
-		logger.info(f'{username} sent: {content}')
+		logger.info(f'{id}-{username} sent: {content}')
 
 
 	async def private_message(self, event):
@@ -148,8 +154,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'receiver_id': event['receiver_id'],
 			'receiver_username': event['receiver_username']
 		}))
-		#log
+		#log-private_message
+		id = event['user_id']
+		receiver_id = event['receiver_id']
 		username = event['username']
 		content = event['content']
 		receiver_username = event['receiver_username']
-		logger.info(f'{username} sent: {content} to {receiver_username}')
+		logger.info(f'{id}-{username} sent: {content} to {receiver_id}-{receiver_username}')

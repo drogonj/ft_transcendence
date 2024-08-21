@@ -1,7 +1,7 @@
 import { currentUser } from './auth.js';
 import { csrfToken } from './auth.js';
 import { navigateTo } from './contentLoader.js';
-import { muteList, muteUser, unmuteUser } from './chat.js';
+import { muteList, muteUser, unmuteUser, formatTime } from './chat.js';
 
 export async function loadUsers() {
 	try {
@@ -24,7 +24,7 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 	const newUser = document.createElement('li');
 	newUser.id = `user-${user_id}`;
 
-	if (muteList && muteList.includes(user_id.toString())) {
+	if (muteList && muteList.includes(user_id)) {
 		is_muted = true;
 	}
 
