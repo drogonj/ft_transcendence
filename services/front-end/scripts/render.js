@@ -215,8 +215,8 @@ export async function renderHome() {
 					<div class="chat-menu-container"></div>
                 `;
 
-    await addChatMenu();
     await addFriendshipMenu();
+	await addChatMenu();
 
     document.getElementById('profile-button').addEventListener('click', (event) => {
         event.preventDefault();

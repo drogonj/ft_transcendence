@@ -5,20 +5,13 @@ class Message(models.Model):
 	content = models.TextField(max_length=500)
 	user_id = models.IntegerField()
 	username = models.CharField(max_length=255)
-	timestamp = models.DateTimeField(auto_now_add=True)
+	timestamp = models.DateTimeField()
 
 class PrivateMessage(models.Model):
 	type = models.CharField(max_length=255)
 	content = models.TextField(max_length=500)
 	user_id = models.IntegerField()
 	username = models.CharField(max_length=255)
-	timestamp = models.DateTimeField(auto_now_add=True)
+	timestamp = models.DateTimeField()
 	receiver_id = models.IntegerField()
 	receiver_username = models.CharField(max_length=255)
-
-# class MessageFromAuth(models.Model):
-# 	type = models.CharField(max_length=255)
-# 	content = models.TextField(max_length=500)
-# 	user_id = models.IntegerField()
-# 	username = models.CharField(max_length=255)
-# 	is_connected = models.BooleanField()
