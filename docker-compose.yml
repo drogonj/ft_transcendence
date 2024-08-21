@@ -4,8 +4,6 @@ services:
     build: services/front-end
     ports:
       - "8080:443"
-    depends_on:
-      - user-management
     volumes:
       #- nginx:/singlepageapp
       - django:/tmp_static/
@@ -16,47 +14,65 @@ services:
     entrypoint: sh -c "sh /entrypoint.sh"
     restart: on-failure
 
-  postgres-master-1:
-    container_name: postgres-master-1
-    build: ./services/postgres-master-1/
-    env_file: .env
+  pg-0:
+    container_name: pg-0
+    image: bitnami/postgresql-repmgr:14
     expose:
       - "5432"
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=custompassword
+      - POSTGRESQL_USERNAME=customuser
+      - POSTGRESQL_PASSWORD=custompassword
+      - POSTGRESQL_DATABASE=postgres
+      - REPMGR_PASSWORD=repmgrpassword
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-0
+      - REPMGR_NODE_NETWORK_NAME=pg-0
     networks:
       - network
+
+  pg-1:
+    container_name: pg-1
+    image: bitnami/postgresql-repmgr:14
+    expose:
+      - "5432"
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=custompassword
+      - POSTGRESQL_USERNAME=customuser
+      - POSTGRESQL_PASSWORD=custompassword
+      - POSTGRESQL_DATABASE=postgres
+      - REPMGR_PASSWORD=repmgrpassword
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-1
+      - REPMGR_NODE_NETWORK_NAME=pg-1
+    networks:
+      - network
+
+  pgpool:
+    container_name: pgpool
+    build: ./services/pgpool/
+    expose:
+      - "5432"
+    environment:
+      - PGPOOL_BACKEND_NODES=0:pg-0:5432,1:pg-1:5432
+      - PGPOOL_SR_CHECK_USER=customuser
+      - PGPOOL_SR_CHECK_PASSWORD=custompassword
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME=customuser
+      - PGPOOL_POSTGRES_PASSWORD=custompassword
+      - PGPOOL_ADMIN_USERNAME=admin
+      - PGPOOL_ADMIN_PASSWORD=custompassword
+      - PGPOOL_USER_CONF_FILE=/opt/bitnami/pgpool/conf/transcendence_pgpool.conf
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - ./services/postgres-master-1/00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
-    restart: on-failure
-
-#  postgres-replica-1:
-#    container_name: postgres-replica-1
-#    build: ./services/postgres-replica-1/
-#    ports:
-#      - "5433:5432"
-#    environment:
-#      PGUSER: replicator
-#      PGPASSWORD: replicator_password
-#    command: |
-#      bash -c "
-#      until pg_basebackup --pgdata=/var/lib/postgresql/data -R --slot=replication_slot --host=postgres-master-1 --port=5432 --username=replicator
-#      do
-#      echo 'Waiting for primary to connect...'
-#      sleep 1s
-#      done
-#      echo 'Backup done, starting replica...'
-#      chmod 0700 /var/lib/postgresql/data
-#      postgres
-#      "
-#    networks:
-#      - network
-#    depends_on:
-#      - postgres-master-1
-#    restart: on-failure
+    user: root
+    networks:
+      - network
 
   user-management:
     container_name: user-management
@@ -70,7 +86,8 @@ services:
     networks:
       - network
     depends_on:
-      - redis
+      pgpool:
+        condition: service_healthy
     env_file:
       - .env
     restart: on-failure
@@ -142,9 +159,6 @@ services:
     env_file: .env
     expose:
       - "6379"
-    depends_on:
-      postgres-master-1:
-        condition: service_healthy
     volumes:
       - redis:/var/lib/redis
     networks:
