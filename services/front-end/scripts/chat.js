@@ -2,19 +2,7 @@ import { currentUser } from './auth.js';
 import { loadUsers, updateUserStatus, getMuteListOf} from './users.js';
 
 export var muteList = [];
-
 var chatSocket = null;
-
-// TODO LIST: First at bottom
-// Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
-// ==> REDIS:6379/1 pour le cache (voir si besoin d'une adresse 0 et/ou definir si juste redis:6379 pour DB)
-
-// CHAT CONTAINER :
-// - Creer un nouveau system de gestion container try/catch :POST
-// - Ajoute dans : document.addEventListener('DOMContentLoaded', async function () la connectChatWebsocket
-// - Recuperer les donnes aussi et les postes dans la table user de chat (creation models users_chat)
-// - ajouter une variable list pour chaque user
-// - Suscribe/PUB : https://redis.io/docs/latest/develop/interact/pubsub/
 
 export async function connectChatWebsocket(user_id) {
 	if (chatSocket)
@@ -35,15 +23,22 @@ export async function connectChatWebsocket(user_id) {
 
 			data.timestamp = formatTime(data.timestamp);
 
-			if (muteList && muteList.includes(data.user_id))
+			console.log(`receiving message, muteList status : ${muteList}`);
+			console.log('muteList:', muteList.map(item => `${item} (${typeof item})`));
+			console.log('sender id : ', data.user_id , typeof(data.user_id));
+			console.log('sender is muted : ', muteList.includes(data.user_id));
+
+			if (muteList && muteList.includes(data.user_id)) {
 				muted = true;
+				console.log('message sender muted: ', muted);
+			}
 
 			if (data.type === 'user_status_update')
 				updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
+
 			else if (data.type === 'private_message') {
 				const receiverList = await getMuteListOf(data.receiver_id);
 				const amIMuted = receiverList.includes(currentUser.user_id);
-
 				if  (!muted && !amIMuted && data.receiver_id !== data.user_id)
 					private_message(data);
 				else if (amIMuted && currentUser.user_id === data.user_id)
@@ -51,6 +46,10 @@ export async function connectChatWebsocket(user_id) {
 				else if (data.receiver_id === data.user_id )
 					troll_message(data);
 			}
+
+			else if (data.type === 'invitation_to_play' && !muted)
+				invitation_to_play(data);
+
 			else if (data.type === 'chat_message' && !muted)
 				chat_message(data);
 		})();
@@ -101,7 +100,7 @@ export async function troll_message(data) {
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-export async function muted_message(data) {
+async function muted_message(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
  
@@ -112,16 +111,14 @@ export async function muted_message(data) {
 	
 	const chatMessages = document.getElementById('chat-messages');
 	chatMessages.scrollTop = chatMessages.scrollHeight;
-
-	fet
 }
 
-export async function chat_message(data) {
+async function chat_message(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
 	newMessage.classList.add('chat-message');
-	newMessage.textContent = `${data.timestamp} ${data.username} : ${data.content}`;
+	newMessage.innerHTML = `${data.timestamp} ${data.username} : ${data.content}`;
 
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -129,13 +126,37 @@ export async function chat_message(data) {
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-export async function private_message(data) {
+async function private_message(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
 	if (data.receiver_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} DM from ${data.username} : ${data.content}`;
+		newMessage.innerHTML = `${data.timestamp} DM from ${data.username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+	if (data.user_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.innerHTML = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+}
+
+async function invitation_to_play(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	if (data.receiver_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.innerHTML = `${data.timestamp} DM from ${data.username} : ${data.content}`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
@@ -207,14 +228,28 @@ async function parseMessage(message) {
 			const messageContent = parts.slice(2).join(' ');
 			console.log('messageContent: ', messageContent);
 
-			if (cmd === 'private') {
-				const response = await fetch('/api/user/get_users/');
-				const usersData = await response.json();
+			const response = await fetch('/api/user/get_users/');
+			const usersData = await response.json();
 
+			if (cmd === 'dm') {
 				for (const user of usersData.users) {
 					if (user.username === username) {
 						chatSocket.send(JSON.stringify({
 							'type': 'private_message',
+							'content': linkify(messageContent),
+							'user_id': currentUser.user_id,
+							'username': currentUser.username,
+							'receiver_id': user.user_id,
+							'receiver_username': user.username
+						}));
+						return ;
+					}
+				}
+			} else if (cmd === 'play') {
+				for (const user of usersData.users) {
+					if (user.username === username) {
+						chatSocket.send(JSON.stringify({
+							'type': 'invitation_to_play',
 							'content': messageContent,
 							'user_id': currentUser.user_id,
 							'username': currentUser.username,
@@ -224,8 +259,6 @@ async function parseMessage(message) {
 						return ;
 					}
 				}
-			} else if (cmd === 'invite') {
-				// TODO : Implement invite command
 			}
 		} else {
 			sendChatMessage(message);
@@ -236,21 +269,28 @@ async function parseMessage(message) {
 	return ;
 }
 
+function linkify(text) {
+	const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+	return text.replace(urlPattern, function(url) {
+		return `<a href="${url}" target="_blank">${url}</a>`;
+	});
+}
+
 async function sendChatMessage(message) {
 	chatSocket.send(JSON.stringify({
 		'type': 'chat_message',
-		'content': message,
+		'content': linkify(message),
 		'user_id': currentUser.user_id,
 		'username': currentUser.username
 	}));
 }
 
 export async function muteUser(userId) {
-	muteList.push(userId);
+	muteList.push(Number(userId));
 }
 
 export async function unmuteUser(userId) {
-	muteList = muteList.filter(id => id !== userId);
+	muteList = muteList.filter(id => id !== Number(userId));
 }
 
 async function loadMessages() {
@@ -270,8 +310,8 @@ async function loadMessages() {
 		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
 
 		allMessages.forEach(message => {
-			console.log('message:', message.user_id, typeof message.user_id);
-			console.log(muteList.includes(message.user_id));
+			console.log(`message from : ${message.user_id}-${message.username} : ${message.content}`);
+			console.log(`sender muted : ${muteList.includes(message.user_id)}`);
 			if (!muteList.includes(message.user_id)) {
 				if (message.type === 'private_message')
 					load_private_message(message);
@@ -300,7 +340,7 @@ export async function load_message(data) {
 	data.timestamp = formatTime(data.timestamp);
 
 	newMessage.classList.add('chat-message');
-	newMessage.textContent = `${data.timestamp} ${data.username} : ${data.content}`;
+	newMessage.innerHTML = `${data.timestamp} ${data.username} : ${data.content}`;
 
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -313,10 +353,9 @@ export async function load_private_message(data) {
 	const newMessage = document.createElement('li');
 	data.timestamp = formatTime(data.timestamp);
 
-
 	if (data.receiver_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} DM from ${data.username} : ${data.content}`;
+		newMessage.innerHTML = `${data.timestamp} DM from ${data.username} : ${data.content}`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
@@ -325,7 +364,7 @@ export async function load_private_message(data) {
 	}
 	if (data.user_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
+		newMessage.innerHTML = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		

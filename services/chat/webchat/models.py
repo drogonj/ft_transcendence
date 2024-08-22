@@ -15,3 +15,12 @@ class PrivateMessage(models.Model):
 	timestamp = models.DateTimeField()
 	receiver_id = models.IntegerField()
 	receiver_username = models.CharField(max_length=255)
+
+class InvitationToPlay(models.Model):
+	type = models.CharField(max_length=255)
+	content = models.TextField(max_length=500)
+	user_id = models.IntegerField()
+	username = models.CharField(max_length=255)
+	timestamp = models.DateTimeField()
+	receiver_id = models.IntegerField()
+	receiver_username = models.CharField(max_length=255)

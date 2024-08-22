@@ -8,6 +8,8 @@ export async function loadUsers() {
 		const getUsers = await fetch('/api/user/get_users/');
 		const usersData = await getUsers.json();
 
+		console.log('before adding users: ', muteList);
+
 		for (const user of usersData.users) {
 			if (user.user_id !== 1 && user.user_id !== currentUser.user_id)
 				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
@@ -25,6 +27,7 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 	newUser.id = `user-${user_id}`;
 
 	if (muteList && muteList.includes(user_id)) {
+		console.log(`User ${user_id} is muted: ${muteList.includes(user_id)}`);
 		is_muted = true;
 	}
 
@@ -76,7 +79,7 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 				muteIcon.src = '/assets/images/chat/chat_icon.png';
 			} else {
 				muteButton.classList.add('muted');
-				muteUser(userId);;
+				muteUser(userId);
 				muteIcon.src = '/assets/images/chat/mute_icon.png';
 			}
 		} catch (error) {

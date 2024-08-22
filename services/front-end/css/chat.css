@@ -172,3 +172,13 @@
     cursor: pointer;
     font-size: max(0.6vh, 0.65vw);
 }
+
+a {
+	color: #1a0dab;
+	text-decoration: underline;
+}
+
+a:hover {
+	color: #d34836;
+	text-decoration: underline;
+}

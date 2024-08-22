@@ -1,6 +1,6 @@
 import json, requests
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Message, PrivateMessage
+from .models import Message, PrivateMessage, InvitationToPlay
 from asgiref.sync import sync_to_async
 from datetime import datetime
 
@@ -90,6 +90,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 		elif data['type'] == 'private_message':
 			new_message = await sync_to_async(PrivateMessage.objects.create)(
+				type = data['type'],
+				content = data['content'],
+				user_id = data['user_id'],
+				username = data['username'],
+				timestamp = datetime.now(),
+				receiver_id = data['receiver_id'],
+				receiver_username = data['receiver_username']
+			)
+			await self.channel_layer.group_send(
+				self.room_name,
+				{
+					'type': new_message.type,
+					'content': new_message.content,
+					'user_id': new_message.user_id,
+					'username': new_message.username,
+					'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+					'receiver_id': new_message.receiver_id,
+					'receiver_username': new_message.receiver_username
+				}
+			)
+
+		elif data['type'] == 'invitation_to_play':
+			new_message = await sync_to_async(InvitationToPlay.objects.create)(
 				type = data['type'],
 				content = data['content'],
 				user_id = data['user_id'],
