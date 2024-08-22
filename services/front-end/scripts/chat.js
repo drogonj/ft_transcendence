@@ -156,22 +156,78 @@ async function invitation_to_play(data) {
 
 	if (data.receiver_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
-		newMessage.innerHTML = `${data.timestamp} DM from ${data.username} : ${data.content}`;
+		newMessage.innerHTML = `
+			Invited to play with ${data.username} : \
+			<button class="accept-button" data-invitation-id="${data.id}">Accept</button> / \
+			<button class="decline-button" data-invitation-id="${data.id}">Decline</button>
+		`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		newMessage.querySelector('.accept-button').addEventListener('click', async () => handleAccept(data.id, newMessage));
+		newMessage.querySelector('.decline-button').addEventListener('click', async () => handleDecline(data.id, newMessage));
 	}
 	if (data.user_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
+		newMessage.textContent = `Pending invitation, please wait...`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
+}
+
+async function handleAccept(invitationId, message) {
+	console.log('Accepted invitation with ID: ', invitationId);
+	message.remove();
+
+	// const response = await fetch(`/api/chat/invitations/`, {
+	// 	method: 'POST',
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 		'X-CSRFToken': csrfToken
+	// 	},
+	// 	body: JSON.stringify({'invitation_id': invitationId})
+	// 	});
+
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.textContent = `<<< Redirection to the lobby. Please, wait... >>>`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+
+	// Redirect to the lobby
+}
+
+async function handleDecline(invitationId, message) {
+	console.log('Declined invitation with ID: ', invitationId);
+	message.remove();
+
+	// await fetch(`/api/chat/decline_invitation/${invitationId}/`, {
+	// 	method: 'POST',
+	// });
+
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.textContent = `Invitation declined.`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+
+	// Send a message to the sender
 }
 
 export async function addChatMenu() {
@@ -220,17 +276,22 @@ export async function addChatMenu() {
 }
 
 async function parseMessage(message) {
+
+	console.log('parsing message:', message);
+
 	if (message.startsWith('/')) {
 		const parts = message.split(' ');
+		console.log('parts:', parts.length);
 		if (parts.length >= 2) {
 			const cmd = parts[0].slice(1);
 			const username = parts[1];
-			const messageContent = parts.slice(2).join(' ');
-			console.log('messageContent: ', messageContent);
+			let messageContent = '';
+
+			if (parts.length >= 3)
+				messageContent = parts.slice(2).join(' ');
 
 			const response = await fetch('/api/user/get_users/');
 			const usersData = await response.json();
-
 			if (cmd === 'dm') {
 				for (const user of usersData.users) {
 					if (user.username === username) {
@@ -250,13 +311,12 @@ async function parseMessage(message) {
 					if (user.username === username) {
 						chatSocket.send(JSON.stringify({
 							'type': 'invitation_to_play',
-							'content': messageContent,
 							'user_id': currentUser.user_id,
 							'username': currentUser.username,
 							'receiver_id': user.user_id,
 							'receiver_username': user.username
 						}));
-						return ;
+					return ;
 					}
 				}
 			}
@@ -370,5 +430,36 @@ export async function load_private_message(data) {
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+}
+
+async function loadInvites() {
+	try {
+		const response = await fetch('api/chat/all-messages/');
+		const data = await response.json();
+
+		let allMessages = [
+			...data.messages,
+			...data.private_messages,
+		];
+
+		if (!allMessages || allMessages.length === 0) {
+			return;
+		}
+
+		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
+
+		allMessages.forEach(message => {
+			console.log(`message from : ${message.user_id}-${message.username} : ${message.content}`);
+			console.log(`sender muted : ${muteList.includes(message.user_id)}`);
+			if (!muteList.includes(message.user_id)) {
+				if (message.type === 'private_message')
+					load_private_message(message);
+				else if (message.type === 'chat_message')
+					load_message(message);
+			}
+		});
+	} catch (error) {
+		console.error('Error loading messages:', error);
 	}
 }

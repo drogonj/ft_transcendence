@@ -80,6 +80,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(
 				self.room_name,
 				{
+					'messageId': new_message.messageId,
 					'type': new_message.type,
 					'content': new_message.content,
 					'user_id': new_message.user_id,
@@ -101,6 +102,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(
 				self.room_name,
 				{
+					'messageId': new_message.messageId,
 					'type': new_message.type,
 					'content': new_message.content,
 					'user_id': new_message.user_id,
@@ -114,7 +116,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		elif data['type'] == 'invitation_to_play':
 			new_message = await sync_to_async(InvitationToPlay.objects.create)(
 				type = data['type'],
-				content = data['content'],
 				user_id = data['user_id'],
 				username = data['username'],
 				timestamp = datetime.now(),
@@ -124,8 +125,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(
 				self.room_name,
 				{
+					'invitationId': new_message.invitationId,
+					'status': new_message.status,
 					'type': new_message.type,
-					'content': new_message.content,
 					'user_id': new_message.user_id,
 					'username': new_message.username,
 					'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
@@ -133,6 +135,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'receiver_username': new_message.receiver_username
 				}
 			)
+
+		# elif data['type'] == 'accept_invitation':
+		# 	invitation = await sync_to_async(InvitationToPlay.objects.get)(invitationId=data['invitationId'])
+		# 	invitation.status = 'accepted'
+		# 	await sync_to_async(invitation.save)()
+
+		# elif data['type'] == 'decline_invitation':
+		# 	invitation = await sync_to_async(InvitationToPlay.objects.get)(invitationId=data['invitationId'])
+		# 	invitation.status = 'declined'
+		# 	await sync_to_async(invitation.save)()
 
 	async def user_status_update(self, event):
 		await self.send(text_data=json.dumps({
@@ -144,16 +156,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		}))
 		#log-status_update
-		id = event['user_id']
+		user_id = event['user_id']
 		username = event['username']
 		is_connected = event['is_connected']
 		if is_connected:
-			logger.info(f'Received user status update from {id}-{username} : connected')
+			logger.info(f'Received user status update from {user_id}-{username} : connected')
 		else:
-			logger.info(f'Received user status update from {id}-{username} : disconnected')
+			logger.info(f'Received user status update from {user_id}-{username} : disconnected')
 
 	async def chat_message(self, event):
 		await self.send(text_data=json.dumps({
+			'messageId': event['messageId'],
 			'type': event['type'],
 			'content': event['content'],
 			'user_id': event['user_id'],
@@ -161,14 +174,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'timestamp': event['timestamp']
 		}))
 		#log-chat_message
-		id = event['user_id']
+		user_id = event['user_id']
 		username = event['username']
 		content = event['content']
-		logger.info(f'{id}-{username} sent: {content}')
+		logger.info(f'{user_id}-{username} sent: {content}')
 
 
 	async def private_message(self, event):
 		await self.send(text_data=json.dumps({
+			'messageId': event['messageId'],
 			'type': event['type'],
 			'content': event['content'],
 			'user_id': event['user_id'],
@@ -178,9 +192,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'receiver_username': event['receiver_username']
 		}))
 		#log-private_message
-		id = event['user_id']
+		user_id = event['user_id']
 		receiver_id = event['receiver_id']
 		username = event['username']
 		content = event['content']
 		receiver_username = event['receiver_username']
-		logger.info(f'{id}-{username} sent: {content} to {receiver_id}-{receiver_username}')
+		logger.info(f'{user_id}-{username} sent: {content} to {receiver_id}-{receiver_username}')
+
+	async def invitation_to_play(self, event):
+		await self.send(text_data=json.dumps({
+			'invitationId': event['invitationId'],
+			'status': event['status'],
+			'type': event['type'],
+			'user_id': event['user_id'],
+			'username': event['username'],
+			'timestamp': event['timestamp'],
+			'receiver_id': event['receiver_id'],
+			'receiver_username': event['receiver_username']
+		}))
+		#log-invitation_to_play
+		user_id = event['user_id']
+		receiver_id = event['receiver_id']
+		username = event['username']
+		receiver_username = event['receiver_username']
+		logger.info(f'{user_id}-{username} invited to play {receiver_id}-{receiver_username}')

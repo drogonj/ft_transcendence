@@ -173,12 +173,18 @@
     font-size: max(0.6vh, 0.65vw);
 }
 
-a {
-	color: #1a0dab;
-	text-decoration: underline;
+.chat-message a {
+	color: #161d2f;
 }
 
-a:hover {
-	color: #d34836;
-	text-decoration: underline;
+.chat-message a:hover {
+	color: #ffc4c4;
+}
+
+.accept-button {
+	color: green;
+}
+
+.decline-button {
+	color: red;
 }
