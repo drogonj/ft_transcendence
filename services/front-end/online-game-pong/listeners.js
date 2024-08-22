@@ -1,10 +1,19 @@
 export let keyDown = new Map();
 
-export default function loadListeners() {
-	document.addEventListener("keydown", function (e) {
-		keyDown.set(e.code, true)
-	});
-	document.addEventListener("keyup", function (e) {
-		keyDown.delete(e.code);
-	});
+function key_down(event) {
+	keyDown.set(event.code, true)
+}
+
+function key_up(event) {
+	keyDown.delete(event.code);
+}
+
+export function loadListeners() {
+	document.addEventListener("keydown", key_down);
+	document.addEventListener("keyup", key_up);
+}
+
+export function removeListeners() {
+	document.removeEventListener("keydown", key_down);
+	document.removeEventListener("keyup", key_up);
 }

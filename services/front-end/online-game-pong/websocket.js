@@ -1,13 +1,13 @@
 import {setTopPositionToPlayer} from "./player.js";
 import {createBall, moveBalls} from "./ball.js";
-import {launchGame, markPoint} from "./game.js";
+import {clearGame, launchGame, markPoint} from "./game.js";
 import {currentUser} from "../scripts/auth.js";
 import {getHostNameFromURL, navigateTo} from "../scripts/contentLoader.js";
 import {launchSpell} from "./spell.js";
 
 let ws;
 
-export default function launchClientGame(socketValues) {
+export default function launchClientGame() {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onopen = function () {
         console.log("WebSocket with Game server is open now.");
@@ -15,6 +15,9 @@ export default function launchClientGame(socketValues) {
     };
     ws.onmessage = onReceive;
     ws.onerror = onError;
+    ws.onclose = function () {
+        clearGame();
+    }
 }
 
 export function launchClientMatchMaking() {
@@ -22,6 +25,7 @@ export function launchClientMatchMaking() {
     ws.onopen = function () {
         console.log("WebSocket MatchMaking server is open now.");
         sendMessageToServer("createUser", {"userId": currentUser.user_id})
+        navigateTo('/waiting-screen', true);
     };
     ws.onmessage = function (event) {
         const data = JSON.parse(event.data);
@@ -73,4 +77,8 @@ function onReceive(event) {
         launchClientGame(data.values)
     else
         console.log("Error: Server send a unknown type of data");
+}
+
+export function isWebSocketBind() {
+    return ws && ws.readyState === WebSocket.OPEN;
 }

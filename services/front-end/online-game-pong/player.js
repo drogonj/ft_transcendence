@@ -4,6 +4,7 @@ import {getSpellWithId} from "./spell.js";
 import {addSpellsToHeader} from "./header.js";
 import {getGameId} from "./game.js";
 
+let playerLoop;
 const players = [];
 let clientSide;
 const playerKeys = {
@@ -16,6 +17,7 @@ const playerKeys = {
 }
 
 export function createPlayers(socketValues) {
+	players.length = 0;
 	clientSide = socketValues["clientSide"];
 	new Player(socketValues["playerLeft"], "Left");
 	new Player(socketValues["playerRight"], "Right");
@@ -95,7 +97,7 @@ function startPlayerLoop() {
 				sendMessageToServer("launchSpell", {"playerSide": clientSide, "spellNumber": key.charAt(key.length - 1), "gameId": getGameId()})
 		}
 	}
-	setTimeout(startPlayerLoop, 5);
+	playerLoop = setTimeout(startPlayerLoop, 5);
 }
 
 export function getPlayerWithSide(side) {
@@ -118,4 +120,8 @@ export function getPlayersSpellWithId(spellId) {
 		if (spell)
 			return spell;
 	}
+}
+
+export function stopPlayerLoop() {
+	clearTimeout(playerLoop);
 }
