@@ -10,4 +10,4 @@ REPLICA_HOST=$6
 
 echo "Failover detected. Promoting $NEW_PRIMARY to primary."
 # Promote new primary
-pg_ctl promote -D /path/to/data_directory -D $NEW_PRIMARY
+pg_ctl promote -D /opt/bitnami/pgpool/data -D $NEW_PRIMARY

@@ -98,11 +98,11 @@ WSGI_APPLICATION = 'user-management.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "customuser",
-        "PASSWORD": "custompassword",
-        "HOST": "pgpool",
-        "PORT": "5432",
+        "NAME": db_secrets.get("POSTGRESQL_DATABASE"),
+        "USER": db_secrets.get("POSTGRESQL_USERNAME"),
+        "PASSWORD": db_secrets.get("POSTGRESQL_PASSWORD"),
+        "HOST": db_secrets.get("POSTGRESQL_HOST"),
+        "PORT": db_secrets.get("POSTGRESQL_PORT"),
     }
 }
 
