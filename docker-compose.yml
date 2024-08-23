@@ -28,7 +28,7 @@ services:
       - REPMGR_NODE_NAME=pg-0
       - REPMGR_NODE_NETWORK_NAME=pg-0
     networks:
-      - network
+      - db
     restart: on-failure
 
   pg-1:
@@ -45,7 +45,7 @@ services:
       - REPMGR_NODE_NAME=pg-1
       - REPMGR_NODE_NETWORK_NAME=pg-1
     networks:
-      - network
+      - db
     restart: on-failure
 
   pgpool:
@@ -59,13 +59,17 @@ services:
       - PGPOOL_POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
       - PGPOOL_SR_CHECK_USER=${POSTGRESQL_USERNAME}
       - PGPOOL_SR_CHECK_PASSWORD=${POSTGRESQL_PASSWORD}
+      - PGPOOL_SR_CHECK_DATABASE=${POSTGRESQL_DATABASE}
     healthcheck:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
+      - db
       - network
+    volumes:
+      - pg_certs:/opt/bitnami/pgpool/certs
     restart: on-failure
 
   user-management:
@@ -77,8 +81,10 @@ services:
       - django:/singlepageapp
       - vault-token:/vault/token:ro
       - vault-ssl:/vault/ssl:ro
+      - pg_certs:/opt/bitnami/pgpool/certs
     networks:
       - network
+      - db
     depends_on:
       pgpool:
         condition: service_healthy
@@ -95,8 +101,6 @@ services:
       - django:/singlepageapp/chat
     networks:
       - network
-    depends_on:
-      - redis
     env_file:
       - .env
     restart: on-failure
@@ -162,6 +166,8 @@ services:
 networks:
   network:
     driver: bridge
+  db:
+    driver: bridge
 
 volumes:
   nginx:
@@ -170,9 +176,9 @@ volumes:
   vault-token:
   vault-ssl:
   redis:
+  pg_certs:
+    driver: local
   pg_0_data:
     driver: local
   pg_1_data:
-    driver: local
-  pg_2_data:
     driver: local
