@@ -13,8 +13,9 @@ class PaddleStun(Spell):
 
 		target_player.set_can_move(False)
 		data_values = {"spellId": self._spell_id,
-					   "playerSide": target_player.get_side(),
-					   "spellAction": "executor"}
+					   "playerSide": player.get_side(),
+					   "spellAction": "executor",
+					   "playerTarget": target_player.get_side()}
 		self.send_spell_message_to_players(game, data_values)
 		asyncio.create_task(self.delayed_spell_task(target_player))
 

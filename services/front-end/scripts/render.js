@@ -16,7 +16,7 @@ import {
 } from './friends.js';
 
 import { addChatMenu } from './chat.js';
-import {closeWebSocket, launchClientMatchMaking} from "../online-game-pong/websocket.js";
+import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
 
 export function renderLogin() {
@@ -232,7 +232,6 @@ export async function renderHome() {
 
     document.getElementById('launch-game-online').addEventListener('click', (event) => {
         launchClientMatchMaking();
-        navigateTo('/waiting-screen', true);
     });
 }
 
@@ -506,6 +505,10 @@ export async function renderSelfProfile() {
 }
 
 export async function renderGameWaiting() {
+    if (!isWebSocketBind()) {
+        navigateTo('/home', true);
+        return;
+    }
     app.innerHTML = `
         <div id="mainWait">
 	        <h1 id="mainTitle">
@@ -570,13 +573,13 @@ export async function renderGameSettings() {
             <h1>Game settings</h1>
         
             <output class="menuItem">Paddle Move Speed</output>
-            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="15">
+            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="10">
         
             <output class="menuItem">Paddle Size</output>
             <input id="inputPaddleSize" class="menuItem slider" type="range" min="5" max="40" value="20">
         
             <output class="menuItem">Ball Move Speed</output>
-            <input id="inputBallSpeed" class="menuItem slider" type="range" min="6" max="20" value="12">
+            <input id="inputBallSpeed" class="menuItem slider" type="range" min="6" max="20" value="11">
         
             <output class="menuItem">Ball Size</output>
             <input id="inputBallSize" class="menuItem slider" type="range" min="1" max="3" value="1.5" step="0.1">
@@ -664,13 +667,17 @@ export async function renderGameLocal() {
 }
 
 export async function renderGameOnline() {
+     if (!isWebSocketBind()) {
+        navigateTo('/home', true);
+        return;
+    }
     app.innerHTML = `
         <div id="main">
             <div id="mapAndHeader">
                 <div id="header">
                     <div id="headerLeft">
                         <div class="iconPlayer">
-                            <img src="../../assets/images/iconleft.jpg">
+                            <img class="avatar" src="../../assets/images/iconleft.jpg">
                         </div>
                         <div class="spellName">
                             <div class="playerName">Player Left</div>
@@ -690,7 +697,7 @@ export async function renderGameOnline() {
                             <div class="spellContainer"></div>
                         </div>
                         <div class="iconPlayer">
-                            <img src="../../assets/images/righticon.jpg">
+                            <img class="avatar" src="../../assets/images/righticon.jpg">
                         </div>
                     </div>
                 </div>
