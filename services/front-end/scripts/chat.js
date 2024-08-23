@@ -11,7 +11,6 @@ var rooms = new Set();
 // - suppression des invite des games si l'utilisateurs se deconnecte ou mute
 // - si l'utilisateur est deja en game, a voir ce qu'on fait
 
-
 export async function connectChatWebsocket(user_id, roomName) {
 	if (!chatSocket) {
 		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/${user_id}/`);
@@ -54,20 +53,16 @@ export async function connectChatWebsocket(user_id, roomName) {
 				}
 
 				else if (data.type === 'invitation_to_play' && !muted) {
-					console.log(`invite_${data.invitationId}`);
-					joinRoom(`invite_${data.invitationId}`);
+					joinRoom(`invitation_${data.invitationId}`);
 					invitationToPlay(data);
 				}
 
 				else if (data.type === 'invitation_response' && !muted) {
-					if (data.receiver_id === currentUser.user_id) {
-						leaveRoom(`invite_${data.invitationId}`);
-						if (data.status === 'accepted')
-							connectToGame(data);
-						else if (data.status === 'declined')
-							suppressInvitation(data);
-					}
-
+					leaveRoom(`invitation_${data.invitationId}`);
+					if (data.status === 'accepted')
+						connectToGame(data);
+					else if (data.status === 'declined')
+						suppressInvitation(data);
 				}
 
 				else if (data.type === 'chat_message' && !muted)
@@ -93,18 +88,46 @@ export async function connectChatWebsocket(user_id, roomName) {
 async function connectToGame(data) {
 	removePendingInvitationMessage(data.invitationId);
 	console.log(data.status);
+
+	// game = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back/`);
+	// game.onopen = function() {
+	// 	sendMessageToServer(game, "bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
+	// };
 }
 
+// async function sendMessageToServer(game, type, values) {
+// 	const message = {
+// 		"type": type,
+// 		"values": values
+// 	}
+// 	game.send(JSON.stringify(message));
+// }
+
 async function suppressInvitation(data) {
-	removePendingInvitationMessage(data.invitationId);
-	console.log(data.status);
+	if (data.receiver_id === currentUser.user_id) {
+		removePendingInvitationMessage(data.invitationId); 
+
+		const messageList = document.getElementById('message-content');
+		const newMessage = document.createElement('li');``
+	
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.username} declined your invitation.`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
 }
 
 async function removePendingInvitationMessage(invitationId) {
-    const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
-    if (pendingMessageElement) {
-        pendingMessageElement.remove();
-    }
+	const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
+	if (pendingMessageElement) {
+		console.log(`Removing pending invitation message with ID: pending-invitation-${invitationId}`);
+		pendingMessageElement.remove();
+	} else {
+		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
+	}
 }
 
 async function joinRoom(roomName) {
@@ -280,7 +303,7 @@ async function handleDecline(data, message) {
 		},
 		body: JSON.stringify({'status': 'declined'})
 		});
-	
+
 	sendRoomMessage(data, 'declined');
 }
 
@@ -308,7 +331,7 @@ export async function addChatMenu() {
 
 	await loadUsers();
 	await loadMessages();
-	// await loadInvites();
+	await loadInvitations();
 
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeydown = function(e) {
@@ -331,20 +354,21 @@ export async function addChatMenu() {
 }
 
 async function parseMessage(message) {
+	console.log('parsing message:', message);
+
 	if (message.startsWith('/')) {
 		const parts = message.split(' ');
-		console.log('parts:', parts.length);
+
 		if (parts.length >= 2) {
 			const cmd = parts[0].slice(1);
 			const username = parts[1];
-			let messageContent = '';
-
-			if (parts.length >= 3)
-				messageContent = parts.slice(2).join(' ');
 
 			const response = await fetch('/api/user/get_users/');
 			const usersData = await response.json();
+
 			if (cmd === 'dm') {
+				let messageContent = parts.slice(2).join(' ');
+
 				for (const user of usersData.users) {
 					if (user.username === username) {
 						chatSocket.send(JSON.stringify({
@@ -373,8 +397,6 @@ async function parseMessage(message) {
 					}
 				}
 			}
-		} else {
-			sendChatMessage(message);
 		}
 	} else {
 		sendChatMessage(message);
@@ -382,7 +404,7 @@ async function parseMessage(message) {
 	return ;
 }
 
-async function convertURL(text) {
+function convertURL(text) {
 	const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
 	return text.replace(urlPattern, function(url) {
 		return `<a href="${url}" target="_blank">${url}</a>`;
@@ -401,7 +423,7 @@ async function sendChatMessage(message) {
 async function sendRoomMessage(data, status) {
 	console.log('sending room message');
 	chatSocket.send(JSON.stringify({
-		'room': `invite_${data.invitationId}`,
+		'room': `invitation_${data.invitationId}`,
 		'type': 'invitation_response',
 		'invitationId': data.invitationId,
 		'status': status,
@@ -422,7 +444,7 @@ export async function unmuteUser(userId) {
 
 async function loadMessages() {
 	try {
-		const response = await fetch('api/chat/all-messages/');
+		const response = await fetch('api/chat/messages/');
 		const data = await response.json();
 
 		let allMessages = [
@@ -495,5 +517,29 @@ export async function loadAPrivateMessage(data) {
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+}
+
+async function loadInvitations() {
+	try {
+		const response = await fetch('api/chat/invitations/');
+		const data = await response.json();
+
+		if (!data || data.length === 0)
+			return;
+
+		data.forEach(invit => {
+			if (invit.status === 'pending') {
+				console.log('loading invitation:', invit.status);
+				if (invit.receiver_id === currentUser.user_id || invit.user_id === currentUser.user_id) {
+					if (!muteList.includes(invit.user_id)) {
+						joinRoom(`invitation_${invit.invitationId}`);
+						invitationToPlay(invit);
+					}
+				}
+			}
+		});
+	} catch (error) {
+		console.error('Error loading invitations:', error);
 	}
 }
