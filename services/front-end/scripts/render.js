@@ -517,8 +517,12 @@ export async function renderGameWaiting() {
 	        <button id="matchMakingCancel" class="friend-menu-button">
 		        Cancel the queue
 	        </button>
-        </div>
+		</div>
+		<div class="chat-menu-container"></div>
     `;
+
+	await addChatMenu();
+
     document.getElementById('matchMakingCancel').addEventListener('click', (event) => {
         closeWebSocket();
         event.preventDefault();
