@@ -673,7 +673,7 @@ export async function renderGameOnline() {
                 <div id="header">
                     <div id="headerLeft">
                         <div class="iconPlayer">
-                            <img src="../../assets/images/iconleft.jpg">
+                            <img class="avatar" src="../../assets/images/iconleft.jpg">
                         </div>
                         <div class="spellName">
                             <div class="playerName">Player Left</div>
@@ -693,7 +693,7 @@ export async function renderGameOnline() {
                             <div class="spellContainer"></div>
                         </div>
                         <div class="iconPlayer">
-                            <img src="../../assets/images/righticon.jpg">
+                            <img class="avatar" src="../../assets/images/righticon.jpg">
                         </div>
                     </div>
                 </div>

@@ -32,7 +32,7 @@ class Player:
 			spells_id.append(spell.get_spell_id())
 
 		return {
-			"usedId": self.__user_id,
+			"userId": self.__user_id,
 			"paddleSide": self.__paddle_side,
 			"paddleTopPosition": str(self.__top_position) + "%",
 			"playerSpells": spells_id

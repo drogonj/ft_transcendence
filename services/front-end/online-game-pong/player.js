@@ -3,6 +3,7 @@ import {sendMessageToServer} from "./websocket.js";
 import {getSpellWithId} from "./spell.js";
 import {addSpellsToHeader} from "./header.js";
 import {getGameId} from "./game.js";
+import {getUserFromId} from "../scripts/auth.js";
 
 let playerLoop;
 const players = [];
@@ -27,6 +28,7 @@ export function createPlayers(socketValues) {
 function Player(socketValues, side) {
 	this.paddleHtml = document.getElementById("paddle" + side);
 	this.paddleHeader = document.getElementById("header" + side);
+	this.setHeaderValues(socketValues["userId"]);
 	this.moveSpeed = socketValues["moveSpeed"];
 	this.setTopPosition(socketValues["paddleTopPosition"]);
 	this.playerSpells = this.loadPlayerSpells(socketValues["playerSpells"]);
@@ -86,6 +88,12 @@ Player.prototype.getPlayerSpellWithId = function (spellId) {
 		if (spell.spellId === spellId)
 			return spell;
 	}
+}
+
+Player.prototype.setHeaderValues = async function (userId) {
+	const userValues = await getUserFromId(userId);
+	this.paddleHeader.getElementsByClassName("playerName")[0].textContent = userValues.username;
+	this.paddleHeader.getElementsByClassName("avatar")[0].src = userValues.avatar;
 }
 
 function startPlayerLoop() {
