@@ -1,6 +1,6 @@
 import {setTopPositionToPlayer} from "./player.js";
 import {createBall, moveBalls} from "./ball.js";
-import {clearGame, launchGame, markPoint} from "./game.js";
+import {clearGame, endGame, launchGame, markPoint} from "./game.js";
 import {currentUser} from "../scripts/auth.js";
 import {getHostNameFromURL, navigateTo} from "../scripts/contentLoader.js";
 import {launchSpell} from "./spell.js";
@@ -73,6 +73,8 @@ function onReceive(event) {
         navigateTo(data.values["url"], true);
     else if (data.type === "launchGame")
         launchGame(data.values);
+    else if (data.type === "endGame")
+        endGame(data.values);
     else if (data.type === "launchClientGame")
         launchClientGame(data.values)
     else

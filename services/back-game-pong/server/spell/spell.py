@@ -23,7 +23,7 @@ class Spell:
     def executor(self, player, game):
         if self._is_on_cooldown:
             return
-        #statsincrease
+        player.statistics.used_spells += 1
         self.perform_executor(game, player)
         self._is_on_cooldown = True
         asyncio.create_task(self.spell_cooldown_run())

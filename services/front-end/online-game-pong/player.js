@@ -92,6 +92,7 @@ Player.prototype.getPlayerSpellWithId = function (spellId) {
 
 Player.prototype.setHeaderValues = async function (userId) {
 	const userValues = await getUserFromId(userId);
+	this.user = userValues;
 	this.paddleHeader.getElementsByClassName("playerName")[0].textContent = userValues.username;
 	this.paddleHeader.getElementsByClassName("avatar")[0].src = userValues.avatar;
 }

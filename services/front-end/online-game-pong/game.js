@@ -3,6 +3,9 @@ import {loadListeners, removeListeners} from "./listeners.js";
 import loadMap from "./map.js";
 import {clearBalls, createBall, getBallWithId} from "./ball.js";
 import {createPlayers, getPlayerWithSide, stopPlayerLoop} from "./player.js";
+import {closeWebSocket} from "./websocket.js";
+import {navigateTo} from "../scripts/contentLoader.js";
+import {displayStatistics} from "./statistics.js";
 
 let gameId;
 let globalGameLoop;
@@ -68,4 +71,11 @@ export function clearGame() {
 	stopPlayerLoop();
 	removeListeners();
 	clearTimeout(globalGameLoop);
+}
+
+export function endGame(socketValues) {
+	clearGame();
+	closeWebSocket();
+	navigateTo("/game-end", true);
+	displayStatistics(socketValues);
 }

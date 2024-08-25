@@ -535,12 +535,12 @@ export async function renderGameEnd() {
         <div id="menuEnd">
             <section id="gameEndHeader">
                 <div id="leftPlayerHeader" class="playerHeader">
-                    <div>LeftPlayer</div>
-                    <img src="../../assets/images/iconleft.jpg">
+                    <div class="playerNameEnd">LeftPlayer</div>
+                    <img class="playerAvatarEnd" src="../../assets/images/iconleft.jpg">
                 </div>
                 <div id="RightPlayerHeader" class="playerHeader">
-                    <div>RightPlayer</div>
-                    <img src="../../assets/images/righticon.jpg">
+                    <div class="playerNameEnd">RightPlayer</div>
+                    <img class="playerAvatarEnd" src="../../assets/images/righticon.jpg">
                 </div>
             </section>
             <section id="statistics">

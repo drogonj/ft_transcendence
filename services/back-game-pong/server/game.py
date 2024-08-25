@@ -51,6 +51,7 @@ class Game:
 					ball.calcul_ball_border_traj()
 				elif ball.trigger_ball_inside_player(self.__players):
 					target_player = self.get_player("Left") if ball.get_ball_side() == "Left" else self.get_player("Right")
+					target_player.statistics.touched_balls += 1
 					ball.calcul_ball_traj(target_player)
 					if ball.have_active_spell():
 						ball.get_active_spell().on_hit(ball, self)
@@ -90,10 +91,14 @@ class Game:
 				player.set_socket(None)
 
 	def mark_point(self, ball):
-		side = reverse_side(ball.get_ball_side())
+		player_have_mark = self.get_player(reverse_side(ball.get_ball_side()))
+		player_take_goal = self.get_player(ball.get_ball_side())
 
-		self.get_player(side).increase_score()
-		socket_values = {"targetPlayer": side}
+		player_have_mark.increase_score()
+		player_have_mark.statistics.increase_goals_in_row()
+		player_take_goal.statistics.reset_goals_in_row()
+		player_take_goal.statistics.reset_time_without_taking_goals()
+		socket_values = {"targetPlayer": player_have_mark.get_side()}
 		socket_values.update(ball.dumps_ball_for_socket())
 		if ball.have_active_spell():
 			ball.get_active_spell().destructor(ball)
@@ -126,10 +131,12 @@ class Game:
 	def game_end(self):
 		create_data_to_send(self.__players)
 		send_to_redis()
-		self.send_message_to_game("renderPage", {"url": "/game-end"})
+
+		data_values = {}
 		for player in self.__players:
-			if player.get_socket():
-				player.kill_connection()
+			data_values[player.get_side()] = player.statistics.get_statistics_as_list()
+		self.send_message_to_game("endGame", data_values)
+
 
 	def trigger_game_launch(self):
 		if len(self.__players) == 2:
@@ -176,7 +183,7 @@ class Game:
 
 	def have_player_with_max_score(self):
 		for player in self.__players:
-			if player.get_score() >= 10:
+			if player.statistics.score >= 10:
 				return True
 		return False
 
