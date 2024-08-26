@@ -35,6 +35,9 @@ export async function handleLogin(event) {
         await getCurrentUserInfo();
         await connectFriendsWebsocket();
         navigateTo('/home', true);
+    } else if (data.type && data.type === "AlreadyLogged") {
+        navigateTo('/home', true);
+        alert('You are already login, please logout before switching account');
     } else {
         alert('Login failed: ' + data.message);
     }
@@ -66,6 +69,9 @@ export async function handleSignup(event) {
         await getCurrentUserInfo();
         await connectFriendsWebsocket();
         navigateTo('/home', true);
+    } else if (data.type && data.type === "AlreadyLogged") {
+        navigateTo('/home', true);
+        alert('You are already login, please logout before switching account');
     } else {
         alert(data.error);
     }
@@ -147,6 +153,9 @@ export async function handleConfirmRegistration(event) {
         await connectFriendsWebsocket();
         cleanUrl()
         navigateTo('/home', false);
+    } else if (data.type && data.type === "AlreadyLogged") {
+        navigateTo('/home', true);
+        alert('You are already login, please logout before switching account');
     } else {
         alert(data.error);
     }

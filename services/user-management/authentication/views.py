@@ -22,6 +22,10 @@ def get_csrf_token(request):
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(View):
     def post(self, request):
+
+        if request.user and request.user.is_authenticated:
+            return JsonResponse({'success': False, 'type': 'AlreadyLogged', f'message': f'You are already login as {request.user.username}'})
+
         data = json.loads(request.body)
         user_auth = data.get('username')
         password = data.get('password')
@@ -40,6 +44,9 @@ class LoginView(View):
 class SignupView(View):
     def post(self, request):
         try:
+            if request.user and request.user.is_authenticated:
+                return JsonResponse({'success': False, 'type': 'AlreadyLogged', f'message': f'You are already login as {request.user.username}'})
+
             data = json.loads(request.body)
             username = data.get('username')
             email    = data.get('email')
@@ -64,12 +71,6 @@ class SignupView(View):
         except Exception as e:
             return JsonResponse({'error': f'{e}'}, status=400)
 
-@method_decorator(login_required, name='dispatch')
-class LogoutView(View):
-    def post(self, request):
-        logout(request)
-        return JsonResponse({'success': True, 'message': 'Logout successful'})
-
 class IsAuthenticatedView(View):
     def get(self, request):
         is_authenticated = request.user.is_authenticated
@@ -82,8 +83,11 @@ class IsAuthenticatedView(View):
 @method_decorator(login_required, name='dispatch')
 class LogoutView(View):
     def post(self, request):
-        logout(request)
-        return JsonResponse({'success': True, 'message': 'Logout successful'})
+        if request.user and request.user.is_authenticated:
+            logout(request)
+            return JsonResponse({'success': True, 'message': 'Logout successful'})
+        else:
+            return HttpResponseBadRequest()
 
 @login_required
 def get_profile_picture(request):
@@ -165,6 +169,9 @@ def oauth_callback(request):
 def oauth_confirm_registration(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Bad request")
+
+    if request.user and request.user.is_authenticated:
+        return JsonResponse({'success': False, 'type': 'AlreadyLogged', f'message': f'You are already login as {request.user.username}'})
 
     data = json.loads(request.body)
 
