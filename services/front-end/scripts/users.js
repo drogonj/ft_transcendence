@@ -1,7 +1,7 @@
 import { currentUser } from './auth.js';
 import { csrfToken } from './auth.js';
 import { navigateTo } from './contentLoader.js';
-import { muteList, muteUser, unmuteUser, formatTime } from './chat.js';
+import { handleDecline, muteList, muteUser, unmuteUser } from './chat.js';
 
 export async function loadUsers() {
 	try {
@@ -81,6 +81,27 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 				muteButton.classList.add('muted');
 				muteUser(userId);
 				muteIcon.src = '/assets/images/chat/mute_icon.png';
+
+				const toDeny = await amIInvitedToPlayBy(userId);
+				toDeny.forEach(async (invitationId) => {
+					const data = {
+						'room': `invitation_${invitationId}`,
+						'type': 'invitation_response',
+						'invitationId': invitationId,
+						'status': 'denied',
+						'user_id': user_id,
+						'username': username,
+						'receiver_id': currentUser.user_id,
+						'receiver_username': currentUser.username
+					};
+
+					const newMessage = document.getElementById(`pending-invitation-${invitationId}`);
+					if (newMessage) {
+						handleDecline(data, newMessage);
+					} else {
+						console.error(`Element with ID pending-invitation-${invitationId} not found.`);
+					}
+				});
 			}
 		} catch (error) {
 			console.error('Error updating mute state:', error);
@@ -94,7 +115,7 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 	});
 }
 
-export async function updateUserStatus(other_id, isConnected, timestamp, content) {
+export async function updateUserStatus(other_id, isConnected, content) {
 	try {
 		const response = await fetch('/api/user/get_users/');
 		const usersData = await response.json();
@@ -106,12 +127,12 @@ export async function updateUserStatus(other_id, isConnected, timestamp, content
 			} else if (statusElement) {
 				statusElement.querySelector('.status-indicator').className = `status-indicator ${isConnected ? 'online' : 'offline'}`;
 				console.log(`Updated status for user ${other_id} to ${isConnected ? "Online" : "Offline"}`);
-				await sendUpdateStatusToChat(timestamp, content);
+				await sendUpdateStatusToChat(content);
 			} else if (currentUser.user_id !== other_id) {
 				const usersContainer = document.getElementById('users-content');
 				if (usersContainer) {
 					addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
-					await sendUpdateStatusToChat(timestamp, content);
+					await sendUpdateStatusToChat(content);
 				}
 			}
 		} 
@@ -120,12 +141,12 @@ export async function updateUserStatus(other_id, isConnected, timestamp, content
 	}
 }
 
-export async function sendUpdateStatusToChat(timestamp, content) {
+export async function sendUpdateStatusToChat(content) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
 	newMessage.classList.add('chat-message');
-	newMessage.textContent = `${timestamp} : ${content}`;
+	newMessage.textContent = `${content}`;
 
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -157,5 +178,26 @@ export async function getMuteListOf(user_id) {
 		return data.muted_users;
 	} catch (error) {
 		console.error('Error loading muted users:', error.message);
+	}
+}
+
+async function amIInvitedToPlayBy(userId) {
+	try {
+		const response = await fetch(`/api/chat/invitations/`);
+		const data = await response.json();
+
+		let invitationList = [];
+
+		data.forEach((invit) => {
+			if (invit.status === 'pending') {
+				if (invit.user_id === Number(userId) && invit.receiver_id === currentUser.user_id) {
+					console.log(`Invitation ${invit.invitationId} is for me`);
+					invitationList.push(invit.invitationId);
+				}
+			}
+		});
+		return invitationList;
+	} catch (error) {
+		console.error('Error loading invitations', error.message);
 	}
 }
