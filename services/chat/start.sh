@@ -1,9 +1,9 @@
 #!/bin/bash
-echo "----- wait user-management ------ "
+echo "----------- wait user-management ----------- "
 while ! nc -z user-management 8000; do sleep 1; done
 echo ""
 
-echo "----- Collect static files ------ " 
+echo "----------- Collect static files ----------- " 
 python manage.py collectstatic --noinput
 echo ""
 

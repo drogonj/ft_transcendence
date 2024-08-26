@@ -1,6 +1,10 @@
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import Message, PrivateMessage, InvitationToPlay
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE', '')})
 
 def serialize_queryset(queryset):
 	return list(queryset.values())
@@ -20,7 +24,6 @@ def invitations(request):
 	invitations = InvitationToPlay.objects.all().values('invitationId', 'status', 'type', 'user_id', 'username', 'timestamp', 'receiver_id', 'receiver_username')
 	return JsonResponse(list(invitations), safe=False)
 
-@csrf_exempt
 def accept_invitation(request, invitationId):
 	try:
 		invitation = InvitationToPlay.objects.get(invitationId=invitationId)
@@ -30,7 +33,6 @@ def accept_invitation(request, invitationId):
 	except InvitationToPlay.DoesNotExist:
 		return JsonResponse({'error': 'Invitation not found'}, status=404)
 
-@csrf_exempt
 def decline_invitation(request, invitationId):
 	try:
 		invitation = InvitationToPlay.objects.get(invitationId=invitationId)
