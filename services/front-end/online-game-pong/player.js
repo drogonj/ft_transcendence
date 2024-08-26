@@ -3,31 +3,32 @@ import {sendMessageToServer} from "./websocket.js";
 import {getSpellWithId} from "./spell.js";
 import {addSpellsToHeader} from "./header.js";
 import {getGameId} from "./game.js";
+import {getUserFromId} from "../scripts/auth.js";
 
+let playerLoop;
 const players = [];
 let clientSide;
 const playerKeys = {
 		"moveUp": "ArrowUp",
 		"moveDown": "ArrowDown",
-		"spell1": "Digit1",
-		"spell2": "Digit2",
-		"spell3": "Digit3",
-		"spell4": "Digit4"
+		"spell0": "Digit1",
+		"spell1": "Digit2",
+		"spell2": "Digit3",
+		"spell3": "Digit4"
 }
 
 export function createPlayers(socketValues) {
+	players.length = 0;
 	clientSide = socketValues["clientSide"];
-	let side = "Left";
-	for (let i = 0; i < 2; i++) {
-		new Player(socketValues, side)
-		side = "Right";
-	}
+	new Player(socketValues["playerLeft"], "Left");
+	new Player(socketValues["playerRight"], "Right");
 	startPlayerLoop();
 }
 
 function Player(socketValues, side) {
 	this.paddleHtml = document.getElementById("paddle" + side);
 	this.paddleHeader = document.getElementById("header" + side);
+	this.setHeaderValues(socketValues["userId"]);
 	this.moveSpeed = socketValues["moveSpeed"];
 	this.setTopPosition(socketValues["paddleTopPosition"]);
 	this.playerSpells = this.loadPlayerSpells(socketValues["playerSpells"]);
@@ -64,10 +65,15 @@ Player.prototype.loadPlayerSpells = function (spellIdArray) {
 	return spells;
 }
 
-Player.prototype.launchSpell = function (spellId) {
+Player.prototype.launchSpell = function (socket_values) {
 	for (const spell of this.playerSpells) {
-		if (spell.spellId === spellId) {
-			spell.executor(this);
+		if (spell.spellId === socket_values["spellId"]) {
+			if (socket_values["spellAction"] === "executor")
+				spell.executor(this);
+			else if (socket_values["spellAction"] === "onHit")
+				spell.onHit(this);
+			else if (socket_values["spellAction"] === "destructor")
+				spell.destructor(this);
 			break;
 		}
 	}
@@ -77,12 +83,30 @@ Player.prototype.increaseScore = function () {
 	this.score++;
 }
 
+Player.prototype.getPlayerSpellWithId = function (spellId) {
+	for (const spell of this.playerSpells) {
+		if (spell.spellId === spellId)
+			return spell;
+	}
+}
+
+Player.prototype.setHeaderValues = async function (userId) {
+	const userValues = await getUserFromId(userId);
+	this.user = userValues;
+	this.paddleHeader.getElementsByClassName("playerName")[0].textContent = userValues.username;
+	this.paddleHeader.getElementsByClassName("avatar")[0].src = userValues.avatar;
+}
+
 function startPlayerLoop() {
 	for (const [key, value] of Object.entries(playerKeys)) {
-		if (keyDown.has(value))
-			sendMessageToServer("movePlayer", {"direction": key, "clientSide": getClientSide(), "gameId": getGameId()})
+		if (keyDown.has(value)) {
+			if (key.includes("move"))
+				sendMessageToServer("movePlayer", {"direction": key, "clientSide": getClientSide(), "gameId": getGameId()})
+			else
+				sendMessageToServer("launchSpell", {"playerSide": clientSide, "spellNumber": key.charAt(key.length - 1), "gameId": getGameId()})
+		}
 	}
-	setTimeout(startPlayerLoop, 5);
+	playerLoop = setTimeout(startPlayerLoop, 5);
 }
 
 export function getPlayerWithSide(side) {
@@ -97,4 +121,16 @@ export function setTopPositionToPlayer(socketValues) {
 	const targetPlayer = getPlayerWithSide(socketValues["targetPlayer"]);
 
 	targetPlayer.setTopPosition(socketValues["topPosition"]);
+}
+
+export function getPlayersSpellWithId(spellId) {
+	for (const player of players) {
+		const spell = player.getPlayerSpellWithId(spellId);
+		if (spell)
+			return spell;
+	}
+}
+
+export function stopPlayerLoop() {
+	clearTimeout(playerLoop);
 }

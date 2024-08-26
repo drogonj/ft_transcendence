@@ -217,8 +217,12 @@ class UserInfoView(View):
             'avatar': profil_image_url,
             'user_id': user.id,
             'email': user.email,
-            'trophy': user.trophy,
+            'trophies': user.trophies,
             'winrate': user.winrate,
+            'victories': user.victories,
+            'defeats': user.defeats,
+            'goals': user.goals,
+            'tournaments_won': user.tournaments_won,
         }
         return JsonResponse(data)
 

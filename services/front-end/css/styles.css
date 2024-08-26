@@ -64,7 +64,6 @@ a {
 
 #mapAndHeader {
     width: 100%;
-    background-color: #1A2130;
 }
 
 #transcendence-title {
@@ -442,6 +441,11 @@ a {
     font-size: max(1.75vh, 0.5vw);
 }
 
+.profile-box #profile-username {
+    text-align: center;
+    font-size: max(1.2vh, 0.3vw);
+}
+
 .profile-box #avatar-display {
     align-self: center;
     width: max(6vh, 4vw);
@@ -588,24 +592,29 @@ a {
 
 #match-history-container .match {
     display: flex;
-    margin-top: 1vh;
-    text-wrap: nowrap;
+    margin-top: 0.25vh;
     width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
+    background: linear-gradient(270deg, #2d007182, #8335328c);
+    background-size: 400% 400%;
+    animation: background-color-slide 4s linear infinite;
+    border-bottom: solid 1px #ffffff54;
 }
 
-#match-history-container .match p.usernames {
-    max-width: 60%;
+#match-history-container .match p {
+    width: 100%;
+    padding: 0;
+    margin: 0;
     overflow: hidden;
-    margin-left: max(1vw, 1vh);
+    text-align: center;
 }
 
 #match-history-container .match p.scores {
-    margin-right: max(1vw, 1vh);
+    font-weight: bold;
 }
 
-#profile-username {
-    text-align: center;
+#match-history-container .match p.datetime {
+    font-size: max(0.75vh, 0.50vw);
 }
 
 #home-button {

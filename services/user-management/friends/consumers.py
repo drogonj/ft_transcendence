@@ -4,9 +4,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'user-management.settings')
-django.setup()
-
 from .models import Friendship
 
 # logging setup for info logs

@@ -1,14 +1,13 @@
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import validate_email, RegexValidator
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
+from PIL import Image, UnidentifiedImageError
 from django.core.files import File
 from django.utils import timezone
-from PIL import Image, UnidentifiedImageError
-import requests
+from django.db import models
 from io import BytesIO
-import uuid
-import os
+import requests, uuid, os
 
 class MyAccountManager(BaseUserManager):
     def create_user(self, intra_id, email, username, password, **extra_fields):
@@ -60,10 +59,15 @@ class Account(AbstractBaseUser):
     tmp_token           = models.CharField(max_length=100, unique=True, blank=True, null=True)
     token_creation_date = models.DateTimeField(verbose_name="token_creation_date", default=timezone.now)
 
-    trophy              = models.IntegerField(default=100)
-    winrate             = models.DecimalField(default=50.0, max_digits=3, decimal_places=1)
+    trophies            = models.IntegerField(default=100)
+    victories           = models.IntegerField(default=0)
+    defeats             = models.IntegerField(default=0)
+    winrate             = models.DecimalField(default=50.0, max_digits=5, decimal_places=2)
+    goals               = models.IntegerField(default=0)
+    tournaments_won     = models.IntegerField(default=0)
 
-    muted_users         = models.ManyToManyField('self', symmetrical=False, related_name='muted_by')
+    muted_users         = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='muted_by')
+    # saved_messages      = JSONField(default=list)
 
     objects = MyAccountManager()
 

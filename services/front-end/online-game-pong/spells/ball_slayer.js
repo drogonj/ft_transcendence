@@ -1,22 +1,16 @@
-import {Spell, spellLaunchController} from "../spell.js";
-import {newImage} from "../game.js";
-/*import {getAllBallInSide} from "../ball.js";
-import {setCssProperty} from "../../view/style_view.js";
-import {newImage} from "../utils/utils.js";*/
-
+import {Spell} from "../spell.js";
+import {newImage, setCssProperty} from "../game.js";
+import {coolDownRun} from "../header.js";
+import {getBallsWithIds} from "../ball.js";
 
 export default function BallSlayer() {
 	Spell.call(this, 10, "Ball Slayer", "DESCRIPTION", "ballSlayer", newImage("../../assets/images/ball_slayer.png"));
 }
 
-BallSlayer.prototype.executor = function (playerPaddle) {
-	if (!spellLaunchController(this))
-		return;
-	const side = playerPaddle.paddleDirection === 1 ? 1 : 0;
-	let ballInSide = getAllBallInSide(side)
+BallSlayer.prototype.executor = function (socketValues) {
+	coolDownRun(this);
+	const ballInSide = getBallsWithIds(socketValues["ballIds"]);
 	ballInSide.forEach((ball) => {
-		ball.ballVx = 0;
-		ball.ballVy = 0;
 		this.animation(ball).then(() => {
 			ball.deleteBall();
 		})

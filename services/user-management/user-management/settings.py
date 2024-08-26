@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'authentication',
     'friends',
+    'games_data',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -150,7 +151,7 @@ CSP_CONNECT_SRC = (
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
 

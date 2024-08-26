@@ -26,6 +26,11 @@ django.setup()
 users_in_queue = []
 
 
+async def ping_users():
+    for user in users_in_queue:
+        user.send_message_to_user("ping", {})
+
+
 async def bind_to_game_server():
     print("Try connecting to the game server..")
     try:
@@ -43,12 +48,12 @@ async def check_game_server_health():
 
 async def send_users_to_server():
     selected_users = get_two_users()
-    await get_game_server().send("createGame", {"username1": selected_users[0].get_username(),
-                                                "username2": selected_users[1].get_username()})
+    await get_game_server().send("createGame", {"userId1": selected_users[0].get_user_id(),
+                                                "userId2": selected_users[1].get_user_id()})
 
     side = "Left"
     for user in selected_users:
-        await get_game_server().send("createPlayer", {"username": user.get_username(), "side": side})
+        await get_game_server().send("createPlayer", {"userId": user.get_user_id(), "side": side})
         side = "Right"
 
     for user in selected_users:
@@ -61,7 +66,8 @@ async def main_check_loop():
         if not await check_game_server_health():
             await gen.sleep(3)
             continue
-        if random.randrange(0, 10) == 0:
+        await ping_users()
+        if random.randrange(0, 15) == 0:
             print("Looking for two users..")
         if len(users_in_queue) > 1:
             print("2 players founds, sending to game server..")
@@ -86,14 +92,13 @@ class MatchMakingWebSocket(WebSocketHandler):
         if socket['type'] == 'createUser':
             user = User(self, socket_values)
             users_in_queue.append(user)
-            print(f"{user.get_username()} is bind to a client in the matchmaking server")
+            print(f"User with id {user.get_user_id()} is bind to a client in the matchmaking server")
 
     def on_close(self):
         print(f"[-] A user leave the matchmaking server.")
         user = self.get_user_from_socket()
         if user:
             users_in_queue.remove(user)
-
 
     def get_user_from_socket(self):
         for user in users_in_queue:

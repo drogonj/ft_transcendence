@@ -12,9 +12,11 @@ import {
 import {getRandomNumberBetweenOne, getRandomNumberWithDecimal} from "./utils/math_utils.js";
 import {markPoint} from "./game.js";
 
+let ballLoop;
 const balls = [];
 
 export default function loadBall() {
+    balls.length = 0;
     while(!isMapContainMaxBall())
         createNewBall();
 }
@@ -129,16 +131,19 @@ Ball.prototype.getBallPosition = function() {
     return [this.ballLeftPosition, this.ballTopPosition];
 }
 
+Ball.prototype.getBallVelocity = function() {
+    return [this.ballVx, this.ballVy];
+}
+
 export function startBallLoop() {
     balls.forEach((ball) => {
-        //todo dont do all trigger
         ball.triggerBallInsidePaddle();
         ball.triggerBallInsideBorder();
         ball.triggerBallInGoal()
         moveBall(ball);
     });
     ballsSpawnTrigger();
-    setTimeout(startBallLoop, ballSpeed);
+    ballLoop = setTimeout(startBallLoop, ballSpeed);
 }
 
 export function getBallNumber() {
@@ -164,4 +169,12 @@ export function getAllBallInSide(side) {
         else
             return ball.getBallDirection() <= 0;
     })
+}
+
+export function stopBallLoop() {
+    clearTimeout(ballLoop);
+}
+
+export function getBallWithIndex(index) {
+    return balls[index];
 }

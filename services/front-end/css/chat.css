@@ -49,7 +49,7 @@
     margin-top: max(0.2vw, 0.2vh);
     text-align: left;
     border-radius: 5px;
-    gap: 0 max(1vh, 0.3vw);
+
     background-color: #e1e2eb85;
     transition: ease-in 0.1s;
 }
@@ -64,12 +64,13 @@
 
 .users-list li span {
     margin: 0;
-    flex-grow: 1; /* Allow text to grow */
-    padding-left: max(0.5vh, 0.6vw); /* Space between avatar and text */
+    /* flex-grow: 1; */ /* Allow text to grow */
+    /* padding-left: max(0.5vh, 0.6vw); */ /* Space between avatar and text */
 }
 
 .users-list li span p {
-    max-width: max(3vw, 6vh);
+    width: max(3vw, 4vh);
+    max-width: max(3vw, 4vh);
     overflow: hidden;
     background: white;
     -webkit-background-clip: text;
@@ -170,4 +171,20 @@
     border-radius: 0 5px 5px 0;
     cursor: pointer;
     font-size: max(0.6vh, 0.65vw);
+}
+
+.chat-message a {
+	color: #161d2f;
+}
+
+.chat-message a:hover {
+	color: #ffc4c4;
+}
+
+.accept-button {
+	color: green;
+}
+
+.decline-button {
+	color: red;
 }

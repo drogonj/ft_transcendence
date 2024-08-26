@@ -1,10 +1,11 @@
 #map {
-    background-color: var(--bg-primary);
+    background: rgb(0 0 0 / 22%);
+    animation: profile-card-gradient 15s ease infinite;
     height: 92%;
     width: 100%;
     position: relative;
-    border: solid 2vmin var(--bg-secondary);
-    border-top: solid 5px var(--bg-secondary);
+    border: solid 2vmin #DAE1E7FF;
+    border-top: solid 5px #DAE1E7FF;
     box-sizing: border-box;
 }
 
@@ -15,6 +16,6 @@
     bottom: 0;
     left: 50%;
     width: 0;
-    border-left: 2px dotted var(--bg-secondary);
+    border-left: 2px dotted #DAE1E7FF;
     transform: translateX(-50%);
 }

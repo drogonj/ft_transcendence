@@ -3,7 +3,7 @@
     height: 20%;
     position: absolute;
     margin-left: 1%;
-    background-color: var(--bg-secondary);
+    background-color: #DAE1E7FF;
 }
 
 #paddleLeft {

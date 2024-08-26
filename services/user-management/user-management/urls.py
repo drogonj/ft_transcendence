@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('authentication.urls')),
     path('', include('friends.urls')),
+    path('', include('games_data.urls')),
 ]

@@ -1,6 +1,4 @@
 from django.urls import path, re_path
-from django.conf.urls.static import static
-from django.conf import settings
 from . import views
 
 urlpatterns = [
@@ -13,7 +11,6 @@ urlpatterns = [
 	path('api/user/search/', views.search_users, name='search_users'),
 	path('api/user/get_users/', views.GetAllUsersDataView.as_view(), name='get_users'),
 	path('api/user/get_user/<int:user_id>/', views.GetOneUserDataView.as_view(), name='get_user'),
-	path('api/user/is_muted/<int:user_id>/<int:target_user_id>/', views.IsUserMutedView.as_view(), name='is_user_muted'),
 	path('api/user/mute_toggle/<str:user_id>/', views.MuteToggleView.as_view(), name='mute_toggle'),
 	path('api/user/get_mutelist/<str:user_id>/', views.GetMuteListView.as_view(), name='mute_list'),
 ]

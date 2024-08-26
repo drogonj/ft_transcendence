@@ -7,11 +7,11 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from server.game import Game, get_game_with_client, remove_player_from_client, bind_player_to_game
-from server.player import Player, get_player_with_username
+from server.game import Game, get_game_with_client, bind_player_to_game, disconnect_handle
+from server.player import Player, get_player_with_user_id
 
 
-# Server will send websocket as json with the followed possible key
+# Server will send websocket as json with the followed possible keys
 # type : Type of data: such as moveBall, movePlayer, createPlayer ...
 # values: The values, need to be sent according to the type, send as dictionary
 
@@ -22,7 +22,7 @@ django.setup()
 clients = []
 
 
-class EchoWebSocket(WebSocketHandler):
+class GameServerWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
@@ -34,20 +34,22 @@ class EchoWebSocket(WebSocketHandler):
         socket_values = socket['values']
         if socket["type"] == "movePlayer":
             get_game_with_client(self).move_player(socket_values)
+        elif socket["type"] == "launchSpell":
+            get_game_with_client(self).launch_spell(socket_values)
         elif socket["type"] == "createPlayer":
             Player(socket_values)
         elif socket["type"] == "createGame":
             Game(0, socket_values)
         elif socket["type"] == "bindSocket":
-            player = get_player_with_username(socket["values"]["username"])
+            player = get_player_with_user_id(socket["values"]["userId"])
             player.bind_socket_to_player(self)
+            player.set_username(socket["values"]["username"])
             bind_player_to_game(player)
-
-
+            print(f"The player {player.get_username()} is connected and bind.")
 
     def on_close(self):
         print("[-] A client leave the server")
-        remove_player_from_client(self)
+        disconnect_handle(self)
         clients.remove(self)
 
 
@@ -55,7 +57,7 @@ class EchoWebSocket(WebSocketHandler):
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
-    (r"/ws/back", EchoWebSocket),  # API handler path
+    (r"/ws/back", GameServerWebSocket),  # API handler path
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 

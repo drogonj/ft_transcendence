@@ -2,11 +2,13 @@ import {maxTime} from "./settings.js";
 import {coolDownDisplay, timerDisplay} from "../view/header_view.js";
 import {setCssProperty} from "../view/style_view.js";
 
-let seconds = 0;
+let seconds;
 let minutes;
 let timeHtml;
+let headerLoop;
 
 export function loadHeader() {
+	seconds = 0
 	minutes = maxTime;
 	timeHtml = document.getElementById("headerTimer");
 }

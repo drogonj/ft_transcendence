@@ -1,86 +1,83 @@
-import { navigateTo, app } from './contentLoader.js';
-import { currentUser } from './auth.js';
-import { csrfToken } from './auth.js';
+import { csrfToken, currentUser } from './auth.js';
+import { loadUsers, updateUserStatus, getMuteListOf} from './users.js';
 
-let chatSocket = null;
-let chatSocketRunning = false;
-let mutedUserIds = [];
+export var muteList = [];
+var chatSocket = null;
+var rooms = new Set();
 
-// Quelques points verifier:
-// Attention a la prise en compte de ADMIN et de son ID dans le chat et les rooms (choix de config)
-// Deplacer les GetAllUsersDataView(View) dans Authentication et modifier les routes (urls.py) (optionnel)
-// Check la configuration CACHE/DATABASE dans settings.py et du coup la sauvegarde des messages
-// ==> REDIS:6379/1 pour le cache (voir si besoin d'une adresse 0 et/ou definir si juste redis:6379 pour DB)
-// Commencer la partie muted users (voir si on mute les messages ou les users)
+// TODO:
+// - load les invitations en cours
+// - creation du socket pour le jeu et rejoindre la game
+// - suppression des invite des games si l'utilisateurs se deconnecte ou mute
+// - si l'utilisateur est deja en game, a voir ce qu'on fait
 
-export async function connectChatWebsocket(user_id) {
-	if (chatSocket) {
-		return;
-	}
+export async function connectChatWebsocket(user_id, roomName) {
+	if (!chatSocket) {
+		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/${user_id}/`);
 
-	const roomName = 'general';
-	chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/${user_id}/`);
+		chatSocket.onopen = function(e) {
+			console.log("Chat-WebSocket connection established.");
+			joinRoom(roomName);
+		};
 
-	chatSocket.onopen = function(e) {
-		chatSocketRunning = true;
-		console.log("Chat WebSocket connection established.");
-	};
+		chatSocket.onmessage = function(e) {
+			(async () => {
+				const data = JSON.parse(e.data);
+				let muted = false;
+				console.log(data);
 
-	chatSocket.onmessage = function(e) {
-		(async () => {
-			const data = JSON.parse(e.data);
-			console.log(data);
-			console.log(currentUser.user_id);	
+				data.timestamp = formatTime(data.timestamp);
 
-			if (data.type === 'chat_message') {
-				const messageList = document.getElementById('message-content');
-				const newMessage = document.createElement('li');
-	
-				newMessage.classList.add('chat-message');
-				newMessage.textContent = `${data.timestamp} ${data.username} : ${data.content}`;
-	
-				messageList.insertBefore(newMessage, messageList.firstChild);
-				
-				const chatMessages = document.getElementById('chat-messages');
-				chatMessages.scrollTop = chatMessages.scrollHeight;
-			} else if (data.type === 'private_message') {
-				const messageList = document.getElementById('message-content');
-				const newMessage = document.createElement('li');
-	
-				const receiverStatus = await getUserStatus(data.receiver_id);
-				console.log(receiverStatus);
-	
-				if (data.receiver_id === currentUser.user_id && receiverStatus) {
-					newMessage.classList.add('chat-message');
-					newMessage.textContent = `${data.timestamp} ${data.username} sent you privately: ${data.content}`;
-	
-					messageList.insertBefore(newMessage, messageList.firstChild);
-					
-					const chatMessages = document.getElementById('chat-messages');
-					chatMessages.scrollTop = chatMessages.scrollHeight;
-				} else if (!receiverStatus && data.user_id === currentUser.user_id) {
-					console.log('User is offline, message not sent.');
-					newMessage.classList.add('chat-message');
-					newMessage.textContent = `${data.timestamp} DM not delivered to : ${data.receiver_username} (reason : offline).`;
-	
-					messageList.insertBefore(newMessage, messageList.firstChild);
-					
-					const chatMessages = document.getElementById('chat-messages');
-					chatMessages.scrollTop = chatMessages.scrollHeight;
+				console.log(`receiving message, muteList status : ${muteList}`);
+				console.log('muteList:', muteList.map(item => `${item} (${typeof item})`));
+				console.log('sender id : ', data.user_id , typeof(data.user_id));
+				console.log('sender is muted : ', muteList.includes(data.user_id));
+
+				if (muteList && muteList.includes(data.user_id)) {
+					muted = true;
+					console.log('message sender muted: ', muted);
 				}
-			} else if (data.type === 'user_status_update') {
-				updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
-			}
-		})();
-	};
+
+				if (data.type === 'user_status_update')
+					updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
+
+				else if (data.type === 'private_message') {
+					const receiverList = await getMuteListOf(data.receiver_id);
+					const amIMuted = receiverList.includes(currentUser.user_id);
+					if  (!muted && !amIMuted && data.receiver_id !== data.user_id)
+						privateMessage(data);
+					else if (amIMuted && currentUser.user_id === data.user_id)
+						mutedMessage(data);
+					else if (data.receiver_id === data.user_id )
+						trollMessage(data);
+				}
+
+				else if (data.type === 'invitation_to_play' && !muted) {
+					joinRoom(`invitation_${data.invitationId}`);
+					invitationToPlay(data);
+				}
+
+				else if (data.type === 'invitation_response' && !muted) {
+					leaveRoom(`invitation_${data.invitationId}`);
+					if (data.status === 'accepted')
+						connectToGame(data);
+					else if (data.status === 'declined')
+						suppressInvitation(data);
+				}
+
+				else if (data.type === 'chat_message' && !muted)
+					chatMessage(data);
+			})();
+		} 
+	} else
+		joinRoom(roomName);
 
 	chatSocket.onclose = function(e) {
-		chatSocketRunning = false;
-		if (e.wasClean) {
+		if (e.wasClean)
 			console.log(`[close] Chat Connection closed cleanly, code=${e.code} reason=${e.reason}`);
-		} else {
+		else
 			console.log('[close] Chat Connection died');
-		}
+		leaveAllRooms();
 	};
 
 	chatSocket.onerror = function(error) {
@@ -88,138 +85,253 @@ export async function connectChatWebsocket(user_id) {
 	};
 }
 
-export async function loadUsers() {
-	try {
-		const response = await fetch('/api/user/get_users/');
-		const usersData = await response.json();
+async function connectToGame(data) {
+	removePendingInvitationMessage(data.invitationId);
+	console.log(data.status);
 
-		for (const user of usersData.users) {
-			if (user.user_id !== 1 && user.user_id !== currentUser.user_id) {
-				const response2 = await fetch(`api/user/is_muted/${currentUser.user_id}/${user.user_id}/`);
-				const muteList = await response2.json();
-				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected, muteList.is_muted);
-			}
-		}
+	// game = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back/`);
+	// game.onopen = function() {
+	// 	sendMessageToServer(game, "bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
+	// };
+}
 
-	} catch (error) {
-		console.error('Error loading users:', error);
+// async function sendMessageToServer(game, type, values) {
+// 	const message = {
+// 		"type": type,
+// 		"values": values
+// 	}
+// 	game.send(JSON.stringify(message));
+// }
+
+async function suppressInvitation(data) {
+	if (data.receiver_id === currentUser.user_id) {
+		removePendingInvitationMessage(data.invitationId); 
+
+		const messageList = document.getElementById('message-content');
+		const newMessage = document.createElement('li');``
+	
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.username} declined your invitation.`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
 }
 
-async function addUserToMenu(user_id, username, avatar, is_connected, is_muted) {
-	const usersContainer = document.getElementById('users-content');
-
-	const newUser = document.createElement('li');
-	newUser.id = `user-${user_id}`;
-
-	newUser.innerHTML = `
-		<div class="status-indicator ${is_connected ? 'online' : 'offline'}"></div>
-		<div class="avatar-container">
-			<img class="avatar" src="${avatar}" alt="${username}'s Avatar">
-		</div>
-		<span class="profile-link" data-user-id="${user_id}">
-			<p>${username}</p>
-		</span>
-        <button class="mute-user-button ${is_muted ? 'muted' : ''}" data-user-id="${user_id}">
-            <img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
-        </button>
-	`;
-
-	usersContainer.insertAdjacentElement('beforeend', newUser);
-
-	// newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
-	// 	const userId = event.currentTarget.getAttribute('data-user-id');
-	// 	const userElement = document.getElementById(`user-${userId}`);
-
-	// 	if (!userElement) {
-	// 		console.error(`User element with ID user-${userId} not found.`);
-	// 		return;
-	// 	}
-
-	// 	const muteButton = userElement.querySelector('.mute-user-button');
-	// 	const muteIcon = muteButton.querySelector('img');
-
-	// 	if (muteButton.classList.contains('muted')) {
-	// 		muteButton.classList.remove('muted');
-	// 		mutedUserIds = mutedUserIds.filter(id => id !== userId);
-	// 		muteIcon.src = '/assets/images/chat/chat_icon.png';
-	// 	} else {
-	// 		muteButton.classList.add('muted');
-	// 		mutedUserIds.push(userId);
-	// 		muteIcon.src = '/assets/images/chat/mute_icon.png';
-	// 	}
-	// });
-
-	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
-		const userId = event.currentTarget.getAttribute('data-user-id');
-		const userElement = document.getElementById(`user-${userId}`);
-	
-		if (!userElement) {
-			console.error(`User element with ID user-${userId} not found.`);
-			return;
-		}
-	
-		const muteButton = userElement.querySelector('.mute-user-button');
-		const muteIcon = muteButton.querySelector('img');
-	
-		const isMuted = muteButton.classList.contains('muted');
-	
-		try {
-			const response = await fetch(`/api/user/mute_toggle/${userId}/`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-CSRFToken': csrfToken
-				},
-				body: JSON.stringify({ muted: !isMuted })
-			});
-	
-			if (!response.ok) {
-				throw new Error(`Network response was not ok. Status: ${response.status}`);
-			}
-	
-			const responseData = await response.json();
-			console.log('Response data:', responseData);
-
-			if (isMuted) {
-				muteButton.classList.remove('muted');
-				mutedUserIds = mutedUserIds.filter(id => id !== userId);
-				muteIcon.src = '/assets/images/chat/chat_icon.png';
-			} else {
-				muteButton.classList.add('muted');
-				mutedUserIds.push(userId);
-				muteIcon.src = '/assets/images/chat/mute_icon.png';
-			}
-		} catch (error) {
-			console.error('Error updating mute state:', error);
-		}
-	});
-	
-
-	newUser.querySelector('.profile-link').addEventListener('click', async function (event) {
-		 const userId = this.getAttribute('data-user-id');
-		 const uri = '/profile/' + userId + '/';
-		 navigateTo(uri, true);
-	});
+async function removePendingInvitationMessage(invitationId) {
+	const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
+	if (pendingMessageElement) {
+		console.log(`Removing pending invitation message with ID: pending-invitation-${invitationId}`);
+		pendingMessageElement.remove();
+	} else {
+		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
+	}
 }
 
-export async function renderChatApp() {
-	await connectChatWebsocket(currentUser.user_id);
-	app.innerHTML += `
-		<div id="users-list" class="users-list">
-		<div class="users-title">Users</div>
-			<ul id="users-content" class="users-content active"></ul>
-		</div>
-		<div id="chat-menu" class="chat-menu">
-			<div id="chat-messages" class="chat-messages">
-				<ul id="message-content" class="message-content active"></ul>
+async function joinRoom(roomName) {
+	if (!rooms.has(roomName)) {
+		chatSocket.send(JSON.stringify({
+			type: 'join_room',
+			room: roomName
+		}));
+		rooms.add(roomName);
+	}
+}
+
+async function leaveRoom(roomName){
+	if (!rooms.has(roomName)) {
+		chatSocket.send(JSON.stringify({
+			type: 'leave_room',
+			room: roomName
+		}));
+	};
+}
+
+async function leaveAllRooms() {
+	rooms.forEach(roomName => {
+		chatSocket.send(JSON.stringify({
+			type: 'leave_room',
+			room: roomName
+		}));
+	});
+	rooms.clear();
+}
+
+export async function trollMessage(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+	const random = Math.floor(Math.random() * 5);
+	let content = [];
+
+	if (data.user_id === currentUser.user_id) {
+		content = [
+			'Ain\'t you a narcissist?',
+			'Dude, you need some help... seriously.',
+			'Ain\'t you a bit lonely?',
+			'Get out, find some friends!',
+			'I mean... you could just... not do that?',
+		]
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.timestamp} ${content[random]}`;
+	} else {
+		content = [
+			'God bless this poor soul.',
+			'Guys, please, just talk to him/her!',
+			'Seems like nobody loves him/her.',
+			'You know what to do!',
+			'Just leave quielty...',
+		]
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.timestamp} ${data.username} talk to him/herself: ${content[random]}`;
+	}
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function mutedMessage(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+ 
+	newMessage.classList.add('chat-message');
+	newMessage.textContent = `${data.timestamp} DM not delivered to : ${data.receiver_username} (reason : muted).`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function chatMessage(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.innerHTML = `${data.timestamp} ${data.username} : ${data.content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function privateMessage(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	if (data.receiver_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.innerHTML = `${data.timestamp} DM from ${data.username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+	if (data.user_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.innerHTML = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+}
+
+async function invitationToPlay(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	if (data.receiver_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.innerHTML = `
+			Invited to play with ${data.username} : \
+			<button class="accept-button" data-invitation-id="${data.invitationId}">Accept</button> / \
+			<button class="decline-button" data-invitation-id="${data.invitationId}">Decline</button>
+		`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		newMessage.querySelector('.accept-button').addEventListener('click', async () => handleAccept(data, newMessage));
+		newMessage.querySelector('.decline-button').addEventListener('click', async () => handleDecline(data, newMessage));
+	}
+	if (data.user_id === currentUser.user_id) {
+		const newMessage = document.createElement('div');
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `Pending invitation, please wait...`;
+		newMessage.id = `pending-invitation-${data.invitationId}`;
+	
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+}
+
+async function handleAccept(data, message) {
+	console.log('Accepted invitation with ID: ', data.invitationId);
+	message.remove();
+
+	await fetch(`/api/chat/invitations/accepted/${data.invitationId}/`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrfToken
+		},
+		body: JSON.stringify({'status': 'accepted'})
+		});
+
+	sendRoomMessage(data, 'accepted');
+}
+
+async function handleDecline(data, message) {
+	console.log('Declined invitation with ID: ', data.invitationId);
+	message.remove();
+
+	await fetch(`/api/chat/invitations/declined/${data.invitationId}/`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrfToken
+		},
+		body: JSON.stringify({'status': 'declined'})
+		});
+
+	sendRoomMessage(data, 'declined');
+}
+
+export async function addChatMenu() {
+	muteList = await getMuteListOf(currentUser.user_id) || [];
+	await connectChatWebsocket(currentUser.user_id, 'general');
+    const chatContainer = document.querySelector('.chat-menu-container');
+    chatContainer.innerHTML = `
+		<div id="chat-menu-container" class="chat-menu-container">
+			<div id="users-list" class="users-list">
+			<div class="users-title">Users</div>
+				<ul id="users-content" class="users-content active"></ul>
 			</div>
-			<div id="chat-input-container" class="chat-input-container">
-				<input id="chat-input" type="text" placeholder="Type a message...">
-				<button id="send-chat-message" class="send-chat-message">Send</button>
+			<div id="chat-menu" class="chat-menu">
+				<div id="chat-messages" class="chat-messages">
+					<ul id="message-content" class="message-content active"></ul>
+				</div>
+				<div id="chat-input-container" class="chat-input-container">
+					<input id="chat-input" type="text" placeholder="Type a message...">
+					<button id="send-chat-message" class="send-chat-message">Send</button>
+				</div>
 			</div>
 		</div>
 	`;
+
+	await loadUsers();
+	await loadMessages();
+	await loadInvitations();
 
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeydown = function(e) {
@@ -242,38 +354,26 @@ export async function renderChatApp() {
 }
 
 async function parseMessage(message) {
-	if (!message.startsWith('/')) {
-		chatSocket.send(JSON.stringify({
-			'type': 'chat_message',
-			'content': message,
-			'user_id': currentUser.user_id,
-			'username': currentUser.username
-		}));
-	} else if (message.startsWith('/')) {
+	console.log('parsing message:', message);
+
+	if (message.startsWith('/')) {
 		const parts = message.split(' ');
-		if (parts.length < 2) {
-			chatSocket.send(JSON.stringify({
-				'type': 'chat_message',
-				'content': message,
-				'user_id': currentUser.user_id,
-				'username': currentUser.username
-			}));
-		} else { 
+
+		if (parts.length >= 2) {
 			const cmd = parts[0].slice(1);
 			const username = parts[1];
-			const messageContent = parts.slice(2).join(' ');
-			console.log('messageContent: ', messageContent);
 
-			if (cmd === 'private') {
-				console.log('Sending private message to:', username);
-				const response = await fetch('/api/user/get_users/');
-				const usersData = await response.json();
+			const response = await fetch('/api/user/get_users/');
+			const usersData = await response.json();
+
+			if (cmd === 'dm') {
+				let messageContent = parts.slice(2).join(' ');
 
 				for (const user of usersData.users) {
 					if (user.username === username) {
 						chatSocket.send(JSON.stringify({
 							'type': 'private_message',
-							'content': messageContent,
+							'content': convertURL(messageContent),
 							'user_id': currentUser.user_id,
 							'username': currentUser.username,
 							'receiver_id': user.user_id,
@@ -282,68 +382,164 @@ async function parseMessage(message) {
 						return ;
 					}
 				}
-			} else {
-			chatSocket.send(JSON.stringify({
-				'type': 'chat_message',
-				'content': message,
-				'user_id': currentUser.user_id,
-				'username': currentUser.username
-				}));
-			};
-		};
+			} else if (cmd === 'play') {
+				for (const user of usersData.users) {
+					if (user.username === username) {
+						console.log('sending invitation to play');
+						chatSocket.send(JSON.stringify({
+							'type': 'invitation_to_play',
+							'user_id': currentUser.user_id,
+							'username': currentUser.username,
+							'receiver_id': user.user_id,
+							'receiver_username': user.username
+						}));
+					return ;
+					}
+				}
+			}
+		}
+	} else {
+		sendChatMessage(message);
 	}
 	return ;
 }
 
-async function updateUserStatus(other_id, isConnected, timestamp, content) {
-	console.log('Updating user status:', other_id, isConnected);
+function convertURL(text) {
+	const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+	return text.replace(urlPattern, function(url) {
+		return `<a href="${url}" target="_blank">${url}</a>`;
+	});
+}
+
+async function sendChatMessage(message) {
+	chatSocket.send(JSON.stringify({
+		'type': 'chat_message',
+		'content': convertURL(message),
+		'user_id': currentUser.user_id,
+		'username': currentUser.username
+	}));
+}
+
+async function sendRoomMessage(data, status) {
+	console.log('sending room message');
+	chatSocket.send(JSON.stringify({
+		'room': `invitation_${data.invitationId}`,
+		'type': 'invitation_response',
+		'invitationId': data.invitationId,
+		'status': status,
+		'receiver_id': data.user_id,
+		'receiver_username': data.username,
+		'user_id': data.receiver_id,
+		'username': data.receiver_username
+	}));
+}
+
+export async function muteUser(userId) {
+	muteList.push(Number(userId));
+}
+
+export async function unmuteUser(userId) {
+	muteList = muteList.filter(id => id !== Number(userId));
+}
+
+async function loadMessages() {
 	try {
-		const response = await fetch('/api/user/get_users/');
-		const usersData = await response.json();
+		const response = await fetch('api/chat/messages/');
+		const data = await response.json();
 
-		for (const user of usersData.users) {
-			const statusElement = document.getElementById(`user-${other_id}`);
-			if (user.user_id !== other_id) {
-				continue ;
-			} else if (statusElement) {
-				statusElement.querySelector('.status-indicator').className = `status-indicator ${isConnected ? 'online' : 'offline'}`;
-				console.log(`Updated status for user ${other_id} to ${isConnected ? "Online" : "Offline"}`);
-			} else if (currentUser.user_id !== other_id) {
-				const usersContainer = document.getElementById('users-content');
-				if (usersContainer) {
-					addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
-				}
+		let allMessages = [
+			...data.messages,
+			...data.private_messages,
+		];
+
+		if (!allMessages || allMessages.length === 0) {
+			return;
+		}
+
+		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
+
+		allMessages.forEach(message => {
+			console.log(`message from : ${message.user_id}-${message.username} : ${message.content}`);
+			console.log(`sender muted : ${muteList.includes(message.user_id)}`);
+			if (!muteList.includes(message.user_id)) {
+				if (message.type === 'private_message')
+					loadAPrivateMessage(message);
+				else if (message.type === 'chat_message')
+					loadAMessage(message);
 			}
-			
-			const messageList = document.getElementById('message-content');
-			const newMessage = document.createElement('li');
-
-			newMessage.classList.add('chat-message');
-			newMessage.textContent = `${timestamp} : ${content}`;
-
-			messageList.insertBefore(newMessage, messageList.firstChild);
-			
-			const chatMessages = document.getElementById('chat-messages');
-			chatMessages.scrollTop = chatMessages.scrollHeight;
-			break ;
-		} 
+		});
 	} catch (error) {
-		console.error('Error loading users:', error.message);
+		console.error('Error loading messages:', error);
 	}
 }
 
-async function getUserStatus(user_id) {
-	try {
-		const response = await fetch('/api/user/get_users/');
-		const usersData = await response.json();
+export function formatTime(timestamp) {
+	const date = new Date(timestamp);
+	const hours = String(date.getHours()).padStart(2, '0');
+	const minutes = String(date.getMinutes()).padStart(2, '0');
+	const seconds = String(date.getSeconds()).padStart(2, '0');
+	return `${hours}:${minutes}:${seconds}`;
+}
 
-		for (const user of usersData.users) {
-			if (user.user_id === user_id) {
-				return user.is_connected;
+export async function loadAMessage(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+	data.timestamp = formatTime(data.timestamp);
+
+	newMessage.classList.add('chat-message');
+	newMessage.innerHTML = `${data.timestamp} ${data.username} : ${data.content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+export async function loadAPrivateMessage(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+	data.timestamp = formatTime(data.timestamp);
+
+	if (data.receiver_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.innerHTML = `${data.timestamp} DM from ${data.username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+	if (data.user_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.innerHTML = `${data.timestamp} DM to ${data.receiver_username} : ${data.content}`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+}
+
+async function loadInvitations() {
+	try {
+		const response = await fetch('api/chat/invitations/');
+		const data = await response.json();
+
+		if (!data || data.length === 0)
+			return;
+
+		data.forEach(invit => {
+			if (invit.status === 'pending') {
+				console.log('loading invitation:', invit.status);
+				if (invit.receiver_id === currentUser.user_id || invit.user_id === currentUser.user_id) {
+					if (!muteList.includes(invit.user_id)) {
+						joinRoom(`invitation_${invit.invitationId}`);
+						invitationToPlay(invit);
+					}
+				}
 			}
-		}
-		return false;
+		});
 	} catch (error) {
-		console.error('Error loading users:', error.message);
+		console.error('Error loading invitations:', error);
 	}
 }
