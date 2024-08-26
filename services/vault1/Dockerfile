@@ -2,7 +2,7 @@ FROM hashicorp/vault:latest
 
 RUN apk add --no-cache bash curl openssl jq su-exec
 
-RUN mkdir -p /vault/ssl /vault/config /vault/data/ /vault/logs /vault/plugins
+RUN mkdir -p /vault/ssl /vault/config /vault/data/ /vault/logs /vault/plugins /vault/data/vault_1
 
 COPY config/vault_1.hcl /vault/config/vault_1.hcl
 COPY start-vault.sh /usr/local/bin/start-vault.sh

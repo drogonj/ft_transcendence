@@ -1,6 +1,6 @@
 FROM hashicorp/vault:latest
 
-RUN apk add --no-cache bash curl openssl jq
+RUN apk add --no-cache bash curl openssl jq su-exec
 
 RUN mkdir -p /vault/ssl /vault/config /vault/data/ /vault/logs /vault/plugins /vault/data/vault_2
 

@@ -5,12 +5,10 @@ rm -rf /vault/data/*
 
 set -e
 
-# Variables
 DIR="/vault/ssl"
 CA_KEY="${DIR}/ca.key"
 CA_CERT="${DIR}/ca.crt"
 
-# Créer le répertoire pour les certificats
 mkdir -p "${DIR}"
 
 # Générer la clé privée de la CA
