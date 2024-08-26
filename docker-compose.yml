@@ -63,7 +63,7 @@ services:
     container_name: vault_1
     volumes:
       - vault-token:/vault/token/
-      - ./ssl:/vault/ssl
+      - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
     environment:
@@ -81,7 +81,7 @@ services:
     container_name: vault_2
     volumes:
       - 'vault-token:/vault/token/'
-      - ./ssl:/vault/ssl
+      - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
     environment:
@@ -102,7 +102,7 @@ services:
     container_name: vault_3
     volumes:
       - vault-token:/vault/token/
-      - ./ssl:/vault/ssl
+      - vault-ssl:/vault/ssl/
     cap_add:
       - IPC_LOCK
     environment:
@@ -122,7 +122,7 @@ services:
     container_name: vault_4
     volumes:
       - vault-token:/vault/token/
-      - ./ssl:/vault/ssl
+      - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
     environment:
@@ -175,4 +175,5 @@ volumes:
   nginx:
   django:
   vault-token:
+  vault-ssl:
   redis:

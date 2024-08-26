@@ -1,10 +1,9 @@
 #!/bin/bash
 
 pkill vault
-rm -rf /vault/data/*
 rm -rf /vault/token/*
 
-mkdir -p /vault/data/vault_1
+# mkdir -p /vault/data/vault_1
 vault_to_network_address() {
   local vault_node_name=$1
   case $vault_node_name in

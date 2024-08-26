@@ -3,7 +3,7 @@
 wait_for_vault2() {
   echo "Waiting for Vault 2 to be ready..."
   while true; do
-    if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_1:8200/v1/sys/health; then
+    if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/sys/health; then
       echo "Vault 2 is ready. Proceeding with startup."
       break
     fi

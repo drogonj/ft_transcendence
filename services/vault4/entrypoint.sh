@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-
+sleep 5
 chown -R vault:vault /vault/token/
 
 # Switch to the vault user and run the start script
