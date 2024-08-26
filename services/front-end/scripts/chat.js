@@ -1,15 +1,21 @@
-import { csrfToken, currentUser } from './auth.js';
+import { currentUser } from './auth.js';
 import { loadUsers, updateUserStatus, getMuteListOf} from './users.js';
+import { bindGameSocket, launchFriendGame } from '../online-game-pong/websocket.js';
 
 export var muteList = [];
-var chatSocket = null;
+export var chatCsrfToken = '';
+export var chatSocket = null;
 var rooms = new Set();
 
 // TODO:
-// - load les invitations en cours
-// - creation du socket pour le jeu et rejoindre la game
-// - suppression des invite des games si l'utilisateurs se deconnecte ou mute
 // - si l'utilisateur est deja en game, a voir ce qu'on fait
+// - Deconnexion chatSocket a verifier sur page login avec reco
+
+export async function getChatCsrfToken() {
+    const response = await fetch('/api/chat/csrf/');
+	   const data = await response.json();
+    chatCsrfToken = data.csrfToken;
+}
 
 export async function connectChatWebsocket(user_id, roomName) {
 	if (!chatSocket) {
@@ -24,37 +30,44 @@ export async function connectChatWebsocket(user_id, roomName) {
 			(async () => {
 				const data = JSON.parse(e.data);
 				let muted = false;
-				console.log(data);
-
+				let amIMuted = false;
 				data.timestamp = formatTime(data.timestamp);
-
-				console.log(`receiving message, muteList status : ${muteList}`);
-				console.log('muteList:', muteList.map(item => `${item} (${typeof item})`));
-				console.log('sender id : ', data.user_id , typeof(data.user_id));
-				console.log('sender is muted : ', muteList.includes(data.user_id));
+				console.log(data);
 
 				if (muteList && muteList.includes(data.user_id)) {
 					muted = true;
-					console.log('message sender muted: ', muted);
+					console.log('Is sender muted? ', muted);
+				}
+
+				if (data.receiver_id) {
+					const receiverList = await getMuteListOf(data.receiver_id);
+					amIMuted = receiverList.includes(currentUser.user_id);
+					console.log('Am i muted by receiver? ', amIMuted);
 				}
 
 				if (data.type === 'user_status_update')
-					updateUserStatus(data.user_id, data.is_connected, data.timestamp, data.content);
+					updateUserStatus(data.user_id, data.is_connected, data.content);
 
-				else if (data.type === 'private_message') {
-					const receiverList = await getMuteListOf(data.receiver_id);
-					const amIMuted = receiverList.includes(currentUser.user_id);
+				else if (data.type === 'private_message' && data.receiver_id === data.user_id)
+					trollMessage(data);
+
+				else if (data.type === 'private_message' && (data.receiver_id === currentUser.user_id
+					|| data.user_id === currentUser.user_id)) {
 					if  (!muted && !amIMuted && data.receiver_id !== data.user_id)
 						privateMessage(data);
 					else if (amIMuted && currentUser.user_id === data.user_id)
-						mutedMessage(data);
-					else if (data.receiver_id === data.user_id )
-						trollMessage(data);
+						mutedCalls(data);
 				}
 
-				else if (data.type === 'invitation_to_play' && !muted) {
-					joinRoom(`invitation_${data.invitationId}`);
-					invitationToPlay(data);
+				else if (data.type === 'invitation_to_play' && (data.receiver_id === currentUser.user_id
+					|| data.user_id === currentUser.user_id)) {
+					if (!muted && !amIMuted) {
+						joinRoom(`invitation_${data.invitationId}`);
+						invitationToPlay(data);
+					} else if (amIMuted && currentUser.user_id === data.user_id) {
+						console.log('invitation from muted user');
+						mutedCalls(data);
+					}
 				}
 
 				else if (data.type === 'invitation_response' && !muted) {
@@ -85,23 +98,16 @@ export async function connectChatWebsocket(user_id, roomName) {
 	};
 }
 
-async function connectToGame(data) {
-	removePendingInvitationMessage(data.invitationId);
-	console.log(data.status);
-
-	// game = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back/`);
-	// game.onopen = function() {
-	// 	sendMessageToServer(game, "bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
-	// };
+export async function disconnectChatWebsocket() {
+	leaveAllRooms();
+    chatSocket.close();
 }
 
-// async function sendMessageToServer(game, type, values) {
-// 	const message = {
-// 		"type": type,
-// 		"values": values
-// 	}
-// 	game.send(JSON.stringify(message));
-// }
+async function connectToGame(data) {
+	removePendingInvitationMessage(data.invitationId);
+	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
+	launchFriendGame(data);
+}
 
 async function suppressInvitation(data) {
 	if (data.receiver_id === currentUser.user_id) {
@@ -174,7 +180,7 @@ export async function trollMessage(data) {
 			'I mean... you could just... not do that?',
 		]
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} ${content[random]}`;
+		newMessage.textContent = `${content[random]}`;
 	} else {
 		content = [
 			'God bless this poor soul.',
@@ -184,7 +190,7 @@ export async function trollMessage(data) {
 			'Just leave quielty...',
 		]
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.timestamp} ${data.username} talk to him/herself: ${content[random]}`;
+		newMessage.textContent = `${data.username} talk to him/herself: ${content[random]}`;
 	}
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -192,12 +198,33 @@ export async function trollMessage(data) {
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-async function mutedMessage(data) {
+async function mutedCalls(data) {
+	if (data.type === 'invitation_to_play') {
+		console.log('Invitation ID : ', data.invitationId);
+		deleteInvitation(data.invitationId);
+	}
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
  
 	newMessage.classList.add('chat-message');
-	newMessage.textContent = `${data.timestamp} DM not delivered to : ${data.receiver_username} (reason : muted).`;
+	if (data.type === 'private_message')
+		newMessage.textContent = `DM not delivered to : ${data.receiver_username} (reason : muted).`;
+	else if (data.type === 'invitation_to_play')
+		newMessage.textContent = `Invitation not delivered to : ${data.receiver_username} (reason : muted).`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function deniedInvitation(username) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+ 
+	newMessage.classList.add('chat-message');
+	newMessage.textContent = `Invitation not delivered to : ${username} (reason : muted).`;
 
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -248,6 +275,7 @@ async function invitationToPlay(data) {
 
 	if (data.receiver_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
+		newMessage.id = `pending-invitation-${data.invitationId}`;
 		newMessage.innerHTML = `
 			Invited to play with ${data.username} : \
 			<button class="accept-button" data-invitation-id="${data.invitationId}">Accept</button> / \
@@ -283,7 +311,7 @@ async function handleAccept(data, message) {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'X-CSRFToken': csrfToken
+			'X-CSRFToken': chatCsrfToken
 		},
 		body: JSON.stringify({'status': 'accepted'})
 		});
@@ -291,7 +319,7 @@ async function handleAccept(data, message) {
 	sendRoomMessage(data, 'accepted');
 }
 
-async function handleDecline(data, message) {
+export async function handleDecline(data, message) {
 	console.log('Declined invitation with ID: ', data.invitationId);
 	message.remove();
 
@@ -299,7 +327,7 @@ async function handleDecline(data, message) {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'X-CSRFToken': csrfToken
+			'X-CSRFToken': chatCsrfToken
 		},
 		body: JSON.stringify({'status': 'declined'})
 		});
@@ -307,8 +335,25 @@ async function handleDecline(data, message) {
 	sendRoomMessage(data, 'declined');
 }
 
+async function deleteInvitation(invitationId) {
+	const response = await fetch(`/api/chat/invitations/${invitationId}/`, {
+		method: 'DELETE',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': chatCsrfToken
+		},
+	});
+
+	if (response.ok) {
+		console.log(`Invitation with ID ${invitationId} deleted successfully.`);
+	} else {
+		console.error(`Failed to delete invitation with ID ${invitationId}.`);
+	}
+}
+
 export async function addChatMenu() {
 	muteList = await getMuteListOf(currentUser.user_id) || [];
+	await getChatCsrfToken();
 	await connectChatWebsocket(currentUser.user_id, 'general');
     const chatContainer = document.querySelector('.chat-menu-container');
     chatContainer.innerHTML = `
@@ -385,15 +430,24 @@ async function parseMessage(message) {
 			} else if (cmd === 'play') {
 				for (const user of usersData.users) {
 					if (user.username === username) {
-						console.log('sending invitation to play');
-						chatSocket.send(JSON.stringify({
-							'type': 'invitation_to_play',
-							'user_id': currentUser.user_id,
-							'username': currentUser.username,
-							'receiver_id': user.user_id,
-							'receiver_username': user.username
-						}));
-					return ;
+						const checkMute = await getMuteListOf(user.user_id)
+						const amIMuted = checkMute.includes(currentUser.user_id)
+						if (user.username === currentUser.username) {
+							trollMessage(message);
+							return ;
+						} else if (!amIMuted) {
+							chatSocket.send(JSON.stringify({
+								'type': 'invitation_to_play',
+								'user_id': currentUser.user_id,
+								'username': currentUser.username,
+								'receiver_id': user.user_id,
+								'receiver_username': user.username
+							}));
+							return ;
+						} else {
+							deniedInvitation(user.username);
+							return ;
+						}
 					}
 				}
 			}
@@ -530,11 +584,13 @@ async function loadInvitations() {
 
 		data.forEach(invit => {
 			if (invit.status === 'pending') {
-				console.log('loading invitation:', invit.status);
 				if (invit.receiver_id === currentUser.user_id || invit.user_id === currentUser.user_id) {
 					if (!muteList.includes(invit.user_id)) {
 						joinRoom(`invitation_${invit.invitationId}`);
 						invitationToPlay(invit);
+					} else if (muteList.includes(invit.user_id)) {
+						console.log('invitation from muted user');
+						suppressInvitation(invit);
 					}
 				}
 			}

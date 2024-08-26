@@ -15,7 +15,7 @@ import {
     handleUserSearch,
 } from './friends.js';
 
-import { addChatMenu } from './chat.js';
+import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
 
@@ -225,6 +225,7 @@ export async function renderHome() {
     document.getElementById('logout-button').addEventListener('click', (event) => {
         handleLogout();
         disconnectFriendsWebsocket();
+		disconnectChatWebsocket();
     });
     document.getElementById('launch-game').addEventListener('click', (event) => {
         navigateTo('/game-settings', true);
