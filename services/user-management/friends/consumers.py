@@ -2,7 +2,10 @@
 import os, django, json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
+from channels.layers import get_channel_layer
+from django.dispatch import receiver
+from django.contrib.auth.signals import user_logged_out
 
 from .models import Friendship
 
@@ -43,8 +46,11 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 				f'user_{self.user.id}',
 				self.channel_name
 			)
-			await self.set_active_connection(self.user.id, -1) # Removing an active connecion to user's session
+			await self.set_active_connection(self.user.id, -1)
 			await self.notify_user_disconnected(self.user)
+
+	async def close_websocket(self, event):
+		await self.close()
 
 	async def set_active_connection(self, user_id, value):
 		User = get_user_model()

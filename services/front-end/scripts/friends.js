@@ -51,6 +51,7 @@ export async function connectFriendsWebsocket() {
         } else {
             console.log('[close] Connection died');
         }
+        friendSocket = null;
     };
 
     friendSocket.onerror = function(error) {
@@ -60,6 +61,7 @@ export async function connectFriendsWebsocket() {
 
 export async function disconnectFriendsWebsocket() {
     friendSocket.close();
+    friendSocket = null;
 }
 
 export function changeFriendStatus(userId, is_connected) {
