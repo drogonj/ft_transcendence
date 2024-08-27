@@ -46,44 +46,41 @@ export async function connectChatWebsocket(user_id, roomName) {
 				}
 
 				if (data.type === 'user_status_update')
-					updateUserStatus(data.user_id, data.is_connected, data.content);
-
+					await updateUserStatus(data.user_id, data.is_connected, data.content);
 				else if (data.type === 'private_message' && data.receiver_id === data.user_id)
-					trollMessage(data);
-
+					await trollMessage(data);
 				else if (data.type === 'private_message' && (data.receiver_id === currentUser.user_id
 					|| data.user_id === currentUser.user_id)) {
 					if  (!muted && !amIMuted && data.receiver_id !== data.user_id)
-						privateMessage(data);
+						await privateMessage(data);
 					else if (amIMuted && currentUser.user_id === data.user_id)
-						mutedCalls(data);
+						await mutedCalls(data);
 				}
-
 				else if (data.type === 'invitation_to_play' && (data.receiver_id === currentUser.user_id
 					|| data.user_id === currentUser.user_id)) {
 					if (!muted && !amIMuted) {
-						joinRoom(`invitation_${data.invitationId}`);
-						invitationToPlay(data);
+						await joinRoom(`invitation_${data.invitationId}`);
+						await invitationToPlay(data);
 					} else if (amIMuted && currentUser.user_id === data.user_id) {
 						console.log('invitation from muted user');
-						mutedCalls(data);
+						await mutedCalls(data);
 					}
 				}
 
 				else if (data.type === 'invitation_response' && !muted) {
-					leaveRoom(`invitation_${data.invitationId}`);
+					await leaveRoom(`invitation_${data.invitationId}`);
 					if (data.status === 'accepted')
-						connectToGame(data);
+						await connectToGame(data);
 					else if (data.status === 'declined')
-						suppressInvitation(data);
+						await suppressInvitation(data);
 				}
 
 				else if (data.type === 'chat_message' && !muted)
-					chatMessage(data);
+					await chatMessage(data);
 			})();
-		} 
+		}
 	} else
-		joinRoom(roomName);
+		await joinRoom(roomName);
 
 	chatSocket.onclose = function(e) {
 		if (e.wasClean)
@@ -91,6 +88,7 @@ export async function connectChatWebsocket(user_id, roomName) {
 		else
 			console.log('[close] Chat Connection died');
 		leaveAllRooms();
+		chatSocket = null;
 	};
 
 	chatSocket.onerror = function(error) {
@@ -99,19 +97,21 @@ export async function connectChatWebsocket(user_id, roomName) {
 }
 
 export async function disconnectChatWebsocket() {
-	leaveAllRooms();
+	await leaveAllRooms();
     chatSocket.close();
+	console.log(chatSocket === null);
+	chatSocket = null;
 }
 
 async function connectToGame(data) {
-	removePendingInvitationMessage(data.invitationId);
+	await removePendingInvitationMessage(data.invitationId);
 	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
 	launchFriendGame(data);
 }
 
 async function suppressInvitation(data) {
 	if (data.receiver_id === currentUser.user_id) {
-		removePendingInvitationMessage(data.invitationId); 
+		await removePendingInvitationMessage(data.invitationId);
 
 		const messageList = document.getElementById('message-content');
 		const newMessage = document.createElement('li');``
@@ -201,7 +201,7 @@ export async function trollMessage(data) {
 async function mutedCalls(data) {
 	if (data.type === 'invitation_to_play') {
 		console.log('Invitation ID : ', data.invitationId);
-		deleteInvitation(data.invitationId);
+		await deleteInvitation(data.invitationId);
 	}
 
 	const messageList = document.getElementById('message-content');
@@ -316,7 +316,7 @@ async function handleAccept(data, message) {
 		body: JSON.stringify({'status': 'accepted'})
 		});
 
-	sendRoomMessage(data, 'accepted');
+	await sendRoomMessage(data, 'accepted');
 }
 
 export async function handleDecline(data, message) {
@@ -332,7 +332,7 @@ export async function handleDecline(data, message) {
 		body: JSON.stringify({'status': 'declined'})
 		});
 
-	sendRoomMessage(data, 'declined');
+	await sendRoomMessage(data, 'declined');
 }
 
 async function deleteInvitation(invitationId) {
@@ -392,7 +392,7 @@ export async function addChatMenu() {
 		if (!message.trim()) {
 			return;
 		} else { 
-			parseMessage(message);
+			await parseMessage(message);
 			messageInputDom.value = '';
 		};
 	}
@@ -433,7 +433,7 @@ async function parseMessage(message) {
 						const checkMute = await getMuteListOf(user.user_id)
 						const amIMuted = checkMute.includes(currentUser.user_id)
 						if (user.username === currentUser.username) {
-							trollMessage(message);
+							await trollMessage(message);
 							return ;
 						} else if (!amIMuted) {
 							chatSocket.send(JSON.stringify({
@@ -445,7 +445,7 @@ async function parseMessage(message) {
 							}));
 							return ;
 						} else {
-							deniedInvitation(user.username);
+							await deniedInvitation(user.username);
 							return ;
 						}
 					}
@@ -453,7 +453,7 @@ async function parseMessage(message) {
 			}
 		}
 	} else {
-		sendChatMessage(message);
+		await sendChatMessage(message);
 	}
 	return ;
 }

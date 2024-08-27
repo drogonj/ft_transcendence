@@ -1,5 +1,5 @@
 import { navigateTo, cleanUrl } from "./contentLoader.js";
-import { connectFriendsWebsocket, disconnectFriendsWebsocket } from "./friends.js";
+import { connectFriendsWebsocket } from "./friends.js";
 
 export var currentUser = {};
 export let csrfToken = '';
