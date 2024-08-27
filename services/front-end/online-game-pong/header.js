@@ -1,7 +1,7 @@
 import {setCssProperty} from "./game.js";
 
-let seconds = 0;
-let minutes = 2;
+let seconds;
+let minutes;
 let timeHtml;
 
 export function setTextContentToHtmlElement(htmlElement, textContent) {
@@ -10,6 +10,8 @@ export function setTextContentToHtmlElement(htmlElement, textContent) {
 
 export function loadHeader() {
 	timeHtml = document.getElementById("headerTimer");
+	minutes = 2;
+	seconds = 0;
 }
 
 export function timerDecrease() {

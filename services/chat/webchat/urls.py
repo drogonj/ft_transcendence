@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import MessageListCreate, PrivateMessageListCreate, message_list
-
+from .views import message_list, invitations, accept_invitation, decline_invitation, get_csrf_token
 
 urlpatterns = [
-	path('api/chat/all-messages/', message_list, name='message_list'),
-	path('api/chat/messages/', MessageListCreate.as_view(), name='message-list-create'),
-	path('api/chat/private-messages/', PrivateMessageListCreate.as_view(), name='private-message-list-create'),
+	path('api/chat/csrf/', get_csrf_token, name='get_csrf_token'),
+	path('api/chat/messages/', message_list, name='message_list'),
+	path('api/chat/invitations/', invitations, name='invitations'),
+	path('api/chat/invitations/accepted/<int:invitationId>/', accept_invitation, name='accept_invitation'),
+	path('api/chat/invitations/declined/<int:invitationId>/', decline_invitation, name='decline_invitation'),
 ]

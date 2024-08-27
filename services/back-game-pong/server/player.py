@@ -1,6 +1,7 @@
 import json
 
 from tornado.websocket import WebSocketClosedError
+from .statistics import Statistics
 
 
 available_players = []
@@ -11,12 +12,12 @@ class Player:
 		self.__socket = None
 		self.__username = None
 		self.__user_id = socket_values["userId"]
-		self.__score = 0
 		self.__paddle_side = socket_values["side"]
 		self.__top_position = 50
 		self.__paddle_size = 20
 		self.__can_move = True
 		self.__spells = []
+		self.statistics = Statistics()
 		available_players.append(self)
 
 	def send_message_to_player(self, data_type, data_values):
@@ -32,7 +33,7 @@ class Player:
 			spells_id.append(spell.get_spell_id())
 
 		return {
-			"usedId": self.__user_id,
+			"userId": self.__user_id,
 			"paddleSide": self.__paddle_side,
 			"paddleTopPosition": str(self.__top_position) + "%",
 			"playerSpells": spells_id
@@ -55,10 +56,10 @@ class Player:
 		available_players.remove(self)
 
 	def increase_score(self):
-		self.__score += 1
+		self.statistics.score += 1
 
 	def has_max_score(self):
-		return self.__score >= 10
+		return self.statistics.score >= 10
 
 	def move_paddle(self, step):
 		if self.__can_move:
@@ -81,9 +82,6 @@ class Player:
 
 	def get_socket(self):
 		return self.__socket
-
-	def get_score(self):
-		return self.__score
 
 	def get_spell_with_id(self, spell_id):
 		for spell in self.__spells:

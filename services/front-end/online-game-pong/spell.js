@@ -5,7 +5,6 @@ import BallPush from "./spells/ball_push.js";
 import BallInvisible from "./spells/ball_invisible.js";
 import BallClone from "./spells/ball_clone.js";
 import PaddleSize from "./spells/paddle_size.js";
-import {coolDownRun} from "./header.js";
 import {setCssProperty} from "./game.js";
 import {getPlayersSpellWithId, getPlayerWithSide} from "./player.js";
 
@@ -32,13 +31,6 @@ export function Spell(cooldown, spellName, description, spellId, icon) {
 
 export function getSpellWithId(spellId) {
 	return new spells[spellId]();
-}
-
-export function spellLaunchController(spell) {
-	if (spell.isOnCooldown)
-		return false;
-	coolDownRun(spell);
-	return true;
 }
 
 export function setSpellDelay(delay) {

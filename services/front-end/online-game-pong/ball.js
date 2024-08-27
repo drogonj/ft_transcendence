@@ -59,3 +59,7 @@ export function moveBalls(socketValues) {
         targetBall.displayBall(ball["topPosition"], ball["leftPosition"]);
     });
 }
+
+export function clearBalls() {
+    balls.length = 0;
+}

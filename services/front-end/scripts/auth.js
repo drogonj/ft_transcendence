@@ -9,6 +9,11 @@ export async function getCurrentUserInfo(){
     currentUser = await userData.json();
 }
 
+export async function getUserFromId(userId) {
+    const userData = await fetch('/api/user/profile/' + userId);
+    return await userData.json();
+}
+
 export async function getCsrfToken() {
     const response = await fetch('/api/user/get_csrf_token/');
     const data = await response.json();

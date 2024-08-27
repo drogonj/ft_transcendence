@@ -3,7 +3,9 @@ import {sendMessageToServer} from "./websocket.js";
 import {getSpellWithId} from "./spell.js";
 import {addSpellsToHeader} from "./header.js";
 import {getGameId} from "./game.js";
+import {getUserFromId} from "../scripts/auth.js";
 
+let playerLoop;
 const players = [];
 let clientSide;
 const playerKeys = {
@@ -16,6 +18,7 @@ const playerKeys = {
 }
 
 export function createPlayers(socketValues) {
+	players.length = 0;
 	clientSide = socketValues["clientSide"];
 	new Player(socketValues["playerLeft"], "Left");
 	new Player(socketValues["playerRight"], "Right");
@@ -25,6 +28,7 @@ export function createPlayers(socketValues) {
 function Player(socketValues, side) {
 	this.paddleHtml = document.getElementById("paddle" + side);
 	this.paddleHeader = document.getElementById("header" + side);
+	this.setHeaderValues(socketValues["userId"]);
 	this.moveSpeed = socketValues["moveSpeed"];
 	this.setTopPosition(socketValues["paddleTopPosition"]);
 	this.playerSpells = this.loadPlayerSpells(socketValues["playerSpells"]);
@@ -86,6 +90,13 @@ Player.prototype.getPlayerSpellWithId = function (spellId) {
 	}
 }
 
+Player.prototype.setHeaderValues = async function (userId) {
+	const userValues = await getUserFromId(userId);
+	this.user = userValues;
+	this.paddleHeader.getElementsByClassName("playerName")[0].textContent = userValues.username;
+	this.paddleHeader.getElementsByClassName("avatar")[0].src = userValues.avatar;
+}
+
 function startPlayerLoop() {
 	for (const [key, value] of Object.entries(playerKeys)) {
 		if (keyDown.has(value)) {
@@ -95,7 +106,7 @@ function startPlayerLoop() {
 				sendMessageToServer("launchSpell", {"playerSide": clientSide, "spellNumber": key.charAt(key.length - 1), "gameId": getGameId()})
 		}
 	}
-	setTimeout(startPlayerLoop, 5);
+	playerLoop = setTimeout(startPlayerLoop, 5);
 }
 
 export function getPlayerWithSide(side) {
@@ -118,4 +129,8 @@ export function getPlayersSpellWithId(spellId) {
 		if (spell)
 			return spell;
 	}
+}
+
+export function stopPlayerLoop() {
+	clearTimeout(playerLoop);
 }

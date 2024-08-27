@@ -22,5 +22,5 @@ def create_data_to_send(players):
     data = {"player0": {}, "player1": {}}
     for index, player in enumerate(players):
         data["player" + str(index)]["playerId"] = player.get_user_id()
-        data["player" + str(index)]["playerScore"] = player.get_score()
+        data["player" + str(index)]["playerScore"] = player.statistics.score
     redis_data_save.append(data)

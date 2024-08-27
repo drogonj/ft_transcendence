@@ -172,3 +172,19 @@
     cursor: pointer;
     font-size: max(0.6vh, 0.65vw);
 }
+
+.chat-message a {
+	color: #161d2f;
+}
+
+.chat-message a:hover {
+	color: #ffc4c4;
+}
+
+.accept-button {
+	color: green;
+}
+
+.decline-button {
+	color: red;
+}

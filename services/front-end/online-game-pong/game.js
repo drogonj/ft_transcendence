@@ -1,10 +1,14 @@
 import {loadHeader, timerDecrease} from "./header.js";
-import loadListeners from "./listeners.js";
+import {loadListeners, removeListeners} from "./listeners.js";
 import loadMap from "./map.js";
-import {createBall, getBallWithId} from "./ball.js";
-import {createPlayers, getPlayerWithSide} from "./player.js";
+import {clearBalls, createBall, getBallWithId} from "./ball.js";
+import {createPlayers, getPlayerWithSide, stopPlayerLoop} from "./player.js";
+import {closeWebSocket} from "./websocket.js";
+import {navigateTo} from "../scripts/contentLoader.js";
+import {displayStatistics} from "./statistics.js";
 
 let gameId;
+let globalGameLoop;
 
 export function launchGame(socketValues) {
 	gameId = socketValues["gameId"];
@@ -24,7 +28,7 @@ export function endGame() {
 
 function startGlobalGameLoop() {
 	timerDecrease();
-	setTimeout(startGlobalGameLoop, 1000);
+	globalGameLoop = setTimeout(startGlobalGameLoop, 1000);
 }
 
 export function removeCssProperty(cssStyle, property) {
@@ -60,4 +64,18 @@ export function markPoint(socketValues) {
 	ball.deleteBall();
 	targetPlayer.increaseScore();
 	targetPlayer.displayPoint()
+}
+
+export function clearGame() {
+	clearBalls();
+	stopPlayerLoop();
+	removeListeners();
+	clearTimeout(globalGameLoop);
+}
+
+export function endGame(socketValues) {
+	clearGame();
+	closeWebSocket();
+	navigateTo("/game-end", true);
+	displayStatistics(socketValues);
 }
