@@ -1,9 +1,5 @@
 #!/bin/bash
 
-pkill vault
-rm -rf /vault/token/*
-
-# mkdir -p /vault/data/vault_1
 vault_to_network_address() {
   local vault_node_name=$1
   case $vault_node_name in
@@ -46,22 +42,32 @@ CA_CERT="${DIR}/ca.crt"
 
 mkdir -p "${DIR}"
 
-# Générer la clé privée de la CA
-openssl genpkey -algorithm RSA -out "${CA_KEY}" -aes256 -pass pass:mycapass
+if [ ! -f "${CA_CERT}" ] || [ ! -f "${CA_KEY}" ]; then
+    echo "Generating CA certificate and key..."
+    # Générer la clé privée de la CA
+    openssl genpkey -algorithm RSA -out "${CA_KEY}" -aes256 -pass pass:mycapass
 
-# Créer le certificat auto-signé de la CA
-openssl req -x509 -new -nodes -key "${CA_KEY}" -sha256 -days 3650 -out "${CA_CERT}" -subj "/C=FR/ST=Alsace/L=Mulhouse/O=Transcendence CA/CN=Transcendence Root CA" -passin pass:mycapass
+    # Créer le certificat auto-signé de la CA
+    openssl req -x509 -new -nodes -key "${CA_KEY}" -sha256 -days 3650 -out "${CA_CERT}" -subj "/C=FR/ST=Alsace/L=Mulhouse/O=Transcendence CA/CN=Transcendence Root CA" -passin pass:mycapass
+else
+    echo "CA certificate and key already exist. Skipping generation."
+fi
 
-# Fonction pour générer les certificats pour un serveur Vault
 generate_cert() {
   local SERVER_NAME=$1
   local IP1=$2
   local IP2=$3
 
+  if [ -f "${DIR}/${SERVER_NAME}-combined.crt" ] && [ -f "${DIR}/${SERVER_NAME}.key" ]; then
+    echo "Certificates for ${SERVER_NAME} already exist. Skipping generation."
+    return
+  fi
+
+  echo "Generating certificates for ${SERVER_NAME}..."
+
   # Générer la clé privée du serveur
   openssl genpkey -algorithm RSA -out "${DIR}/${SERVER_NAME}.key"
 
-  # Créer le fichier de configuration OpenSSL pour le serveur
   cat > "${DIR}/${SERVER_NAME}.cnf" << EOF
 [req]
 default_bits = 4096
@@ -87,6 +93,10 @@ subjectAltName       = @alt_names
 IP.1  = ${IP1}
 IP.2  = ${IP2}
 DNS.1 = ${SERVER_NAME}
+DNS.2 = vault_1
+DNS.3 = vault_2
+DNS.4 = vault_3
+DNS.5 = vault_4
 EOF
 
   # Générer la CSR pour le serveur
@@ -95,8 +105,11 @@ EOF
   # Signer la CSR avec la CA
   openssl x509 -req -in "${DIR}/${SERVER_NAME}.csr" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${DIR}/${SERVER_NAME}.crt" -days 365 -sha256 -extensions v3_req -extfile "${DIR}/${SERVER_NAME}.cnf" -passin pass:mycapass
 
-  # Créer le certificat combiné pour le serveur
   cat "${DIR}/${SERVER_NAME}.crt" "${CA_CERT}" > "${DIR}/${SERVER_NAME}-combined.crt"
+
+  rm "${DIR}/${SERVER_NAME}.csr" "${DIR}/${SERVER_NAME}.cnf"
+
+  echo "Certificates for ${SERVER_NAME} generated successfully."
 }
 
 generate_cert "vault_1" "127.0.0.1" "0.0.0.0"
@@ -109,15 +122,16 @@ sleep 2
 echo "Initializing Vault..."
 vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/token/init1.json
 chmod 600 /vault/token/init1.json
+sleep 2
 
 echo "Extracting unseal key and root token..."
 UNSEAL_KEY=$(jq -r '.unseal_keys_b64[0]' /vault/token/init1.json)
 VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init1.json)
 echo $VAULT_TOKEN > /vault/token/root_token-vault_1
 chmod 600 /vault/token/root_token-vault_1
-
 echo "Unsealing Vault..."
 vault operator unseal $UNSEAL_KEY
+sleep 2
 
 echo "Logging in with root token..."
 vault login $VAULT_TOKEN
@@ -143,5 +157,5 @@ vault token create -policy="unseal_key" -orphan -period=24h -format=json > /vaul
 chmod 600 /vault/token/unseal_token /vault/logs/vault_audit.log
 UNSEAL_TOKEN=$(jq -r '.auth.client_token' /vault/token/unseal_token)
 echo $UNSEAL_TOKEN > /vault/token/unseal_token
-echo "Setup complete. Keeping the container running..."
+echo "Setup complete."
 tail -f /dev/null

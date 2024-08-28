@@ -68,13 +68,11 @@ services:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=https://vault_1:8200
+      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "8201:8200"
 
   vault_2:
     build: ./services/vault2/
@@ -86,15 +84,13 @@ services:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=https://vault_2:8200
+      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     env_file:
       - .env
+    ports:
+      - "8202:8200"
 
 
   vault_3:
@@ -107,15 +103,11 @@ services:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=https://vault_3:8200
+      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     ports:
-      - "8200:8200"
+      - "8203:8200"
 
   vault_4:
     build: ./services/vault4/
@@ -127,13 +119,11 @@ services:
       - IPC_LOCK
     environment:
       - VAULT_ADDR=https://vault_4:8200
+      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "8204:8200"
 
   back-game:
     container_name: back-game-pong

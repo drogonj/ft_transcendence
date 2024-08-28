@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 sleep 5
 chown -R vault:vault /vault/token/
 
