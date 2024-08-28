@@ -316,11 +316,11 @@ export async function addChatMenu() {
 
 		if (!message.trim()) {
 			return;
-		} else {
+		} else { 
 			parseMessage(message);
 			messageInputDom.value = '';
-		}
-	};
+		};
+	}
 }
 
 async function parseMessage(message) {
