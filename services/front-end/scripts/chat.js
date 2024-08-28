@@ -12,9 +12,9 @@ var rooms = new Set();
 // - Deconnexion chatSocket a verifier sur page login avec reco
 
 export async function getChatCsrfToken() {
-    const response = await fetch('/api/chat/csrf/');
-	   const data = await response.json();
-    chatCsrfToken = data.csrfToken;
+	const response = await fetch('/api/chat/csrf/');
+	const data = await response.json();
+	chatCsrfToken = data.csrfToken;
 }
 
 export async function connectChatWebsocket(user_id, roomName) {
@@ -79,7 +79,7 @@ export async function connectChatWebsocket(user_id, roomName) {
 
 export async function disconnectChatWebsocket() {
 	leaveAllRooms();
-    chatSocket.close();
+	chatSocket.close();
 }
 
 async function connectToGame(data) {
@@ -166,7 +166,7 @@ export async function trollMessage(data) {
 async function muteMessage(username, cmd) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
- 
+
 	newMessage.classList.add('chat-message');
 	if (cmd === 'dm')
 		newMessage.textContent = `DM not delivered to : ${username} (reason : muted).`;
@@ -280,8 +280,8 @@ export async function addChatMenu() {
 	muteList = await getMuteListOf(currentUser.user_id) || [];
 	await getChatCsrfToken();
 	await connectChatWebsocket(currentUser.user_id, 'general');
-    const chatContainer = document.querySelector('.chat-menu-container');
-    chatContainer.innerHTML = `
+	const chatContainer = document.querySelector('.chat-menu-container');
+	chatContainer.innerHTML = `
 		<div id="chat-menu-container" class="chat-menu-container">
 			<div id="users-list" class="users-list">
 			<div class="users-title">Users</div>
