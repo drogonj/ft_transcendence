@@ -9,7 +9,8 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from user import User
+from player import Player
+from tournament import Tournament
 from websocket import WebSocketClient, get_game_server
 from websockets.exceptions import (
     ConnectionClosedError,
@@ -24,6 +25,13 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backtournamentpong.settings')
 django.setup()
 
 users_in_queue = []
+tournaments = []
+
+
+def get_tournament_with_id(tournament_id):
+    for tournament in tournaments:
+        if tournament.id == tournament_id:
+            return tournament
 
 
 async def ping_users():
@@ -92,11 +100,11 @@ class TournamentWebSocket(WebSocketHandler):
         if socket['type'] == 'launchTournament':
             print("launchTournament")
         elif socket['type'] == 'createUser':
-            user = User(self, socket_values)
-            users_in_queue.append(user)
-            print(f"User with id {user.get_user_id()} is bind to a client in the tournament server")
+            player = Player(self, socket_values)
+            users_in_queue.append(player)
+            print(f"User with id {player.get_player_id()} is bind to a client in the tournament server")
             if socket_values['host']:
-                print("createTournament")
+                tournaments.append(Tournament(player, socket_values["tournamentId"]))
             else:
                 print("bindtotournament")
 
