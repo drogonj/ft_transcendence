@@ -11,6 +11,11 @@ var rooms = new Set();
 // - si l'utilisateur est deja en game, a voir ce qu'on fait
 // - Deconnexion chatSocket a verifier sur page login avec reco
 
+
+// - reprendre les Threads dans consumers.py
+// - message de expired NOK poour le lanceur de l'invitation
+//  - Views.py ajouter des verifications
+
 export async function getChatCsrfToken() {
 	const response = await fetch('/api/chat/csrf/');
 	const data = await response.json();
@@ -54,11 +59,17 @@ export async function connectChatWebsocket(user_id, roomName) {
 					if (data.status === 'accepted')
 						connectToGame(data);
 					else if (data.status === 'declined')
-						suppressInvitation(data);
+						declinedInvitation(data);
+					else if (data.status === 'expired')
+						expiredInvitation(data);
 				}
 
 				else if (data.type === 'chat_message' && !muted)
 					chatMessage(data);
+
+				else if (data.type === 'troll_message' && !muted)
+					trollMessage(data);
+
 			})();
 		} 
 	} else
@@ -88,7 +99,7 @@ async function connectToGame(data) {
 	launchFriendGame(data);
 }
 
-async function suppressInvitation(data) {
+async function declinedInvitation(data) {
 	if (data.receiver_id === currentUser.user_id) {
 		removePendingInvitationMessage(data.invitationId); 
 
@@ -103,6 +114,25 @@ async function suppressInvitation(data) {
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
+}
+
+async function expiredInvitation(data) {
+	console.log(`Receiver: ${data.receiver_username} | Sender: ${data.user_name}`);
+	removePendingInvitationMessage(data.invitationId); 
+
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');``
+
+	newMessage.classList.add('chat-message');
+	if (data.receiver_id === currentUser.user_id)
+		newMessage.textContent = `${data.receiver}'s invitation has expired.`;
+	else if (data.user_id === currentUser.user_id)
+		newMessage.textContent = `Invitation to ${data.username} has expired.`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 async function removePendingInvitationMessage(invitationId) {
@@ -140,6 +170,19 @@ async function leaveAllRooms() {
 	rooms.clear();
 }
 
+
+function getTrollMessage() {
+	const random = Math.floor(Math.random() * 5);
+	let content = [
+		'Ain\'t you a narcissist?',
+		'Dude, you need some help... seriously.',
+		'Ain\'t you a bit lonely?',
+		'Get out, find some friends!',
+		'I mean... you could just... not do that?',
+	]
+	return content[random];
+}
+
 export async function trollMessage(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
@@ -147,15 +190,18 @@ export async function trollMessage(data) {
 	let content = [];
 
 	if (data.user_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.content}`;
+	} else {
 		content = [
-			'Ain\'t you a narcissist?',
-			'Dude, you need some help... seriously.',
-			'Ain\'t you a bit lonely?',
-			'Get out, find some friends!',
-			'I mean... you could just... not do that?',
+			'God bless this poor soul.',
+			'Guys, please, just talk to him/her/it!',
+			'Seems like nobody loves him/her/it.',
+			'You know what to do!',
+			'***leaving quietly***',
 		]
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${content[random]}`;
+		newMessage.textContent = `${data.username} talk to him/her/itself: ${content[random]}`;
 	}
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -240,7 +286,7 @@ async function invitationToPlay(data) {
 	if (data.user_id === currentUser.user_id) {
 		const newMessage = document.createElement('div');
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `Pending invitation, please wait...`;
+		newMessage.textContent = `Waiting for ${data.receiver_username} response, please wait...`;
 		newMessage.id = `pending-invitation-${data.invitationId}`;
 	
 		messageList.insertBefore(newMessage, messageList.firstChild);
@@ -299,6 +345,20 @@ export async function addChatMenu() {
 		</div>
 	`;
 
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.innerHTML = `Welcome to the chat ${currentUser.username}! <br> \
+		For private message: "/dm username message" <br> \
+		For private game: "/play username" \
+	`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+
 	await loadUsers();
 	await loadMessages();
 	await loadInvitations();
@@ -339,8 +399,15 @@ async function parseMessage(message) {
 					const amIMuted = checkMute.includes(currentUser.user_id);
 
 					if (user.username === username) {
-						if (user.username === currentUser.username)
-							trollMessage(message);
+						if (user.username === currentUser.username) {
+							let troll = getTrollMessage();
+							chatSocket.send(JSON.stringify({
+								'type': 'troll_message',
+								'content': troll,
+								'user_id': currentUser.user_id,
+								'username': currentUser.username,
+							}));
+						}
 						else if (!amIMuted && cmd === 'dm') {
 							chatSocket.send(JSON.stringify({
 								'type': 'private_message',

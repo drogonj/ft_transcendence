@@ -183,8 +183,10 @@
 
 .accept-button {
 	color: green;
+	width: auto;
 }
 
 .decline-button {
 	color: red;
+	width: auto;
 }
