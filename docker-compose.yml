@@ -143,6 +143,15 @@ services:
     networks:
       - network
 
+  back-tournament:
+    container_name: back-tournament-pong
+    build: services/back-tournament-pong/
+    expose:
+      - "2610"
+    env_file: .env
+    networks:
+      - network
+
   redis:
     container_name: redis
     build: ./services/redis/

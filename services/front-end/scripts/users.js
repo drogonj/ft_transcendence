@@ -26,10 +26,8 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 	const newUser = document.createElement('li');
 	newUser.id = `user-${user_id}`;
 
-	if (muteList && muteList.includes(user_id)) {
-		console.log(`User ${user_id} is muted: ${muteList.includes(user_id)}`);
+	if (muteList && muteList.includes(user_id))
 		is_muted = true;
-	}
 
 	newUser.innerHTML = `
 		<div class="status-indicator ${is_connected ? 'online' : 'offline'}"></div>
@@ -39,9 +37,12 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 		<span class="profile-link" data-user-id="${user_id}">
 			<p>${username}</p>
 		</span>
-        <button class="mute-user-button ${is_muted ? 'muted' : ''}" data-user-id="${user_id}">
-            <img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
-        </button>
+		<button class="game-user-button ${is_muted ? 'muted' : ''}" data-user-id="${user_id}">
+			<img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
+		</button>
+		<button class="mute-user-button ${is_muted ? 'muted' : ''}" data-user-id="${user_id}">
+			<img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
+		</button>
 	`;
 
 	usersContainer.insertAdjacentElement('beforeend', newUser);
@@ -109,9 +110,9 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 	});
 	
 	newUser.querySelector('.profile-link').addEventListener('click', async function (event) {
-		 const userId = this.getAttribute('data-user-id');
-		 const uri = '/profile/' + userId + '/';
-		 navigateTo(uri, true);
+		const userId = this.getAttribute('data-user-id');
+		const uri = '/profile/' + userId + '/';
+		navigateTo(uri, true);
 	});
 }
 
