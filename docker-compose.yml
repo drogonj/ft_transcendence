@@ -85,7 +85,6 @@ services:
       TZ: 'Europe/Paris'
       VAULT_SKIP_IP_AUTO_CONFIG: 'true'
 
-
   back-game:
     container_name: back-game-pong
     build: services/back-game-pong/
@@ -100,6 +99,15 @@ services:
     build: services/back-matchmaking-pong/
     expose:
       - "2607"
+    env_file: .env
+    networks:
+      - network
+
+  back-tournament:
+    container_name: back-tournament-pong
+    build: services/back-tournament-pong/
+    expose:
+      - "2610"
     env_file: .env
     networks:
       - network
