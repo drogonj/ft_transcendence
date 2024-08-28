@@ -292,7 +292,7 @@ export async function addChatMenu() {
 					<ul id="message-content" class="message-content active"></ul>
 				</div>
 				<div id="chat-input-container" class="chat-input-container">
-					<input id="chat-input" type="text" placeholder="Type a message...">
+					<input id="chat-input" type="text" maxlength="200" placeholder="Type a message...">
 					<button id="send-chat-message" class="send-chat-message">Send</button>
 				</div>
 			</div>
