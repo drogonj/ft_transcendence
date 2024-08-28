@@ -19,4 +19,5 @@ urlpatterns = [
     path('api/user/change-username/', views.ChangeUsernameView.as_view(), name='change-username'),
     path('api/user/change-password/', views.ChangePasswordView.as_view(), name='change-password'),
     path('api/user/upload-avatar/', views.ChangeAvatarView.as_view(), name='upload-avatar'),
+    path('api/user/get_session_user/', views.GetSessionUser.as_view(), name='get_session_user'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

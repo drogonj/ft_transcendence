@@ -19,7 +19,7 @@ export async function getChatCsrfToken() {
 
 export async function connectChatWebsocket(user_id, roomName) {
 	if (!chatSocket) {
-		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/${user_id}/`);
+		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/`);
 
 		chatSocket.onopen = function(e) {
 			console.log("Chat-WebSocket connection established.");
