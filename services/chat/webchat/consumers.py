@@ -1,7 +1,6 @@
 import json, requests, time, threading
-from asgiref.sync import sync_to_async, async_to_sync
-from datetime import datetime, timedelta
-from django.core.management.base import BaseCommand
+from asgiref.sync import sync_to_async
+from datetime import datetime
 from .models import Message, PrivateMessage, InvitationToPlay
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -273,32 +272,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		#log-troll
 		username = event['username']
 		logger.info(f'{username} speaks to self')
-
-	def start_expiration_check(self):
-		def check_expired_invitations():
-			while True:
-				now = datetime.now()
-				logger.info(f"Checking for expired invitations at {now}")
-				expired_invitations = InvitationToPlay.objects.filter(
-					timestamp__lte=now - timedelta(minutes=1),
-					status='pending'
-				)
-				for invitation in expired_invitations:
-					invitation.status = 'expired'
-					invitation.save()
-					event = {
-						'invitationId': invitation.invitationId,
-						'status': 'expired',
-						'type': 'invitation_response',
-						'user_id': invitation.receiver_id,
-						'username': invitation.receiver_username,
-						'receiver_id': invitation.user_id,
-						'receiver_username': invitation.username
-					}
-					logger.info(f"Invitation expired: {event}")
-					async_to_sync(self.invitation_response)(event)
-				time.sleep(30)
-
-		thread = threading.Thread(target=check_expired_invitations)
-		thread.daemon = True
-		thread.start()

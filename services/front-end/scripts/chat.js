@@ -60,8 +60,6 @@ export async function connectChatWebsocket(user_id, roomName) {
 						connectToGame(data);
 					else if (data.status === 'declined')
 						declinedInvitation(data);
-					else if (data.status === 'expired')
-						expiredInvitation(data);
 				}
 
 				else if (data.type === 'chat_message' && !muted)
@@ -69,7 +67,6 @@ export async function connectChatWebsocket(user_id, roomName) {
 
 				else if (data.type === 'troll_message' && !muted)
 					trollMessage(data);
-
 			})();
 		} 
 	} else
@@ -114,25 +111,6 @@ async function declinedInvitation(data) {
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
-}
-
-async function expiredInvitation(data) {
-	console.log(`Receiver: ${data.receiver_username} | Sender: ${data.user_name}`);
-	removePendingInvitationMessage(data.invitationId); 
-
-	const messageList = document.getElementById('message-content');
-	const newMessage = document.createElement('li');``
-
-	newMessage.classList.add('chat-message');
-	if (data.receiver_id === currentUser.user_id)
-		newMessage.textContent = `${data.receiver}'s invitation has expired.`;
-	else if (data.user_id === currentUser.user_id)
-		newMessage.textContent = `Invitation to ${data.username} has expired.`;
-
-	messageList.insertBefore(newMessage, messageList.firstChild);
-	
-	const chatMessages = document.getElementById('chat-messages');
-	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 async function removePendingInvitationMessage(invitationId) {
