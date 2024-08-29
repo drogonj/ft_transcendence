@@ -9,6 +9,9 @@ listener "tcp" {
   tls_cert_file   = "/vault/ssl/vault_1-combined.crt"
   tls_key_file    = "/vault/ssl/vault_1.key"
   tls_client_ca_file = "/vault/ssl/ca.crt"
+  tls_disable_client_certs = false
+  tls_min_version = "tls12"
+  tls_disable = 0
 }
 
 ui = true

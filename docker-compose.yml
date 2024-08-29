@@ -22,6 +22,8 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
+      - vault-ssl:/vault/ssl
+      - vault-token:/vault/token/
     networks:
       - network
     depends_on:
