@@ -40,9 +40,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 		<button class="game-user-button ${is_muted ? 'muted' : ''}" data-user-id="${user_id}">
 			<img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
 		</button>
-		<button class="mute-user-button ${is_muted ? 'muted' : ''}" data-user-id="${user_id}">
-			<img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
-		</button>
 	`;
 
 	usersContainer.insertAdjacentElement('beforeend', newUser);

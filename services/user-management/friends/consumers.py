@@ -124,7 +124,7 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 	async def accepted_friendship_request_notification(self, event):
 		from_user = event['from_user']
 		avatar = event['avatar']
-		is_connected = event['is_connected']
+		status = event['status']
 		id = event['id']
 
 		await self.send(text_data=json.dumps({
@@ -132,7 +132,7 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 			'id': id,
 			'username': from_user,
 			'avatar': avatar,
-			'is_connected': is_connected,
+			'status': status,
 		}))
 
 	async def canceled_friendship_notification(self, event):

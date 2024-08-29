@@ -108,7 +108,7 @@ async function suppressInvitation(data) {
 
 async function removePendingInvitationMessage(invitationId) {
 	const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
-	if (pendingMessageElement)
+	if (pendingMessageElement) {
 		pendingMessageElement.remove();
 	} else {
 		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
