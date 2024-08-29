@@ -31,7 +31,7 @@ def send_accepted_friendship_request_notification(to_user_id, from_user):
             'id': from_user.id,
             'from_user': from_user.username,
             'avatar': from_user.profil_image.url,
-            'is_connected': from_user.is_connected,
+            'status': from_user.status,
         }
     )
 
@@ -59,7 +59,7 @@ class GetFriendsView(View):
                 'id': friend.id,
                 'username': friend.username,
                 'avatar': friend.profil_image.url,
-                'is_connected': friend.is_connected,
+                'status': friend.status,
             })
         return JsonResponse({'friends': friends_info})
 
@@ -111,7 +111,7 @@ class AddFriendView(View):
                 'message': 'friendship request accepted',
                 'id': to_user.id,
                 'avatar': to_user.profil_image.url,
-                'is_connected': to_user.is_connected,
+                'status': to_user.status,
             })
 
         try:
@@ -145,7 +145,7 @@ class AcceptFriendshipRequest(View):
             return JsonResponse({
                 'message': 'friendship request accepted',
                 'username': from_user.username,
-                'is_connected': from_user.is_connected,
+                'status': from_user.status,
             })
         except Exception:
             return HttpResponseBadRequest()
@@ -201,7 +201,7 @@ class GetAllUsersDataView(View):
 				'avatar': user.profil_image.url if user.profil_image else None,
 				'is_connected': user.is_connected,
 			}
-			for user in users
+			for user in users if user.register_complete == True
 		]
 		return JsonResponse({'users': user_data})
 

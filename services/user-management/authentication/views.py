@@ -154,6 +154,7 @@ def oauth_callback(request):
                 'username': secrets.token_hex(30 // 2),
                 'email': user_data.get('email'),
                 'password': 'none',
+                'register_complete': False
             }
         )
 
