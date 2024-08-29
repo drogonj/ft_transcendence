@@ -8,14 +8,14 @@ COPY requirements.txt .
 
 RUN apt-get update && apt-get upgrade -y && \
 apt-get install -y --no-install-recommends \
-build-essential \
-		libpq-dev  && \
+        build-essential \
+		libpq-dev && \
 		apt-get clean && \
 		rm -rf /var/lib/apt/lists/* && \
 		pip install --upgrade pip && \
 		pip install -r requirements.txt
-		
+
 COPY . .
-		
+
 RUN chmod +x start.sh
 ENTRYPOINT ["./start.sh"]

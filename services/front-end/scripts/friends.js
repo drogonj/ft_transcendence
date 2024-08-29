@@ -1,14 +1,18 @@
 import { getCsrfToken, csrfToken } from "./auth.js";
 import { navigateTo } from "./contentLoader.js";
 
-let friendSocket;
-let friendSocketRunning = false;
+let friendSocket = null;
 
 export async function connectFriendsWebsocket() {
-    friendSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/friend-requests/`);
+    if (friendSocket !== null)
+        return;
 
-    friendSocket.onopen = function(e) {5
-        friendSocketRunning = true;
+    const tokenRequest = await fetch('/api/user/ws_token/');
+    const token = await tokenRequest.json();
+
+    friendSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/friend-requests/?uuid=${token.uuid}`);
+
+    friendSocket.onopen = function(e) {
         console.log("WebSocket connection established.");
     };
 
@@ -22,12 +26,9 @@ export async function connectFriendsWebsocket() {
 
         const route =  window.location.pathname + window.location.search;
         ifif: if (type === 'friend_request_notification') {
-            const avatar = data.avatar
-            addFriendshipRequestToMenu(user_id, from_user, avatar)
+            addFriendshipRequestToMenu(user_id, from_user, data.avatar)
         } else if (type === 'accepted_friendship_request_notification') {
-            const avatar = data.avatar
-            const is_connected = data.is_connected
-            addFriendToMenu(user_id, from_user, avatar, is_connected)
+            addFriendToMenu(user_id, from_user, data.avatar, data.status)
         } else if (type === 'canceled_friendship_notification') {
             const divId = "friend-" + user_id;
             const element = document.getElementById(divId);
@@ -35,19 +36,21 @@ export async function connectFriendsWebsocket() {
                 break ifif;
             element.remove();
         } else if (type === 'friend_connected_notification') {
-            changeFriendStatus(user_id, true);
+            changeFriendStatus(user_id, 'online');
         } else if (type === 'friend_disconnected_notification') {
-            changeFriendStatus(user_id, false)
+            changeFriendStatus(user_id, 'offline')
+        } else if (type === 'friend_ingame_notification') {
+            changeFriendStatus(user_id, 'in-game')
         }
     };
 
     friendSocket.onclose = function(event) {
-        friendSocketRunning = false;
         if (event.wasClean) {
             console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
         } else {
             console.log('[close] Connection died');
         }
+        friendSocket = null;
     };
 
     friendSocket.onerror = function(error) {
@@ -57,9 +60,10 @@ export async function connectFriendsWebsocket() {
 
 export async function disconnectFriendsWebsocket() {
     friendSocket.close();
+    friendSocket = null;
 }
 
-export function changeFriendStatus(userId, is_connected) {
+export function changeFriendStatus(userId, status) {
     let friendElement = document.getElementById(`friend-${userId}`);
 
     if (!friendElement)
@@ -71,15 +75,16 @@ export function changeFriendStatus(userId, is_connected) {
         const ul = friendElement.parentElement;
 
         if (statusIndicator) {
-            statusIndicator.classList.remove('offline', 'online');
-            statusIndicator.classList.add(is_connected ? 'online' : 'offline');
+            statusIndicator.classList.remove('offline', 'online', 'ingame');
+            let newClass = (status === 'offline') ? 'offline' : 'online';
+            statusIndicator.classList.add(newClass)
         }
 
         if (statusIndicatorText) {
-            statusIndicatorText.textContent = is_connected ? 'online' : 'offline';
+            statusIndicatorText.textContent = status;
         }
 
-        if (is_connected) {
+        if (status !== 'offline') {
             ul.prepend(friendElement)
         } else {
             ul.appendChild(friendElement)
@@ -108,7 +113,7 @@ export async function addFriend(event) {
     if (data.error) {
         alert(data.error);
     } else if (data.message && data.message === 'friendship request accepted') {
-        addFriendToMenu(data.id, username, data.avatar, data.is_connected);
+        addFriendToMenu(data.id, username, data.avatar, data.status);
     }
 }
 
@@ -157,7 +162,7 @@ export async function acceptFriendshipRequest(event) {
         const element = document.getElementById(divId);
         element.remove();
         console.log(responseData)
-        await addFriendToMenu(friendId, responseData.username, friendAvatar, responseData.is_connected)
+        await addFriendToMenu(friendId, responseData.username, friendAvatar, responseData.status)
     }
 }
 
@@ -185,7 +190,7 @@ export async function declineFriendshipRequest(event) {
 }
 
 // Function to add a friend to the menu
-export function addFriendToMenu(user, username, avatar, is_connected) {
+export function addFriendToMenu(user, username, avatar, status) {
     const friendsContainer = document.getElementById('friends-content');
 
     if (!friendsContainer)
@@ -197,8 +202,8 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
 
     // HTML structure of the friend
     newFriend.innerHTML = `
-        <div class="status-indicator ${is_connected ? 'online' : 'offline'}"></div>
-        <p class="status-indicator-text">${is_connected ? 'online' : 'offline'}</p>
+        <div class="status-indicator offline"></div>
+        <p class="status-indicator-text">offline</p>
         <div class="avatar-container">
             <img class="avatar" src="${avatar}" alt="${username}'s Avatar">
         </div>
@@ -217,7 +222,7 @@ export function addFriendToMenu(user, username, avatar, is_connected) {
     // Add the new element to the existing list
     friendsContainer.insertAdjacentElement('beforeend', newFriend);
 
-    changeFriendStatus(user, is_connected);
+    changeFriendStatus(user, status);
 
     // Add event listener for the delete button
     newFriend.querySelector('.delete-friend-button').addEventListener('click', async (event) => {
@@ -240,7 +245,7 @@ export async function loadFriends() {
 
         // Use for...of loop to iterate over friends and await each addFriendToMenu call
         for (const friend of friendsData.friends) {
-            addFriendToMenu(friend.id, friend.username, friend.avatar, friend.is_connected);
+            addFriendToMenu(friend.id, friend.username, friend.avatar, friend.status);
         }
 
     } catch (error) {

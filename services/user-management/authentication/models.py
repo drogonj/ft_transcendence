@@ -52,10 +52,11 @@ class Account(AbstractBaseUser):
     profil_image        = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
 
     is_connected        = models.BooleanField(default=False)
+    status              = models.CharField(default='offline', max_length=10)
     active_connections  = models.IntegerField(default=0)
 
     intra_id            = models.IntegerField(default=0)
-    register_complete   = models.BooleanField(default=False)
+    register_complete   = models.BooleanField(default=True)
     tmp_token           = models.CharField(max_length=100, unique=True, blank=True, null=True)
     token_creation_date = models.DateTimeField(verbose_name="token_creation_date", default=timezone.now)
 
@@ -128,3 +129,14 @@ class Account(AbstractBaseUser):
             self.save()
         except Exception as e:
             raise e
+
+    async def set_status(self, status):
+        status_list = ['offline', 'online', 'ingame']
+        if status not in status_list:
+            return
+        self.status = status
+        if status == 'offline':
+            self.is_connected = False
+        else:
+            self.is_connected = True
+        await self.asave()
