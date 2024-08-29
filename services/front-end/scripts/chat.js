@@ -7,15 +7,6 @@ export var chatCsrfToken = '';
 export var chatSocket = null;
 var rooms = new Set();
 
-// TODO:
-// - si l'utilisateur est deja en game, a voir ce qu'on fait
-// - Deconnexion chatSocket a verifier sur page login avec reco
-
-
-// - reprendre les Threads dans consumers.py
-// - message de expired NOK poour le lanceur de l'invitation
-//  - Views.py ajouter des verifications
-
 export async function getChatCsrfToken() {
 	const response = await fetch('/api/chat/csrf/');
 	const data = await response.json();
@@ -28,6 +19,7 @@ export async function connectChatWebsocket(user_id, roomName) {
 
 		chatSocket.onopen = function(e) {
 			console.log("Chat-WebSocket connection established.");
+			joinRoom(`ID_${currentUser.user_id}`);
 			joinRoom(roomName);
 		};
 
@@ -48,8 +40,7 @@ export async function connectChatWebsocket(user_id, roomName) {
 					|| data.user_id === currentUser.user_id))
 						privateMessage(data);
 
-				else if (data.type === 'invitation_to_play' && (data.receiver_id === currentUser.user_id
-					|| data.user_id === currentUser.user_id)) {
+				else if (data.type === 'invitation_to_play') {
 						joinRoom(`invitation_${data.invitationId}`);
 						invitationToPlay(data);
 				}
@@ -59,9 +50,14 @@ export async function connectChatWebsocket(user_id, roomName) {
 						connectToGame(data);
 					else if (data.status === 'declined')
 						declinedInvitation(data);
-					else if (data.status === 'cancelled')
-						cancelledInvitation(data);
 				}
+
+				else if (data.type === 'cancelled_invitation') {
+					cancelledInvitation(data);
+				}
+
+				else if (data.type === 'system')
+					systemMessage(data);
 
 				else if (data.type === 'chat_message' && !muted)
 					chatMessage(data);
@@ -91,7 +87,7 @@ export async function disconnectChatWebsocket() {
 	chatSocket.close();
 }
 
-async function connectToGame(data) {
+async function 	connectToGame(data) {
 	removePendingInvitationMessage(data.invitationId);
 	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
 	leaveRoom(`invitation_${data.invitationId}`);
@@ -140,6 +136,9 @@ async function removePendingInvitationMessage(invitationId) {
 	const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
 	if (pendingMessageElement)
 		pendingMessageElement.remove();
+}
+async function joinRooms() {
+
 }
 
 async function joinRoom(roomName) {
@@ -239,6 +238,19 @@ async function chatMessage(data) {
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+async function systemMessage(data) {
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.innerHTML = `${data.content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 async function privateMessage(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
@@ -293,7 +305,7 @@ function inviteConnectedUser(data) {
 			const chatMessages = document.getElementById('chat-messages');
 			chatMessages.scrollTop = chatMessages.scrollHeight;
 
-			newMessage.querySelector('.cancel-button').addEventListener('click', async () => handleDecline(data, newMessage));
+			newMessage.querySelector('.cancel-button').addEventListener('click', async () => handleCancel(data, newMessage));
 	}
 }
 
@@ -379,13 +391,13 @@ export async function handleDecline(data, message) {
 			'X-CSRFToken': chatCsrfToken
 		},
 		body: JSON.stringify({'status': 'declined'})
-		});
+		});	
 	sendRoomMessage(data, 'declined');
 }
 
 export async function handleCancel(data, message) {
 	message.remove();
-	await fetch(`/api/chat/invitations/cancel/${data.invitationId}/`, {
+	await fetch(`/api/chat/invitations/cancelled/${data.invitationId}/`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -494,6 +506,7 @@ async function parseMessage(message) {
 							}));
 						} else if (!amIMuted && cmd === 'play') {
 							chatSocket.send(JSON.stringify({
+								'room': `ID_${currentUser.user_id}`,
 								'type': 'invitation_to_play',
 								'user_id': currentUser.user_id,
 								'username': currentUser.username,
@@ -533,16 +546,29 @@ async function sendChatMessage(message) {
 }
 
 async function sendRoomMessage(data, status) {
-	chatSocket.send(JSON.stringify({
-		'room': `invitation_${data.invitationId}`,
-		'type': 'invitation_response',
-		'invitationId': data.invitationId,
-		'status': status,
-		'receiver_id': data.user_id,
-		'receiver_username': data.username,
-		'user_id': data.receiver_id,
-		'username': data.receiver_username
-	}));
+	if (status === 'cancelled') {
+		chatSocket.send(JSON.stringify({
+			'room': `invitation_${data.invitationId}`,
+			'type': 'cancelled_invitation',
+			'invitationId': data.invitationId,
+			'status': status,
+			'receiver_id': data.receiver_id,
+			'receiver_username': data.receiver_username,
+			'user_id': data.user_id,
+			'username': data.username
+		}));
+	} else {
+		chatSocket.send(JSON.stringify({
+			'room': `invitation_${data.invitationId}`,
+			'type': 'invitation_response',
+			'invitationId': data.invitationId,
+			'status': status,
+			'receiver_id': data.user_id,
+			'receiver_username': data.username,
+			'user_id': data.receiver_id,
+			'username': data.receiver_username
+		}));
+	}
 }
 
 export async function muteUser(userId) {
