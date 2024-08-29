@@ -31,7 +31,7 @@ def send_accepted_friendship_request_notification(to_user_id, from_user):
             'id': from_user.id,
             'from_user': from_user.username,
             'avatar': from_user.profil_image.url,
-            'is_connected': from_user.is_connected,
+            'status': from_user.status,
         }
     )
 
@@ -59,7 +59,7 @@ class GetFriendsView(View):
                 'id': friend.id,
                 'username': friend.username,
                 'avatar': friend.profil_image.url,
-                'is_connected': friend.is_connected,
+                'status': friend.status,
             })
         return JsonResponse({'friends': friends_info})
 
@@ -111,7 +111,7 @@ class AddFriendView(View):
                 'message': 'friendship request accepted',
                 'id': to_user.id,
                 'avatar': to_user.profil_image.url,
-                'is_connected': to_user.is_connected,
+                'status': to_user.status,
             })
 
         try:
@@ -145,7 +145,7 @@ class AcceptFriendshipRequest(View):
             return JsonResponse({
                 'message': 'friendship request accepted',
                 'username': from_user.username,
-                'is_connected': from_user.is_connected,
+                'status': from_user.status,
             })
         except Exception:
             return HttpResponseBadRequest()
@@ -201,7 +201,7 @@ class GetAllUsersDataView(View):
 				'avatar': user.profil_image.url if user.profil_image else None,
 				'is_connected': user.is_connected,
 			}
-			for user in users
+			for user in users if user.register_complete == True
 		]
 		return JsonResponse({'users': user_data})
 
@@ -218,36 +218,38 @@ class GetOneUserDataView(View):
 			return JsonResponse({'error': 'User not found'}, status=404)
 
 class GetMuteListView(View):
-	def get(self, request, user_id):
-		try:
-			user = User.objects.get(id=user_id)
-			muted_users = user.muted_users.values_list('id', flat=True)
-			user_data = {
-				'muted_users': list(muted_users),
-			}
-			return JsonResponse(user_data)
-		except User.DoesNotExist:
-			return JsonResponse({'error': 'User not found'}, status=404)
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            muted_users = user.muted_users.values_list('id', flat=True)
+            user_data = {
+            'muted_users': list(muted_users)
+            }
+            return JsonResponse(user_data)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except ValueError:
+            return HttpResponseBadRequest()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MuteToggleView(View):
-	def post(self, request, user_id):
-		try:
-			user = User.objects.get(id=user_id)
-			data = json.loads(request.body)
-			muted = data.get('muted', False)
-			current_user = request.user
+    def post(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            data = json.loads(request.body)
+            muted = data.get('muted', False)
+            current_user = request.user
 
-			if not current_user.is_authenticated:
-				return JsonResponse({'error': 'User not authenticated'}, status=401)
+            if not current_user.is_authenticated:
+                return JsonResponse({'error': 'User not authenticated'}, status=401)
 
-			if muted:
-				if user.id not in current_user.muted_users.values_list('id', flat=True):
-					current_user.muted_users.add(user)
-			else:
-				if user in current_user.muted_users.all():
-					current_user.muted_users.remove(user)
+            if muted:
+                if user.id not in current_user.muted_users.values_list('id', flat=True):
+                    current_user.muted_users.add(user)
+                else:
+                    if user in current_user.muted_users.all():
+                        current_user.muted_users.remove(user)
+                return JsonResponse({'success': True})
 
-			return JsonResponse({'success': True})
-		except User.DoesNotExist:
-			return JsonResponse({'error': 'User not found'}, status=404)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)

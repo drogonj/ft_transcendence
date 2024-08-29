@@ -1,4 +1,5 @@
 from django.urls import path, re_path
+from django_channels_jwt.views import AsgiValidateTokenView
 from . import views
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
 	path('api/user/get_user/<int:user_id>/', views.GetOneUserDataView.as_view(), name='get_user'),
 	path('api/user/mute_toggle/<str:user_id>/', views.MuteToggleView.as_view(), name='mute_toggle'),
 	path('api/user/get_mutelist/<str:user_id>/', views.GetMuteListView.as_view(), name='mute_list'),
+	path('api/user/ws_token/', AsgiValidateTokenView.as_view(), name='ws_token')
 ]

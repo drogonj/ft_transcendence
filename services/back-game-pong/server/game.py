@@ -1,7 +1,7 @@
 import asyncio
 from .ball import Ball
 from .utils import reverse_side
-from .redis_communication import send_to_redis, create_data_to_send
+from .redis_communication import send_game_data_to_redis, store_game_data, send_game_started_to_redis, store_game_started_data
 from .spell.spell_registry import SpellRegistry
 
 
@@ -36,6 +36,9 @@ class Game:
 
 		socket_values["clientSide"] = "Right"
 		player_right.send_message_to_player("launchGame", socket_values)
+
+		store_game_started_data(self.__players)
+		send_game_started_to_redis()
 
 		asyncio.create_task(self.main_loop())
 		asyncio.create_task(self.launch_max_time())
@@ -129,14 +132,13 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
-		create_data_to_send(self.__players)
-		send_to_redis()
+		store_game_data(self.__players)
+		send_game_data_to_redis()
 
 		data_values = {}
 		for player in self.__players:
 			data_values[player.get_side()] = player.statistics.get_statistics_as_list()
 		self.send_message_to_game("endGame", data_values)
-
 
 	def trigger_game_launch(self):
 		if len(self.__players) == 2:

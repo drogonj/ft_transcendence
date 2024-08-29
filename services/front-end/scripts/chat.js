@@ -15,7 +15,7 @@ export async function getChatCsrfToken() {
 
 export async function connectChatWebsocket(user_id, roomName) {
 	if (!chatSocket) {
-		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/${user_id}/`);
+		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/`);
 
 		chatSocket.onopen = function(e) {
 			console.log("Chat-WebSocket connection established.");
@@ -44,7 +44,6 @@ export async function connectChatWebsocket(user_id, roomName) {
 						joinRoom(`invitation_${data.invitationId}`);
 						invitationToPlay(data);
 				}
-
 				else if (data.type === 'invitation_response') {
 					if (data.status === 'accepted')
 						connectToGame(data);
@@ -65,7 +64,7 @@ export async function connectChatWebsocket(user_id, roomName) {
 				else if (data.type === 'troll_message' && !muted)
 					trollMessage(data);
 			})();
-		} 
+		}
 	} else
 		joinRoom(roomName);
 
@@ -75,6 +74,7 @@ export async function connectChatWebsocket(user_id, roomName) {
 		else
 			console.log('[close] Chat Connection died');
 		leaveAllRooms();
+		chatSocket = null;
 	};
 
 	chatSocket.onerror = function(error) {
@@ -83,8 +83,9 @@ export async function connectChatWebsocket(user_id, roomName) {
 }
 
 export async function disconnectChatWebsocket() {
-	leaveAllRooms();
-	chatSocket.close();
+	await leaveAllRooms();
+    chatSocket.close();
+	chatSocket = null;
 }
 
 async function 	connectToGame(data) {
@@ -134,8 +135,11 @@ async function cancelledInvitation(data) {
 
 async function removePendingInvitationMessage(invitationId) {
 	const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
-	if (pendingMessageElement)
+	if (pendingMessageElement) {
 		pendingMessageElement.remove();
+	} else {
+		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
+	}
 }
 async function joinRooms() {
 

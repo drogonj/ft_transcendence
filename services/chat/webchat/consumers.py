@@ -9,9 +9,28 @@ user_to_consumer = {}
 
 class ChatConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
+		cookies = self.scope['cookies']
+		session_id = cookies.get('sessionid')
+		self.user_id = 0
+		if not session_id:
+			await self.close()
+			return
+		session_response = requests.post('http://user-management:8000/api/user/get_session_user/', json={'sessionId': session_id})
+		status = session_response.status_code
+
+		if status != 200:
+			await self.close()
+			return
+		else:
+			response_data = session_response.json()
+			if response_data.get('success'):
+				self.user_id = response_data.get('id')
+			else:
+				await self.close()
+				return
+
 		self.room_name = self.scope['url_route']['kwargs']['room_name']
 		self.rooms = set()
-		self.user_id = self.scope['url_route']['kwargs']['user_id']
 		user_to_consumer[self.user_id] = self
 		uri = f'http://user-management:8000/api/user/get_user/{self.user_id}/'
 

@@ -1,7 +1,7 @@
 from django.views.generic import FormView
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, HttpResponseServerError
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
@@ -12,8 +12,20 @@ from datetime import timedelta
 import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
+from django.contrib.sessions.models import Session
 
 User = get_user_model()
+
+import logging
+import sys
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -22,6 +34,10 @@ def get_csrf_token(request):
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(View):
     def post(self, request):
+
+        if request.user and request.user.is_authenticated:
+            return JsonResponse({'success': False, 'type': 'AlreadyLogged', f'message': f'You are already login as {request.user.username}'})
+
         data = json.loads(request.body)
         user_auth = data.get('username')
         password = data.get('password')
@@ -40,6 +56,9 @@ class LoginView(View):
 class SignupView(View):
     def post(self, request):
         try:
+            if request.user and request.user.is_authenticated:
+                return JsonResponse({'success': False, 'type': 'AlreadyLogged', f'message': f'You are already login as {request.user.username}'})
+
             data = json.loads(request.body)
             username = data.get('username')
             email    = data.get('email')
@@ -64,12 +83,6 @@ class SignupView(View):
         except Exception as e:
             return JsonResponse({'error': f'{e}'}, status=400)
 
-@method_decorator(login_required, name='dispatch')
-class LogoutView(View):
-    def post(self, request):
-        logout(request)
-        return JsonResponse({'success': True, 'message': 'Logout successful'})
-
 class IsAuthenticatedView(View):
     def get(self, request):
         is_authenticated = request.user.is_authenticated
@@ -82,8 +95,11 @@ class IsAuthenticatedView(View):
 @method_decorator(login_required, name='dispatch')
 class LogoutView(View):
     def post(self, request):
-        logout(request)
-        return JsonResponse({'success': True, 'message': 'Logout successful'})
+        if request.user and request.user.is_authenticated:
+            logout(request)
+            return JsonResponse({'success': True, 'message': 'Logout successful'})
+        else:
+            return HttpResponseBadRequest()
 
 @login_required
 def get_profile_picture(request):
@@ -138,6 +154,7 @@ def oauth_callback(request):
                 'username': secrets.token_hex(30 // 2),
                 'email': user_data.get('email'),
                 'password': 'none',
+                'register_complete': False
             }
         )
 
@@ -165,6 +182,9 @@ def oauth_callback(request):
 def oauth_confirm_registration(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Bad request")
+
+    if request.user and request.user.is_authenticated:
+        return JsonResponse({'success': False, 'type': 'AlreadyLogged', f'message': f'You are already login as {request.user.username}'})
 
     data = json.loads(request.body)
 
@@ -303,5 +323,36 @@ class ChangeAvatarView(View):
 
             return JsonResponse({'success': True, 'avatar': user.profil_image.url})
 
-        except Exception as e:
+        except:
             return HttpResponseBadRequest('Failed to upload image')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GetSessionUser(View):
+    def post(self, request):
+        user_id = -1
+        user = None
+        try:
+            body = json.loads(request.body)
+            sessionId = body.get('sessionId')
+
+            if not sessionId:
+                return HttpResponseBadRequest("Session ID is required")
+
+            session = Session.objects.get(session_key=sessionId)
+            data = session.get_decoded()
+            user_id = data.get('_auth_user_id')
+
+            logger.info(f'USER ID: {user_id}')
+
+            if not User.objects.filter(id=user_id).exists():
+                return JsonResponse({'success': False, 'message': 'No user found for this session'})
+            user = User.objects.get(id=user_id)
+            return JsonResponse({'success': True, 'id': user_id, 'username': user.username})
+
+        except Session.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Session not found'})
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'No user found for this session'})
+        except Exception as e:
+            logger.info(f'GetSessionUser Error: {e}')
+            return HttpResponseServerError(f"An error occurred: {e}")
