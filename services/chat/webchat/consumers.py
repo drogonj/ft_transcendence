@@ -6,12 +6,14 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 logger = logging.getLogger(__name__)
 user_to_consumer = {}
+group_to_users = {}
 
 class ChatConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		cookies = self.scope['cookies']
 		session_id = cookies.get('sessionid')
 		self.user_id = 0
+
 		if not session_id:
 			await self.close()
 			return
@@ -28,6 +30,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			else:
 				await self.close()
 				return
+
+		await self.fetch_csrf_token()
 
 		self.room_name = self.scope['url_route']['kwargs']['room_name']
 		self.rooms = set()
@@ -63,13 +67,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		data = json.loads(text_data)
 
 		if data['type'] == 'join_room':
-			room_name = data.get('room')
+			room_name = data['room']
 			self.rooms.add(room_name)
 			await self.channel_layer.group_add(room_name, self.channel_name)
 
 		elif data['type'] == 'leave_room':
-			room_name = data.get('room')
-			await self.channel_layer.group_discard(room_name,self.channel_name)
+			room_name = data['room']
+			await self.channel_layer.group_discard(room_name, self.channel_name)
 
 		elif data['type'] == 'user_status_update':
 			await self.channel_layer.group_send(
@@ -82,16 +86,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'is_connected': data['is_connected'],
 					'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 				}
-			)		
+			)        
 
 		elif data['type'] == 'chat_message':
+			sender_id = data['user_id']
+			group_name = self.room_name
+
+			group_users = group_to_users.get(group_name, set())
+
+			for user_id in group_users:
+				if not await self.is_user_muted(user_id, sender_id):
+					await self.channel_layer.send(user_id, {
+						'type': 'chat.message',
+						'messageId': data['messageId'],
+						'type': data['type'],
+						'content': data['content'],
+						'user_id': data['user_id'],
+						'username': data['username'],
+						'timestamp': data['timestamp']
+					})
+
 			new_message = await sync_to_async(Message.objects.create)(
 				type = data['type'],
 				content = data['content'],
 				user_id = data['user_id'],
 				username = data['username'],
 				timestamp = datetime.now(),
-			)	
+			)    
 			await self.channel_layer.group_send(
 				self.room_name,
 				{
@@ -129,7 +150,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			)
 
 		elif data['type'] == 'invitation_to_play':
-			receiver = data['receiver_id']
+			receiver = data.get('receiver_id')
 			room_name = data.get('room')
 			room_name2 = f'ID_{receiver}'
 			uri = f'http://user-management:8000/api/user/get_user/{receiver}/'
@@ -217,7 +238,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'user_id': data['user_id'],
 					'username': data['username'],
 				}
-			)	
+			)    
 
 	async def user_status_update(self, event):
 		await self.send(text_data=json.dumps({
@@ -310,7 +331,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'receiver_id': event['receiver_id'],
 			'receiver_username': event['receiver_username']
 		}))
-		#log-response
+		#log-cancel
 		username = event['username']
 		status = event['status']
 		receiver_username = event['receiver_username']
@@ -341,3 +362,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		#log-troll
 		username = event['username']
 		logger.info(f'{username} speaks to self')
+
+	async def mute_user_backend(self, target_user_id):
+		if not self.csrf_token:
+			logger.error("CSRF token is missing")
+			return
+		uri = f'http://user-management:8000/api/user/mute_toggle/{target_user_id}/'
+		response = requests.post(uri, json={'muted': True}, headers={'X-CSRFToken': self.csrf_token})
+		response.raise_for_status()
+
+	async def unmute_user_backend(self, target_user_id):
+		if not self.csrf_token:
+			logger.error("CSRF token is missing")
+			return
+		uri = f'http://user-management:8000/api/user/mute_toggle/{target_user_id}/'
+		response = requests.post(uri, json={'muted': False}, headers={'X-CSRFToken': self.csrf_token})
+		response.raise_for_status()
+
+	async def is_user_muted(self, user_id, target_user_id):
+		uri = f'http://user-management:8000/api/user/get_mute_list/{user_id}/'
+		response = requests.get(uri)
+		response.raise_for_status()
+		mute_list = response.json().get('muted_users', [])
+		return target_user_id in mute_list
+	
+	async def fetch_csrf_token(self):
+		try:
+			response = requests.get('http://user-management:8000/api/user/get_csrf_token/')
+			response.raise_for_status()
+			self.csrf_token = response.cookies['csrftoken']
+		except requests.exceptions.RequestException as e:
+			logger.error(f"Error fetching CSRF token: {e}")
+			self.csrf_token = None

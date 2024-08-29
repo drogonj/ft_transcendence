@@ -73,35 +73,40 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 				throw new Error(`Network response was not ok. Status: ${response.status}`);
 			}
 
-			if (isMuted) {
-				muteButton.classList.remove('muted');
-				unmuteUser(userId);
-				muteIcon.src = '/assets/images/chat/chat_icon.png';
+			const result = await response.json();
+			if (result.success) {
+				if (isMuted) {
+					muteButton.classList.remove('muted');
+					await unmuteUser(userId);
+					muteIcon.src = '/assets/images/chat/chat_icon.png';
+				} else {
+					muteButton.classList.add('muted');
+					await muteUser(userId);
+					muteIcon.src = '/assets/images/chat/mute_icon.png';
+
+					const toDeny = await amIInvitedToPlayBy(userId);
+					toDeny.forEach(async (invitationId) => {
+						const data = {
+							'room': `invitation_${invitationId}`,
+							'type': 'invitation_response',
+							'invitationId': invitationId,
+							'status': 'denied',
+							'user_id': user_id,
+							'username': username,
+							'receiver_id': currentUser.user_id,
+							'receiver_username': currentUser.username
+						};
+
+						const newMessage = document.getElementById(`pending-invitation-${invitationId}`);
+						if (newMessage) {
+							handleDecline(data, newMessage);
+						} else {
+							console.error(`Element with ID pending-invitation-${invitationId} not found.`);
+						}
+					});
+				}
 			} else {
-				muteButton.classList.add('muted');
-				muteUser(userId);
-				muteIcon.src = '/assets/images/chat/mute_icon.png';
-
-				const toDeny = await amIInvitedToPlayBy(userId);
-				toDeny.forEach(async (invitationId) => {
-					const data = {
-						'room': `invitation_${invitationId}`,
-						'type': 'invitation_response',
-						'invitationId': invitationId,
-						'status': 'denied',
-						'user_id': user_id,
-						'username': username,
-						'receiver_id': currentUser.user_id,
-						'receiver_username': currentUser.username
-					};
-
-					const newMessage = document.getElementById(`pending-invitation-${invitationId}`);
-					if (newMessage) {
-						handleDecline(data, newMessage);
-					} else {
-						console.error(`Element with ID pending-invitation-${invitationId} not found.`);
-					}
-				});
+				console.error('Failed to update mute state:', result.message);
 			}
 		} catch (error) {
 			console.error('Error updating mute state:', error);

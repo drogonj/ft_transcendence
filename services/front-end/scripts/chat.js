@@ -27,7 +27,10 @@ export async function connectChatWebsocket(user_id, roomName) {
 			(async () => {
 				const data = JSON.parse(e.data);
 				let muted = false;
-				data.timestamp = formatTime(data.timestamp);
+
+				if (data.timestamp)
+					data.timestamp = formatTime(data.timestamp);
+
 				console.log(data);
 
 				if (muteList && muteList.includes(data.user_id))
@@ -576,11 +579,55 @@ async function sendRoomMessage(data, status) {
 }
 
 export async function muteUser(userId) {
-	muteList.push(Number(userId));
+	try {
+		const response = await fetch(`/api/user/mute_toggle/${userId}/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': chatCsrfToken
+			},
+			body: JSON.stringify({ muted: true })
+		});
+
+		if (!response.ok) {
+			throw new Error(`Network response was not ok. Status: ${response.status}`);
+		}
+
+		const result = await response.json();
+		if (result.success) {
+			muteList.push(Number(userId));
+		} else {
+			console.error('Failed to mute user:', result.message);
+		}
+	} catch (error) {
+		console.error('Error muting user:', error);
+	}
 }
 
 export async function unmuteUser(userId) {
-	muteList = muteList.filter(id => id !== Number(userId));
+	try {
+		const response = await fetch(`/api/user/mute_toggle/${userId}/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': chatCsrfToken
+			},
+			body: JSON.stringify({ muted: false })
+		});
+
+		if (!response.ok) {
+			throw new Error(`Network response was not ok. Status: ${response.status}`);
+		}
+
+		const result = await response.json();
+		if (result.success) {
+			muteList = muteList.filter(id => id !== Number(userId));
+		} else {
+			console.error('Failed to unmute user:', result.message);
+		}
+	} catch (error) {
+		console.error('Error unmuting user:', error);
+	}
 }
 
 async function loadMessages() {
