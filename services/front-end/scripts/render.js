@@ -18,6 +18,7 @@ import {
 import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
+import {test} from "../tournament/tournament.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -209,6 +210,7 @@ export async function renderHome() {
                     <div id="gameButtons">
                         <button id="launch-game" class="friend-menu-button">Start local game</button>
                         <button id="launch-game-online" class="friend-menu-button">Start online game</button>
+                        <button id="tournament" class="friend-menu-button">Tournament</button>
                     </div>
                     
                     <div class="friend-menu-container"></div>
@@ -233,6 +235,10 @@ export async function renderHome() {
 
     document.getElementById('launch-game-online').addEventListener('click', (event) => {
         launchClientMatchMaking();
+    });
+
+    document.getElementById('tournament').addEventListener('click', (event) => {
+        test();
     });
 }
 
