@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR_ENV = Path(__file__).resolve().parent.parent.parent.parent
 load_dotenv(os.path.join(BASE_DIR_ENV, '.env'))
 vault_client = get_vault_client()
-db_secrets = vault_client.read_secret('myapp/database')
+db_secrets = vault_client.read_secret('ft_transcendence/database')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

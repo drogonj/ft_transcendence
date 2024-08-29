@@ -8,6 +8,7 @@ COPY requirements.txt .
 
 RUN apt-get update && apt-get upgrade -y && \
 apt-get install -y --no-install-recommends \
+curl \
 build-essential \
 		libpq-dev  && \
 		apt-get clean && \

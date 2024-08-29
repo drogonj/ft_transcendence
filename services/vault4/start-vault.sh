@@ -48,86 +48,21 @@ start_vault() {
   VAULT_TOKEN=$VAULT_TOKEN VAULT_API_ADDR=$vault_network_address vault server -log-level=trace -config "$vault_config_file" > "$vault_log_file" 2>&1 &
 }
 
-DIR="/vault/ssl"
-CA_KEY="${DIR}/ca.key"
-CA_CERT="${DIR}/ca.crt"
-
-mkdir -p "${DIR}"
-
-generate_cert() {
-  local SERVER_NAME=$1
-  local IP1=$2
-  local IP2=$3
-
-  if [ -f "${DIR}/${SERVER_NAME}-combined.crt" ] && [ -f "${DIR}/${SERVER_NAME}.key" ]; then
-    echo "Certificates for ${SERVER_NAME} already exist. Skipping generation."
-    return
-  fi
-
-  echo "Generating certificates for ${SERVER_NAME}..."
-
-  # Générer la clé privée du serveur
-  openssl genpkey -algorithm RSA -out "${DIR}/${SERVER_NAME}.key"
-
-  cat > "${DIR}/${SERVER_NAME}.cnf" << EOF
-[req]
-default_bits = 4096
-encrypt_key  = no
-default_md   = sha256
-prompt       = no
-utf8         = yes
-distinguished_name = req_distinguished_name
-req_extensions     = v3_req
-[req_distinguished_name]
-C  = FR
-ST = Alsace
-L  = Mulhouse
-O  = Transcendence
-CN = ${SERVER_NAME}
-[v3_req]
-basicConstraints     = CA:FALSE
-subjectKeyIdentifier = hash
-keyUsage             = digitalSignature, keyEncipherment
-extendedKeyUsage     = clientAuth, serverAuth
-subjectAltName       = @alt_names
-[alt_names]
-IP.1  = ${IP1}
-IP.2  = ${IP2}
-DNS.1 = ${SERVER_NAME}
-DNS.2 = vault_1
-DNS.3 = vault_2
-DNS.4 = vault_3
-DNS.5 = vault_4
-EOF
-
-  # Générer la CSR pour le serveur
-  openssl req -new -key "${DIR}/${SERVER_NAME}.key" -out "${DIR}/${SERVER_NAME}.csr" -config "${DIR}/${SERVER_NAME}.cnf"
-
-  # Signer la CSR avec la CA
-  openssl x509 -req -in "${DIR}/${SERVER_NAME}.csr" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${DIR}/${SERVER_NAME}.crt" -days 365 -sha256 -extensions v3_req -extfile "${DIR}/${SERVER_NAME}.cnf" -passin pass:mycapass
-
-  cat "${DIR}/${SERVER_NAME}.crt" "${CA_CERT}" > "${DIR}/${SERVER_NAME}-combined.crt"
-
-  rm "${DIR}/${SERVER_NAME}.csr" "${DIR}/${SERVER_NAME}.cnf"
-
-  echo "Certificates for ${SERVER_NAME} generated successfully."
-}
-generate_cert "vault_4" "127.0.0.1" "0.0.0.0"
 export VAULT_CACERT=/vault/ssl/ca.crt
 wait_for_vault2
 start_vault "vault_4"
 
 echo "Waiting for Vault 4 to start and auto-unseal..."
-for i in {1..30}; do
+for i in {1..5}; do
     if vault status -format=json 2>/dev/null | jq -e '.sealed==false' >/dev/null; then
         echo "Vault 4 is unsealed and ready."
         break
     fi
-    if [ $i -eq 30 ]; then
+    if [ $i -eq 5 ]; then
         echo "Timeout waiting for Vault 4 to unseal. Please check logs and configuration."
         exit 1
     fi
-    echo "Waiting for Vault 4 to unseal... Attempt $i/30"
+    echo "Waiting for Vault 4 to unseal... Attempt $i/5"
     sleep 10
 done
 
