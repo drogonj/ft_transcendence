@@ -12,9 +12,9 @@ var rooms = new Set();
 // - Deconnexion chatSocket a verifier sur page login avec reco
 
 export async function getChatCsrfToken() {
-    const response = await fetch('/api/chat/csrf/');
-	   const data = await response.json();
-    chatCsrfToken = data.csrfToken;
+	const response = await fetch('/api/chat/csrf/');
+	const data = await response.json();
+	chatCsrfToken = data.csrfToken;
 }
 
 export async function connectChatWebsocket(user_id, roomName) {
@@ -30,57 +30,38 @@ export async function connectChatWebsocket(user_id, roomName) {
 			(async () => {
 				const data = JSON.parse(e.data);
 				let muted = false;
-				let amIMuted = false;
 				data.timestamp = formatTime(data.timestamp);
 				console.log(data);
 
-				if (muteList && muteList.includes(data.user_id)) {
+				if (muteList && muteList.includes(data.user_id))
 					muted = true;
-					console.log('Is sender muted? ', muted);
-				}
-
-				if (data.receiver_id) {
-					const receiverList = await getMuteListOf(data.receiver_id);
-					amIMuted = receiverList.includes(currentUser.user_id);
-					console.log('Am i muted by receiver? ', amIMuted);
-				}
 
 				if (data.type === 'user_status_update')
-					await updateUserStatus(data.user_id, data.is_connected, data.content);
-				else if (data.type === 'private_message' && data.receiver_id === data.user_id)
-					await trollMessage(data);
+					updateUserStatus(data.user_id, data.is_connected, data.content);
+
 				else if (data.type === 'private_message' && (data.receiver_id === currentUser.user_id
-					|| data.user_id === currentUser.user_id)) {
-					if  (!muted && !amIMuted && data.receiver_id !== data.user_id)
-						await privateMessage(data);
-					else if (amIMuted && currentUser.user_id === data.user_id)
-						await mutedCalls(data);
-				}
+					|| data.user_id === currentUser.user_id))
+						privateMessage(data);
+
 				else if (data.type === 'invitation_to_play' && (data.receiver_id === currentUser.user_id
 					|| data.user_id === currentUser.user_id)) {
-					if (!muted && !amIMuted) {
-						await joinRoom(`invitation_${data.invitationId}`);
-						await invitationToPlay(data);
-					} else if (amIMuted && currentUser.user_id === data.user_id) {
-						console.log('invitation from muted user');
-						await mutedCalls(data);
-					}
+						joinRoom(`invitation_${data.invitationId}`);
+						invitationToPlay(data);
 				}
-
-				else if (data.type === 'invitation_response' && !muted) {
-					await leaveRoom(`invitation_${data.invitationId}`);
+				else if (data.type === 'invitation_response') {
+					leaveRoom(`invitation_${data.invitationId}`);
 					if (data.status === 'accepted')
-						await connectToGame(data);
+						connectToGame(data);
 					else if (data.status === 'declined')
-						await suppressInvitation(data);
+						suppressInvitation(data);
 				}
 
 				else if (data.type === 'chat_message' && !muted)
-					await chatMessage(data);
+					chatMessage(data);
 			})();
 		}
 	} else
-		await joinRoom(roomName);
+		joinRoom(roomName);
 
 	chatSocket.onclose = function(e) {
 		if (e.wasClean)
@@ -99,19 +80,18 @@ export async function connectChatWebsocket(user_id, roomName) {
 export async function disconnectChatWebsocket() {
 	await leaveAllRooms();
     chatSocket.close();
-	console.log(chatSocket === null);
 	chatSocket = null;
 }
 
 async function connectToGame(data) {
-	await removePendingInvitationMessage(data.invitationId);
+	removePendingInvitationMessage(data.invitationId);
 	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
 	launchFriendGame(data);
 }
 
 async function suppressInvitation(data) {
 	if (data.receiver_id === currentUser.user_id) {
-		await removePendingInvitationMessage(data.invitationId);
+		removePendingInvitationMessage(data.invitationId); 
 
 		const messageList = document.getElementById('message-content');
 		const newMessage = document.createElement('li');``
@@ -128,8 +108,7 @@ async function suppressInvitation(data) {
 
 async function removePendingInvitationMessage(invitationId) {
 	const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
-	if (pendingMessageElement) {
-		console.log(`Removing pending invitation message with ID: pending-invitation-${invitationId}`);
+	if (pendingMessageElement)
 		pendingMessageElement.remove();
 	} else {
 		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
@@ -181,16 +160,6 @@ export async function trollMessage(data) {
 		]
 		newMessage.classList.add('chat-message');
 		newMessage.textContent = `${content[random]}`;
-	} else {
-		content = [
-			'God bless this poor soul.',
-			'Guys, please, just talk to him/her!',
-			'Seems like nobody loves him/her.',
-			'You know what to do!',
-			'Just leave quielty...',
-		]
-		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.username} talk to him/herself: ${content[random]}`;
 	}
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -198,33 +167,15 @@ export async function trollMessage(data) {
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-async function mutedCalls(data) {
-	if (data.type === 'invitation_to_play') {
-		console.log('Invitation ID : ', data.invitationId);
-		await deleteInvitation(data.invitationId);
-	}
-
+async function muteMessage(username, cmd) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
- 
-	newMessage.classList.add('chat-message');
-	if (data.type === 'private_message')
-		newMessage.textContent = `DM not delivered to : ${data.receiver_username} (reason : muted).`;
-	else if (data.type === 'invitation_to_play')
-		newMessage.textContent = `Invitation not delivered to : ${data.receiver_username} (reason : muted).`;
 
-	messageList.insertBefore(newMessage, messageList.firstChild);
-	
-	const chatMessages = document.getElementById('chat-messages');
-	chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-async function deniedInvitation(username) {
-	const messageList = document.getElementById('message-content');
-	const newMessage = document.createElement('li');
- 
 	newMessage.classList.add('chat-message');
-	newMessage.textContent = `Invitation not delivered to : ${username} (reason : muted).`;
+	if (cmd === 'dm')
+		newMessage.textContent = `DM not delivered to : ${username} (reason : muted).`;
+	else if (cmd === 'play')
+		newMessage.textContent = `Invitation not delivered to : ${username} (reason : muted).`;
 
 	messageList.insertBefore(newMessage, messageList.firstChild);
 	
@@ -304,9 +255,7 @@ async function invitationToPlay(data) {
 }
 
 async function handleAccept(data, message) {
-	console.log('Accepted invitation with ID: ', data.invitationId);
 	message.remove();
-
 	await fetch(`/api/chat/invitations/accepted/${data.invitationId}/`, {
 		method: 'POST',
 		headers: {
@@ -315,14 +264,11 @@ async function handleAccept(data, message) {
 		},
 		body: JSON.stringify({'status': 'accepted'})
 		});
-
-	await sendRoomMessage(data, 'accepted');
+	sendRoomMessage(data, 'accepted');
 }
 
 export async function handleDecline(data, message) {
-	console.log('Declined invitation with ID: ', data.invitationId);
 	message.remove();
-
 	await fetch(`/api/chat/invitations/declined/${data.invitationId}/`, {
 		method: 'POST',
 		headers: {
@@ -331,32 +277,15 @@ export async function handleDecline(data, message) {
 		},
 		body: JSON.stringify({'status': 'declined'})
 		});
-
-	await sendRoomMessage(data, 'declined');
-}
-
-async function deleteInvitation(invitationId) {
-	const response = await fetch(`/api/chat/invitations/${invitationId}/`, {
-		method: 'DELETE',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-CSRFToken': chatCsrfToken
-		},
-	});
-
-	if (response.ok) {
-		console.log(`Invitation with ID ${invitationId} deleted successfully.`);
-	} else {
-		console.error(`Failed to delete invitation with ID ${invitationId}.`);
-	}
+	sendRoomMessage(data, 'declined');
 }
 
 export async function addChatMenu() {
 	muteList = await getMuteListOf(currentUser.user_id) || [];
 	await getChatCsrfToken();
 	await connectChatWebsocket(currentUser.user_id, 'general');
-    const chatContainer = document.querySelector('.chat-menu-container');
-    chatContainer.innerHTML = `
+	const chatContainer = document.querySelector('.chat-menu-container');
+	chatContainer.innerHTML = `
 		<div id="chat-menu-container" class="chat-menu-container">
 			<div id="users-list" class="users-list">
 			<div class="users-title">Users</div>
@@ -367,7 +296,7 @@ export async function addChatMenu() {
 					<ul id="message-content" class="message-content active"></ul>
 				</div>
 				<div id="chat-input-container" class="chat-input-container">
-					<input id="chat-input" type="text" placeholder="Type a message...">
+					<input id="chat-input" type="text" maxlength="200" placeholder="Type a message...">
 					<button id="send-chat-message" class="send-chat-message">Send</button>
 				</div>
 			</div>
@@ -391,51 +320,41 @@ export async function addChatMenu() {
 
 		if (!message.trim()) {
 			return;
-		} else { 
-			await parseMessage(message);
+		} else {
+			parseMessage(message);
 			messageInputDom.value = '';
-		};
-	}
+		}
+	};
 }
 
 async function parseMessage(message) {
-	console.log('parsing message:', message);
-
 	if (message.startsWith('/')) {
 		const parts = message.split(' ');
-
 		if (parts.length >= 2) {
 			const cmd = parts[0].slice(1);
 			const username = parts[1];
 
-			const response = await fetch('/api/user/get_users/');
-			const usersData = await response.json();
-
-			if (cmd === 'dm') {
-				let messageContent = parts.slice(2).join(' ');
+			try {
+				const response = await fetch('/api/user/get_users/');
+				const usersData = await response.json();
 
 				for (const user of usersData.users) {
+					const checkMute = await getMuteListOf(user.user_id);
+					const amIMuted = checkMute.includes(currentUser.user_id);
+
 					if (user.username === username) {
-						chatSocket.send(JSON.stringify({
-							'type': 'private_message',
-							'content': convertURL(messageContent),
-							'user_id': currentUser.user_id,
-							'username': currentUser.username,
-							'receiver_id': user.user_id,
-							'receiver_username': user.username
-						}));
-						return ;
-					}
-				}
-			} else if (cmd === 'play') {
-				for (const user of usersData.users) {
-					if (user.username === username) {
-						const checkMute = await getMuteListOf(user.user_id)
-						const amIMuted = checkMute.includes(currentUser.user_id)
-						if (user.username === currentUser.username) {
-							await trollMessage(message);
-							return ;
-						} else if (!amIMuted) {
+						if (user.username === currentUser.username)
+							trollMessage(message);
+						else if (!amIMuted && cmd === 'dm') {
+							chatSocket.send(JSON.stringify({
+								'type': 'private_message',
+								'content': convertURL(parts.slice(2).join(' ')),
+								'user_id': currentUser.user_id,
+								'username': currentUser.username,
+								'receiver_id': user.user_id,
+								'receiver_username': user.username
+							}));
+						} else if (!amIMuted && cmd === 'play') {
 							chatSocket.send(JSON.stringify({
 								'type': 'invitation_to_play',
 								'user_id': currentUser.user_id,
@@ -443,19 +362,20 @@ async function parseMessage(message) {
 								'receiver_id': user.user_id,
 								'receiver_username': user.username
 							}));
-							return ;
-						} else {
-							await deniedInvitation(user.username);
-							return ;
-						}
+						} else
+							muteMessage(user.username, cmd);
+						return;
 					}
 				}
+			} catch (error) {
+				console.error('Error fetching users or processing message:', error);
 			}
+		} else {
+			sendChatMessage(message);
 		}
 	} else {
-		await sendChatMessage(message);
+		sendChatMessage(message);
 	}
-	return ;
 }
 
 function convertURL(text) {
@@ -475,7 +395,6 @@ async function sendChatMessage(message) {
 }
 
 async function sendRoomMessage(data, status) {
-	console.log('sending room message');
 	chatSocket.send(JSON.stringify({
 		'room': `invitation_${data.invitationId}`,
 		'type': 'invitation_response',
@@ -513,8 +432,6 @@ async function loadMessages() {
 		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
 
 		allMessages.forEach(message => {
-			console.log(`message from : ${message.user_id}-${message.username} : ${message.content}`);
-			console.log(`sender muted : ${muteList.includes(message.user_id)}`);
 			if (!muteList.includes(message.user_id)) {
 				if (message.type === 'private_message')
 					loadAPrivateMessage(message);
@@ -588,10 +505,8 @@ async function loadInvitations() {
 					if (!muteList.includes(invit.user_id)) {
 						joinRoom(`invitation_${invit.invitationId}`);
 						invitationToPlay(invit);
-					} else if (muteList.includes(invit.user_id)) {
-						console.log('invitation from muted user');
+					} else if (muteList.includes(invit.user_id))
 						suppressInvitation(invit);
-					}
 				}
 			}
 		});

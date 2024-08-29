@@ -214,10 +214,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'timestamp': event['timestamp']
 		}))
 		#log-chat_message
-		user_id = event['user_id']
 		username = event['username']
 		content = event['content']
-		logger.info(f'{user_id}-{username} sent: {content}')
+		logger.info(f'{username} sent: {content}')
 
 
 	async def private_message(self, event):
@@ -232,12 +231,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'receiver_username': event['receiver_username']
 		}))
 		#log-private_message
-		user_id = event['user_id']
-		receiver_id = event['receiver_id']
 		username = event['username']
 		content = event['content']
 		receiver_username = event['receiver_username']
-		logger.info(f'{user_id}-{username} sent: {content} to {receiver_id}-{receiver_username}')
+		logger.info(f'{username} sent: {content} to {receiver_username}')
 
 	async def invitation_to_play(self, event):
 		await self.send(text_data=json.dumps({
@@ -251,11 +248,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'receiver_username': event['receiver_username']
 		}))
 		#log-invitation_to_play
-		user_id = event['user_id']
-		receiver_id = event['receiver_id']
 		username = event['username']
 		receiver_username = event['receiver_username']
-		logger.info(f'{user_id}-{username} invited to play {receiver_id}-{receiver_username}')
+		logger.info(f'{username} invited to play {receiver_username}')
 
 	async def invitation_response(self, event):
 		await self.send(text_data=json.dumps({
@@ -268,8 +263,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'receiver_username': event['receiver_username']
 		}))
 		#log-response
-		user_id = event['user_id']
-		receiver_id = event['receiver_id']
 		username = event['username']
 		receiver_username = event['receiver_username']
-		logger.info(f'{user_id}-{username} agreed to play with {receiver_id}-{receiver_username}')
+		logger.info(f'{username} agreed to play with {receiver_username}')
