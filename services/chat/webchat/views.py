@@ -41,3 +41,21 @@ def decline_invitation(request, invitationId):
 		return JsonResponse({'status': 'declined'})
 	except InvitationToPlay.DoesNotExist:
 		return JsonResponse({'error': 'Invitation not found'}, status=404)
+
+def cancel_invitation(request, invitationId):
+	try:
+		invitation = InvitationToPlay.objects.get(invitationId=invitationId)
+		invitation.status = 'cancelled'
+		invitation.save() 
+		return JsonResponse({'status': 'cancelled'})
+	except InvitationToPlay.DoesNotExist:
+		return JsonResponse({'error': 'Invitation not found'}, status=404)
+	
+def on_hold_invitation(request, invitationId):
+	try:
+		invitation = InvitationToPlay.objects.get(invitationId=invitationId)
+		invitation.status = 'on-hold'
+		invitation.save() 
+		return JsonResponse({'status': 'on-hold'})
+	except InvitationToPlay.DoesNotExist:
+		return JsonResponse({'error': 'Invitation not found'}, status=404)

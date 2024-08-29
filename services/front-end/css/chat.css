@@ -183,10 +183,12 @@
 
 .accept-button {
 	color: green;
-	width: auto;
 }
 
 .decline-button {
 	color: red;
-	width: auto;
+}
+
+.cancel-button {
+	color: red;
 }

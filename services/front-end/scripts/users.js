@@ -42,6 +42,8 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 		</button>
 	`;
 
+	console.log(getStatus(user_id));
+
 	usersContainer.insertAdjacentElement('beforeend', newUser);
 
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
@@ -160,6 +162,22 @@ export async function getUserStatus(user_id) {
 		for (const user of usersData.users) {
 			if (user.user_id === user_id) {
 				return user.is_connected;
+			}
+		}
+		return false;
+	} catch (error) {
+		console.error('Error loading users:', error.message);
+	}
+}
+
+export async function getStatus(user_id) {
+	try {
+		const response = await fetch('/api/user/get_users/');
+		const usersData = await response.json();
+
+		for (const user of usersData.users) {
+			if (user.user_id === user_id) {
+				return user.status;
 			}
 		}
 		return false;

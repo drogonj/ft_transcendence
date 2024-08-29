@@ -42,8 +42,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 		await self.accept()
 
-		self.start_expiration_check()
-
 	async def disconnect(self, close_code):
 		if self.user_id in user_to_consumer:
 			del user_to_consumer[self.user_id]
@@ -132,6 +130,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			)
 
 		elif data['type'] == 'invitation_to_play':
+
+			try:
+				
 			new_message = await sync_to_async(InvitationToPlay.objects.create)(
 				type = data['type'],
 				user_id = data['user_id'],

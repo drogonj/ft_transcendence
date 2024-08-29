@@ -1,5 +1,5 @@
 import { currentUser } from './auth.js';
-import { loadUsers, updateUserStatus, getMuteListOf} from './users.js';
+import { loadUsers, updateUserStatus, getMuteListOf, getUserStatus} from './users.js';
 import { bindGameSocket, launchFriendGame } from '../online-game-pong/websocket.js';
 
 export var muteList = [];
@@ -55,11 +55,12 @@ export async function connectChatWebsocket(user_id, roomName) {
 				}
 
 				else if (data.type === 'invitation_response') {
-					leaveRoom(`invitation_${data.invitationId}`);
 					if (data.status === 'accepted')
 						connectToGame(data);
 					else if (data.status === 'declined')
 						declinedInvitation(data);
+					else if (data.status === 'cancelled')
+						cancelledInvitation(data);
 				}
 
 				else if (data.type === 'chat_message' && !muted)
@@ -93,6 +94,7 @@ export async function disconnectChatWebsocket() {
 async function connectToGame(data) {
 	removePendingInvitationMessage(data.invitationId);
 	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
+	leaveRoom(`invitation_${data.invitationId}`);
 	launchFriendGame(data);
 }
 
@@ -111,6 +113,27 @@ async function declinedInvitation(data) {
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
+
+	leaveRoom(`invitation_${data.invitationId}`);
+}
+
+async function cancelledInvitation(data) {
+	removePendingInvitationMessage(data.invitationId);
+
+	if (data.receiver_id === currentUser.user_id) {
+		const messageList = document.getElementById('message-content');
+		const newMessage = document.createElement('li');``
+	
+		newMessage.classList.add('chat-message');
+		newMessage.textContent = `${data.username} cancelled the invitation.`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+
+	leaveRoom(`invitation_${data.invitationId}`);
 }
 
 async function removePendingInvitationMessage(invitationId) {
@@ -240,10 +263,66 @@ async function privateMessage(data) {
 	}
 }
 
+function inviteConnectedUser(data) {
+	if (data.receiver_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.id = `pending-invitation-${data.invitationId}`;
+		newMessage.innerHTML = `
+			Invited to play with ${data.username} : \
+			<button class="accept-button" data-invitation-id="${data.invitationId}">Accept</button> / \
+			<button class="decline-button" data-invitation-id="${data.invitationId}">Decline</button>
+		`;
+
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		newMessage.querySelector('.accept-button').addEventListener('click', async () => handleAccept(data, newMessage));
+		newMessage.querySelector('.decline-button').addEventListener('click', async () => handleDecline(data, newMessage));
+	} else if (data.user_id === currentUser.user_id) {
+			newMessage.classList.add('chat-message');
+			newMessage.id = `pending-invitation-${data.invitationId}`;
+			newMessage.innerHTML = `
+				Waiting for ${data.receiver_username}... \
+				<button class="cancel-button" data-invitation-id="${data.invitationId}">Cancel</button>
+			`;
+		
+			messageList.insertBefore(newMessage, messageList.firstChild);
+			
+			const chatMessages = document.getElementById('chat-messages');
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+
+			newMessage.querySelector('.cancel-button').addEventListener('click', async () => handleDecline(data, newMessage));
+	}
+}
+
+function inviteDisconnectedUser(data) {
+	if (data.user_id === currentUser.user_id) {
+		newMessage.classList.add('chat-message');
+		newMessage.id = `pending-invitation-${data.invitationId}`;
+		newMessage.innerHTML = `
+			${data.receiver_username} is Offline... \
+			<button class="cancel-button" data-invitation-id="${data.invitationId}">Cancel</button>
+		`;
+	
+		messageList.insertBefore(newMessage, messageList.firstChild);
+		
+		const chatMessages = document.getElementById('chat-messages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		newMessage.querySelector('.cancel-button').addEventListener('click', async () => handleCancel(data, newMessage));
+	}
+}
+
 async function invitationToPlay(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
+	// if (getUserStatus(data.receiver_id) === 'online')
+		// inviteConnectedUser(data);
+	// else if (getUserStatus(data.receiver_id) === 'offline')
+		// inviteDisconnectedUser(data);
 	if (data.receiver_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
 		newMessage.id = `pending-invitation-${data.invitationId}`;
@@ -262,15 +341,19 @@ async function invitationToPlay(data) {
 		newMessage.querySelector('.decline-button').addEventListener('click', async () => handleDecline(data, newMessage));
 	}
 	if (data.user_id === currentUser.user_id) {
-		const newMessage = document.createElement('div');
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `Waiting for ${data.receiver_username} response, please wait...`;
 		newMessage.id = `pending-invitation-${data.invitationId}`;
+		newMessage.innerHTML = `
+			Waiting for ${data.receiver_username}... \
+			<button class="cancel-button" data-invitation-id="${data.invitationId}">Cancel</button>
+		`;
 	
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		newMessage.querySelector('.cancel-button').addEventListener('click', async () => handleCancel(data, newMessage));
 	}
 }
 
@@ -299,6 +382,20 @@ export async function handleDecline(data, message) {
 		});
 	sendRoomMessage(data, 'declined');
 }
+
+export async function handleCancel(data, message) {
+	message.remove();
+	await fetch(`/api/chat/invitations/cancel/${data.invitationId}/`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': chatCsrfToken
+		},
+		body: JSON.stringify({'status': 'cancelled'})
+		});
+	sendRoomMessage(data, 'cancelled');
+}
+
 
 export async function addChatMenu() {
 	muteList = await getMuteListOf(currentUser.user_id) || [];
@@ -549,7 +646,11 @@ async function loadInvitations() {
 					} else if (muteList.includes(invit.user_id))
 						suppressInvitation(invit);
 				}
-			}
+			}			
+			// else if (invit.status == 'on-hold') {
+			// 	joinRoom(`invitation_${invit.invitationId}`);
+			// 	invitationToPlay(invit);
+			// }
 		});
 	} catch (error) {
 		console.error('Error loading invitations:', error);
