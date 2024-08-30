@@ -65,9 +65,6 @@ class Player:
 		if self.__can_move:
 			self.__top_position += step
 
-	def get_username(self):
-		return self.__username
-
 	def get_user_id(self):
 		return self.__user_id
 
@@ -95,9 +92,6 @@ class Player:
 	def get_paddle_size(self):
 		return self.__paddle_size
 
-	def set_username(self, username):
-		self.__username = username
-
 	def set_socket(self, socket):
 		self.__socket = socket
 
@@ -113,5 +107,5 @@ class Player:
 
 def get_player_with_user_id(user_id):
 	for player in available_players:
-		if player.get_user_id() == user_id:
+		if int(player.get_user_id()) == int(user_id):
 			return player

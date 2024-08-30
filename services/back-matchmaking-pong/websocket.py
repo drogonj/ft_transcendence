@@ -17,7 +17,7 @@ class WebSocketClient:
         WebSocketClient.game_server = self
 
     async def connect(self):
-        self.websocket = await websockets.connect(self.uri)
+        self.websocket = await websockets.connect(self.uri, extra_headers={"server": "Matchmaking"})
         print("Connection with game server established.")
         asyncio.ensure_future(self.close_handle())
 

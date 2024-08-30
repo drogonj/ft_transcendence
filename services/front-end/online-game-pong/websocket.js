@@ -9,10 +9,6 @@ let ws;
 
 export default function launchClientGame(userId, username) {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
-    ws.onopen = function () {
-        console.log("WebSocket with Game server is open now.");
-        sendMessageToServer("bindSocket", {"userId": userId, "username": username})
-    };
     ws.onmessage = onReceive;
     ws.onerror = onError;
     ws.onclose = function () {
@@ -43,7 +39,6 @@ export function launchClientMatchMaking() {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/matchmaking`);
     ws.onopen = function () {
         console.log("WebSocket MatchMaking server is open now.");
-        sendMessageToServer("createUser", {"userId": currentUser.user_id})
         navigateTo('/waiting-screen', true);
     };
     ws.onmessage = function (event) {
