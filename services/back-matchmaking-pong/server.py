@@ -40,6 +40,13 @@ async def bind_to_game_server():
         print(f"Failed to connect: {e}")
 
 
+def is_user_already_in_queue(user_id):
+    for user in users_in_queue:
+        if user.get_user_id() == user_id:
+            return True
+    return False
+
+
 async def check_game_server_health():
     if not get_game_server().is_connected():
         await bind_to_game_server()
@@ -51,11 +58,6 @@ async def send_users_to_server():
     selected_users = get_two_users()
     await get_game_server().send("createGame", {"userId1": selected_users[0].get_user_id(),
                                                 "userId2": selected_users[1].get_user_id()})
-
-    side = "Left"
-    for user in selected_users:
-        await get_game_server().send("createPlayer", {"userId": user.get_user_id(), "side": side})
-        side = "Right"
 
     for user in selected_users:
         users_in_queue.remove(user)
@@ -93,7 +95,12 @@ class MatchMakingWebSocket(WebSocketHandler):
             return
 
         request_data = request_response.json()
-        user = User(self, request_data["id"])
+        user_id = request_data["id"]
+        if is_user_already_in_queue(user_id):
+            print(f"An error occured with the session_id: {session_id}. The user is already in queue")
+            self.write_message({"type": "error", "values": {"message": "You are already in the Matchmaking"}})
+            return
+        user = User(self, user_id)
         users_in_queue.append(user)
 
         print(f'[+] The user ({user.get_user_id()}) {request_data["username"]} is connected to the matchmaking server.')

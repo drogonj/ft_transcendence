@@ -716,8 +716,3 @@ export async function renderGameOnline() {
         </div>
     `;
 }
-
-export function cancelMatchMaking() {
-    closeWebSocket();
-    navigateTo('/home', true)
-}

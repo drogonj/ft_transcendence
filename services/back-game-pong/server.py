@@ -8,8 +8,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from server.game import Game, get_game_with_client, bind_player_to_game, disconnect_handle
-from server.player import Player, get_player_with_user_id
+from server.game import Game, get_game_with_client, disconnect_handle, bind_socket_to_player
 
 
 # Server will send websocket as json with the followed possible keys
@@ -42,15 +41,12 @@ class GameServerWebSocket(WebSocketHandler):
             return
 
         request_data = request_response.json()
-        player = get_player_with_user_id(request_data["id"])
-        if not player:
+        if not bind_socket_to_player(self, request_data["id"]):
             print(f'An error occured with the id: {request_data["id"]}. No player found')
             self.close()
             return
-        player.bind_socket_to_player(self)
-        bind_player_to_game(player)
 
-        print(f'[+] The user ({player.get_user_id()}) {request_data["username"]} is connected to the game server.')
+        print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
     def on_message(self, message):
         socket = json.loads(message)
@@ -59,8 +55,6 @@ class GameServerWebSocket(WebSocketHandler):
             get_game_with_client(self).move_player(socket_values)
         elif socket["type"] == "launchSpell":
             get_game_with_client(self).launch_spell(socket_values)
-        elif socket["type"] == "createPlayer":
-            Player(socket_values)
         elif socket["type"] == "createGame":
             Game(0, socket_values)
 

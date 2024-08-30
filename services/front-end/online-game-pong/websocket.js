@@ -49,6 +49,10 @@ export function launchClientMatchMaking() {
             document.getElementById("mainTitle").textContent = "Player found ! Setting up the game.."
             ws.close();
             launchClientGame(currentUser.user_id, currentUser.username);
+        } else if (data.type ===  "error") {
+            ws.close();
+            navigateTo('/home', true);
+            window.alert(data.values["message"]);
         }
     }
     ws.onerror = onError;

@@ -4,21 +4,16 @@ from tornado.websocket import WebSocketClosedError
 from .statistics import Statistics
 
 
-available_players = []
-
-
 class Player:
-	def __init__(self, socket_values):
+	def __init__(self, user_id, side):
 		self.__socket = None
-		self.__username = None
-		self.__user_id = socket_values["userId"]
-		self.__paddle_side = socket_values["side"]
+		self.__user_id = user_id
+		self.__paddle_side = side
 		self.__top_position = 50
 		self.__paddle_size = 20
 		self.__can_move = True
 		self.__spells = []
 		self.statistics = Statistics()
-		available_players.append(self)
 
 	def send_message_to_player(self, data_type, data_values):
 		data = {'type': data_type, 'values': data_values}
@@ -50,10 +45,6 @@ class Player:
 			return False
 
 		return True
-
-	def bind_socket_to_player(self, socket):
-		self.set_socket(socket)
-		available_players.remove(self)
 
 	def increase_score(self):
 		self.statistics.score += 1
@@ -104,8 +95,5 @@ class Player:
 	def set_paddle_size(self, value):
 		self.__paddle_size = value
 
-
-def get_player_with_user_id(user_id):
-	for player in available_players:
-		if int(player.get_user_id()) == int(user_id):
-			return player
+	def is_socket_bind(self):
+		return self.__socket is not None
