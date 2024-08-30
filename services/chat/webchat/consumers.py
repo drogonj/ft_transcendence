@@ -1,12 +1,11 @@
 import json, requests, logging
 from asgiref.sync import sync_to_async
 from datetime import datetime
-from .models import Message, PrivateMessage, InvitationToPlay
+from .models import Message, PrivateMessage, InvitationToPlay, MuteList
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 logger = logging.getLogger(__name__)
 user_to_consumer = {}
-group_to_users = {}
 
 class ChatConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
@@ -31,8 +30,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				await self.close()
 				return
 
-		await self.fetch_csrf_token()
-
 		self.room_name = self.scope['url_route']['kwargs']['room_name']
 		self.rooms = set()
 		user_to_consumer[self.user_id] = self
@@ -48,7 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			user_data = []
 
 		await self.channel_layer.group_add(self.room_name, self.channel_name)
-
+		await sync_to_async(MuteList.objects.get_or_create_mute_list)(self.user_id)
 		await self.accept()
 
 	async def disconnect(self, close_code):
@@ -362,35 +359,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		#log-troll
 		username = event['username']
 		logger.info(f'{username} speaks to self')
-
-	async def mute_user_backend(self, target_user_id):
-		if not self.csrf_token:
-			logger.error("CSRF token is missing")
-			return
-		uri = f'http://user-management:8000/api/user/mute_toggle/{target_user_id}/'
-		response = requests.post(uri, json={'muted': True}, headers={'X-CSRFToken': self.csrf_token})
-		response.raise_for_status()
-
-	async def unmute_user_backend(self, target_user_id):
-		if not self.csrf_token:
-			logger.error("CSRF token is missing")
-			return
-		uri = f'http://user-management:8000/api/user/mute_toggle/{target_user_id}/'
-		response = requests.post(uri, json={'muted': False}, headers={'X-CSRFToken': self.csrf_token})
-		response.raise_for_status()
-
-	async def is_user_muted(self, user_id, target_user_id):
-		uri = f'http://user-management:8000/api/user/get_mute_list/{user_id}/'
-		response = requests.get(uri)
-		response.raise_for_status()
-		mute_list = response.json().get('muted_users', [])
-		return target_user_id in mute_list
-	
-	async def fetch_csrf_token(self):
-		try:
-			response = requests.get('http://user-management:8000/api/user/get_csrf_token/')
-			response.raise_for_status()
-			self.csrf_token = response.cookies['csrftoken']
-		except requests.exceptions.RequestException as e:
-			logger.error(f"Error fetching CSRF token: {e}")
-			self.csrf_token = None
