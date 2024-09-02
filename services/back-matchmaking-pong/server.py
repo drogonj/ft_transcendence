@@ -2,6 +2,7 @@ import json
 import os
 
 import django
+import requests
 from django.core.wsgi import get_wsgi_application
 from tornado import gen
 from tornado.httpserver import HTTPServer
@@ -39,6 +40,13 @@ async def bind_to_game_server():
         print(f"Failed to connect: {e}")
 
 
+def is_user_already_in_queue(user_id):
+    for user in users_in_queue:
+        if user.get_user_id() == user_id:
+            return True
+    return False
+
+
 async def check_game_server_health():
     if not get_game_server().is_connected():
         await bind_to_game_server()
@@ -51,11 +59,6 @@ async def send_users_to_server():
     await get_game_server().send("createGame", {"userId1": selected_users[0].get_user_id(),
                                                 "userId2": selected_users[1].get_user_id()})
 
-    side = "Left"
-    for user in selected_users:
-        await get_game_server().send("createPlayer", {"userId": user.get_user_id(), "side": side})
-        side = "Right"
-
     for user in selected_users:
         users_in_queue.remove(user)
         user.send_message_to_user("connectTo", {"server": "gameServer"})
@@ -67,8 +70,6 @@ async def main_check_loop():
             await gen.sleep(3)
             continue
         await ping_users()
-        if random.randrange(0, 15) == 0:
-            print("Looking for two users..")
         if len(users_in_queue) > 1:
             print("2 players founds, sending to game server..")
             await send_users_to_server()
@@ -84,15 +85,25 @@ class MatchMakingWebSocket(WebSocketHandler):
         return True  # Allow all origins
 
     def open(self):
-        print("[+] A new client is connected to the matchmaking server.")
+        cookies = self.request.cookies
+        session_id = cookies.get("sessionid").value
 
-    def on_message(self, message):
-        socket = json.loads(message)
-        socket_values = socket['values']
-        if socket['type'] == 'createUser':
-            user = User(self, socket_values)
-            users_in_queue.append(user)
-            print(f"User with id {user.get_user_id()} is bind to a client in the matchmaking server")
+        request_response = requests.post("http://user-management:8000/api/user/get_session_user/", json={"sessionId": session_id})
+        if request_response.status_code != 200:
+            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
+            self.close()
+            return
+
+        request_data = request_response.json()
+        user_id = request_data["id"]
+        if is_user_already_in_queue(user_id):
+            print(f"An error occured with the session_id: {session_id}. The user is already in queue")
+            self.write_message({"type": "error", "values": {"message": "You are already in the Matchmaking"}})
+            return
+        user = User(self, user_id)
+        users_in_queue.append(user)
+
+        print(f'[+] The user ({user.get_user_id()}) {request_data["username"]} is connected to the matchmaking server.')
 
     def on_close(self):
         print(f"[-] A user leave the matchmaking server.")

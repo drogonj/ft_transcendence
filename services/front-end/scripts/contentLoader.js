@@ -3,7 +3,6 @@ import {
     renderHome,
     renderSignup,
     renderConfirmRegistration,
-    cancelMatchMaking,
     renderGameWaiting,
     renderGameSettings,
     renderGameLocal,
@@ -14,6 +13,7 @@ import {
 } from './render.js';
 import {currentUser, getCsrfToken, getCurrentUserInfo, handleLogin} from "./auth.js";
 import {connectFriendsWebsocket} from "./friends.js";
+import {closeWebSocket, isWebSocketBind} from "../online-game-pong/websocket.js";
 
 export const app = document.getElementById('app');
 
@@ -81,6 +81,8 @@ export function navigateTo(route, pushState, data) {
 // Écouter les événements de l'API History
 window.addEventListener('popstate', function (event) {
     if (event.state) {
+        if (isWebSocketBind())
+            closeWebSocket();
         var route = event.state.route;
         navigateTo(route, false);
     }

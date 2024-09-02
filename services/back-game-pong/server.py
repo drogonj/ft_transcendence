@@ -1,14 +1,14 @@
 import json
 import os
 import django
+import requests
 from django.core.wsgi import get_wsgi_application
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
-from server.game import Game, get_game_with_client, bind_player_to_game, disconnect_handle
-from server.player import Player, get_player_with_user_id
+from server.game import Game, get_game_with_client, disconnect_handle, bind_socket_to_player
 
 
 # Server will send websocket as json with the followed possible keys
@@ -27,7 +27,26 @@ class GameServerWebSocket(WebSocketHandler):
         return True  # Allow all origins
 
     def open(self):
-        print("[+] A new connection is established to game server.")
+        cookies = self.request.cookies
+        if not cookies:
+            print(f'[+] Server {self.request.headers.get("server")} is bind to server Game')
+            return
+
+        session_id = cookies.get("sessionid").value
+        request_response = requests.post("http://user-management:8000/api/user/get_session_user/",
+                                         json={"sessionId": session_id})
+        if request_response.status_code != 200:
+            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
+            self.close()
+            return
+
+        request_data = request_response.json()
+        if not bind_socket_to_player(self, request_data["id"]):
+            print(f'An error occured with the id: {request_data["id"]}. No player found')
+            self.close()
+            return
+
+        print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
     def on_message(self, message):
         socket = json.loads(message)
@@ -36,16 +55,8 @@ class GameServerWebSocket(WebSocketHandler):
             get_game_with_client(self).move_player(socket_values)
         elif socket["type"] == "launchSpell":
             get_game_with_client(self).launch_spell(socket_values)
-        elif socket["type"] == "createPlayer":
-            Player(socket_values)
         elif socket["type"] == "createGame":
             Game(0, socket_values)
-        elif socket["type"] == "bindSocket":
-            player = get_player_with_user_id(socket["values"]["userId"])
-            player.bind_socket_to_player(self)
-            player.set_username(socket["values"]["username"])
-            bind_player_to_game(player)
-            print(f"The player {player.get_username()} is connected and bind.")
 
     def on_close(self):
         print("[-] A client leave the server")
