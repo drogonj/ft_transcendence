@@ -56,5 +56,5 @@ class MuteList(models.Model):
 	def mute_user(self, user_id):
 		self.muted_users.add(user_id)
 	
-	def demute_user(self, user_id):
+	def unmute_user(self, user_id):
 		self.muted_users.remove(user_id)

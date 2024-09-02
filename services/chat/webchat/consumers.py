@@ -63,6 +63,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 	async def receive(self, text_data):
 		data = json.loads(text_data)
 
+		mute_list = MuteList.objects.get_or_create_mute_list(data.get('user_id'))
+		can_send = MuteList.objects.can_send_message(data.get('user_id'), data.get('receiver_id'))
+
 		if data['type'] == 'join_room':
 			room_name = data['room']
 			self.rooms.add(room_name)
@@ -83,26 +86,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'is_connected': data['is_connected'],
 					'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 				}
-			)        
+			)
 
 		elif data['type'] == 'chat_message':
-			sender_id = data['user_id']
-			group_name = self.room_name
-
-			group_users = group_to_users.get(group_name, set())
-
-			for user_id in group_users:
-				if not await self.is_user_muted(user_id, sender_id):
-					await self.channel_layer.send(user_id, {
-						'type': 'chat.message',
-						'messageId': data['messageId'],
-						'type': data['type'],
-						'content': data['content'],
-						'user_id': data['user_id'],
-						'username': data['username'],
-						'timestamp': data['timestamp']
-					})
-
 			new_message = await sync_to_async(Message.objects.create)(
 				type = data['type'],
 				content = data['content'],

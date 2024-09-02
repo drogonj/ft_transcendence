@@ -2,7 +2,6 @@ import { currentUser } from './auth.js';
 import { loadUsers, updateUserStatus, getMuteListOf, getUserStatus} from './users.js';
 import { bindGameSocket, launchFriendGame } from '../online-game-pong/websocket.js';
 
-export var muteList = [];
 export var chatCsrfToken = '';
 export var chatSocket = null;
 var rooms = new Set();
@@ -417,7 +416,6 @@ export async function handleCancel(data, message) {
 
 
 export async function addChatMenu() {
-	muteList = await getMuteListOf(currentUser.user_id) || [];
 	await getChatCsrfToken();
 	await connectChatWebsocket(currentUser.user_id, 'general');
 	const chatContainer = document.querySelector('.chat-menu-container');
@@ -575,58 +573,6 @@ async function sendRoomMessage(data, status) {
 			'user_id': data.receiver_id,
 			'username': data.receiver_username
 		}));
-	}
-}
-
-export async function muteUser(userId) {
-	try {
-		const response = await fetch(`/api/user/mute_toggle/${userId}/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': chatCsrfToken
-			},
-			body: JSON.stringify({ muted: true })
-		});
-
-		if (!response.ok) {
-			throw new Error(`Network response was not ok. Status: ${response.status}`);
-		}
-
-		const result = await response.json();
-		if (result.success) {
-			muteList.push(Number(userId));
-		} else {
-			console.error('Failed to mute user:', result.message);
-		}
-	} catch (error) {
-		console.error('Error muting user:', error);
-	}
-}
-
-export async function unmuteUser(userId) {
-	try {
-		const response = await fetch(`/api/user/mute_toggle/${userId}/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': chatCsrfToken
-			},
-			body: JSON.stringify({ muted: false })
-		});
-
-		if (!response.ok) {
-			throw new Error(`Network response was not ok. Status: ${response.status}`);
-		}
-
-		const result = await response.json();
-		if (result.success) {
-			muteList = muteList.filter(id => id !== Number(userId));
-		} else {
-			console.error('Failed to unmute user:', result.message);
-		}
-	} catch (error) {
-		console.error('Error unmuting user:', error);
 	}
 }
 

@@ -1,25 +1,24 @@
-import { currentUser } from './auth.js';
-import { csrfToken } from './auth.js';
 import { navigateTo } from './contentLoader.js';
-import { handleDecline, muteList, muteUser, unmuteUser } from './chat.js';
+import { currentUser, csrfToken } from './auth.js';
 
+// Modify the data sent to addUserToMenu
 export async function loadUsers() {
 	try {
 		const getUsers = await fetch('/api/user/get_users/');
 		const usersData = await getUsers.json();
 
-		console.log('before adding users: ', muteList);
+		const muteList = await getMuteListOf(currentUser.user_id) | [];
 
 		for (const user of usersData.users) {
 			if (user.user_id !== 1 && user.user_id !== currentUser.user_id)
-				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
+				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected, muteList);
 		}
 	} catch (error) {
 		console.error('Error loading users:', error);
 	}
 }
 
-async function addUserToMenu(user_id, username, avatar, is_connected) {
+async function addUserToMenu(user_id, username, avatar, is_connected, muteList) {
 	const usersContainer = document.getElementById('users-content');
 	let is_muted = false;
 
@@ -42,8 +41,6 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 		</button>
 	`;
 
-	console.log(getStatus(user_id));
-
 	usersContainer.insertAdjacentElement('beforeend', newUser);
 
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
@@ -57,56 +54,29 @@ async function addUserToMenu(user_id, username, avatar, is_connected) {
 	
 		const muteButton = userElement.querySelector('.mute-user-button');
 		const muteIcon = muteButton.querySelector('img');
-		const isMuted = muteButton.classList.contains('muted');
-	
+
 		try {
-			const response = await fetch(`/api/user/mute_toggle/${userId}/`, {
+			const response = await fetch(`/api/chat/mute_toggle/${userId}/`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'X-CSRFToken': csrfToken
 				},
-				body: JSON.stringify({ muted: !isMuted })
+				body: JSON.stringify({target: userId})
 			});
-	
+
 			if (!response.ok) {
 				throw new Error(`Network response was not ok. Status: ${response.status}`);
 			}
 
 			const result = await response.json();
-			if (result.success) {
-				if (isMuted) {
-					muteButton.classList.remove('muted');
-					await unmuteUser(userId);
-					muteIcon.src = '/assets/images/chat/chat_icon.png';
-				} else {
-					muteButton.classList.add('muted');
-					await muteUser(userId);
-					muteIcon.src = '/assets/images/chat/mute_icon.png';
 
-					const toDeny = await amIInvitedToPlayBy(userId);
-					toDeny.forEach(async (invitationId) => {
-						const data = {
-							'room': `invitation_${invitationId}`,
-							'type': 'invitation_response',
-							'invitationId': invitationId,
-							'status': 'denied',
-							'user_id': user_id,
-							'username': username,
-							'receiver_id': currentUser.user_id,
-							'receiver_username': currentUser.username
-						};
-
-						const newMessage = document.getElementById(`pending-invitation-${invitationId}`);
-						if (newMessage) {
-							handleDecline(data, newMessage);
-						} else {
-							console.error(`Element with ID pending-invitation-${invitationId} not found.`);
-						}
-					});
-				}
+			if (result.is_muted) {
+				muteButton.classList.add('muted');
+				muteIcon.src = '/assets/images/chat/mute_icon.png';
 			} else {
-				console.error('Failed to update mute state:', result.message);
+				muteButton.classList.remove('muted');
+				muteIcon.src = '/assets/images/chat/chat_icon.png';
 			}
 		} catch (error) {
 			console.error('Error updating mute state:', error);
@@ -193,12 +163,16 @@ export async function getStatus(user_id) {
 
 export async function getMuteListOf(user_id) {
 	try {
-		const response = await fetch(`api/user/get_mutelist/${user_id}/`);
+		const response = await fetch(`/api/chat/get_mutelist/${user_id}/`);
+		if (!response.ok) {
+			throw new Error(`Network response was not ok. Status: ${response.status}`);
+		}
 		const data = await response.json();
-
+		
 		return data.muted_users;
 	} catch (error) {
 		console.error('Error loading muted users:', error.message);
+		return [];
 	}
 }
 
