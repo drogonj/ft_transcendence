@@ -18,15 +18,17 @@ logging.basicConfig(
 	]
 )
 
-async def notify_user_status(channel_layer, user, status):
+async def change_and_notify_user_status(channel_layer, user, status):
 	connected_friends = await sync_to_async(Friendship.objects.get_connected_friends)(user)
 
 	if status == 'online':
+		await user.set_status('online')
 		event_type = 'friend_connected_notification'
 	elif status == 'offline':
+		await user.set_status('offline')
 		event_type = 'friend_disconnected_notification'
-	elif status == 'ingame':
-		await user.set_status('ingame')
+	elif status == 'in-game':
+		await user.set_status('in-game')
 		event_type = 'friend_ingame_notification'
 	else:
 		logger.error(f'Friends Notification Bad Type: {status}')
@@ -70,13 +72,11 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 	async def set_active_connection(self, value):
 		self.user.active_connections += value
 		if self.user.active_connections > 0 and not self.user.is_connected:
-			await self.user.set_status('online')
 			await self.notify_chat_user_connected(self.user)
-			await notify_user_status(self.channel_layer, self.user, 'online')
+			await change_and_notify_user_status(self.channel_layer, self.user, 'online')
 		elif self.user.active_connections <= 0:
-			await self.user.set_status('offline')
 			await self.notify_chat_user_disconnected(self.user)
-			await notify_user_status(self.channel_layer, self.user, 'offline')
+			await change_and_notify_user_status(self.channel_layer, self.user, 'offline')
 
 	async def close_websocket(self, event):
 		await self.close()
