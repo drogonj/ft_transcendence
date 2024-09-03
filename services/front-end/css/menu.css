@@ -112,3 +112,13 @@
 	-ms-transform: rotate(45deg);
 	transform: rotate(45deg);
 }
+
+#buttonPlay {
+	font-size: max(1.5vw, 1.5vh);
+	transition: 0.2s;
+}
+
+#buttonPlay:hover {
+	filter: drop-shadow(0 0 5rem #ffffff);
+	background: #00000066;
+}

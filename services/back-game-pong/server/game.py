@@ -1,8 +1,9 @@
 import asyncio
 from .ball import Ball
 from .utils import reverse_side
-from .redis_communication import send_to_redis, create_data_to_send
+from .redis_communication import send_game_data_to_redis, store_game_data, send_game_started_to_redis, store_game_started_data
 from .spell.spell_registry import SpellRegistry
+from .player import Player
 
 
 games = []
@@ -11,13 +12,14 @@ games = []
 class Game:
 	def __init__(self, game_id, socket_values):
 		self.__game_id = game_id
-		self.__players = []
+		self.__players = [Player(socket_values["userId1"], "Left"), Player(socket_values["userId2"], "Right")]
 		self.__user_ids = [socket_values["userId1"], socket_values["userId2"]]
 		self.__balls = [Ball()]
 		self.__is_game_end = False
 		games.append(self)
 
 	def launch_game(self):
+		print("start launch ")
 		SpellRegistry.set_spells_to_players(self.__players)
 
 		self.send_message_to_game("renderPage", {"url": "/game-online"})
@@ -36,6 +38,9 @@ class Game:
 
 		socket_values["clientSide"] = "Right"
 		player_right.send_message_to_player("launchGame", socket_values)
+
+		store_game_started_data(self.__players)
+		send_game_started_to_redis()
 
 		asyncio.create_task(self.main_loop())
 		asyncio.create_task(self.launch_max_time())
@@ -129,28 +134,26 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
-		create_data_to_send(self.__players)
-		send_to_redis()
+		store_game_data(self.__players)
+		send_game_data_to_redis()
 
 		data_values = {}
 		for player in self.__players:
 			data_values[player.get_side()] = player.statistics.get_statistics_as_list()
 		self.send_message_to_game("endGame", data_values)
 
-
 	def trigger_game_launch(self):
-		if len(self.__players) == 2:
+		if self.__players[0].is_socket_bind() and self.__players[1].is_socket_bind():
 			self.launch_game()
-
-	def add_player_to_game(self, player):
-		self.__players.append(player)
-		self.trigger_game_launch()
 
 	def get_user_ids(self):
 		return self.__user_ids
 
 	def get_player(self, side):
 		return self.__players[0] if self.__players[0].get_side() == side else self.__players[1]
+
+	def get_players(self):
+		return self.__players
 
 	def get_id(self):
 		return self.__game_id
@@ -210,9 +213,11 @@ def disconnect_handle(client):
 		games.remove(game)
 
 
-def bind_player_to_game(player):
+def bind_socket_to_player(socket, user_id):
 	for game in games:
-		for user_id in game.get_user_ids():
-			if user_id == player.get_user_id():
-				game.add_player_to_game(player)
-				return
+		for player in game.get_players():
+			if player.get_user_id() == user_id:
+				player.set_socket(socket)
+				game.trigger_game_launch()
+				return True
+	return False

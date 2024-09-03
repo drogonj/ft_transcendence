@@ -2,6 +2,7 @@ import json
 import os
 
 import django
+import tornado
 from django.core.wsgi import get_wsgi_application
 from tornado import gen
 from tornado.httpserver import HTTPServer
@@ -91,6 +92,17 @@ class TournamentWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
+    def post(self):
+        # Get data from the request body (assuming it's JSON)
+        data = tornado.escape.json_decode(self.request.body)
+        tournament_name = data.get("tournament_name", "Unknown Tournament")
+
+        # Print received data to the console
+        print(f"Received tournament: {tournament_name}")
+
+        # Send a JSON response back
+        self.write({"status": "success", "message": f"Tournament {tournament_name} received"})
+
     def open(self):
         print("[+] A new client is connected to the tournament server.")
 
@@ -101,12 +113,13 @@ class TournamentWebSocket(WebSocketHandler):
             print("launchTournament")
         elif socket['type'] == 'createUser':
             player = Player(self, socket_values)
-            users_in_queue.append(player)
             print(f"User with id {player.get_player_id()} is bind to a client in the tournament server")
             if socket_values['host']:
+                print("bind host")
                 tournaments.append(Tournament(player, socket_values["tournamentId"]))
             else:
-                print("bindtotournament")
+                get_tournament_with_id(socket_values['tournamentId']).add_player(player)
+                print("bind to tournament")
 
     def on_close(self):
         print(f"[-] A user leave the tournament server.")

@@ -8,7 +8,6 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 """
 
 import os, django
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chat.settings")
 django.setup()
 
@@ -21,7 +20,7 @@ django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": AuthMiddlewareStack(
+    "websocket": AuthMiddlewareStack (
         URLRouter(
             webchat.routing.websocket_urlpatterns
         )
