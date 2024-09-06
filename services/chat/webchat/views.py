@@ -1,9 +1,10 @@
-import json
+import json, logging
 from django.views import View
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.utils.decorators import method_decorator
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse, HttpResponseBadRequest
 from .models import Message, PrivateMessage, InvitationToPlay, MuteList
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -67,8 +68,8 @@ class GetMuteListView(View):
 	def get(self, request, user_id):
 		try:
 			mute_list = MuteList.objects.get_mute_list(user_id=user_id)
-
 			muted_users = mute_list.muted_users.values_list('user_id', flat=True)
+	
 			user_data = { 'muted_users': list(muted_users) }
 
 			return JsonResponse(user_data)
@@ -78,21 +79,25 @@ class GetMuteListView(View):
 		except ObjectDoesNotExist:
 			return JsonResponse({'error': 'Target user not found'}, status=404)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class MuteToggleView(View):
 	def post(self, request, user_id):
+		logging.info(f'Id: {user_id}, {type(user_id)}')
 		try:
 			mute_list = MuteList.objects.get_mute_list(user_id=user_id)
+			
 			data = json.loads(request.body)
+			target_id = data.get('target_id')
+			logging.info(f'Id: {target_id}, {type(target_id)}')
 
-			target = data.get('target')
-			if not target:
+			if not target_id:
 				return JsonResponse({'error': 'Target user ID is required'}, status=400)
 
-			if mute_list.muted_users.filter(user_id=target).exists():
-				mute_list.umute_user(user_id)
+			if mute_list.muted_users.filter(user_id=target_id).exists():
+				mute_list.unmute_user(target_id)
 				muted = False
 			else:
-				mute_list.mute_user(user_id)
+				mute_list.mute_user(target_id)
 				muted = True
 			return JsonResponse({'success': True, 'muted': muted})
 		

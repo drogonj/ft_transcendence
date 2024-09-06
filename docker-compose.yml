@@ -64,7 +64,7 @@ services:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
     networks:
       - db
       - network

@@ -1,13 +1,13 @@
 import { navigateTo } from './contentLoader.js';
-import { currentUser, csrfToken } from './auth.js';
+import { chatCsrfToken } from './chat.js';
+import { currentUser } from './auth.js';
 
-// Modify the data sent to addUserToMenu
 export async function loadUsers() {
 	try {
 		const getUsers = await fetch('/api/user/get_users/');
 		const usersData = await getUsers.json();
 
-		const muteList = await getMuteListOf(currentUser.user_id) | [];
+		const muteList = await getMuteListOf(currentUser.user_id);
 
 		for (const user of usersData.users) {
 			if (user.user_id !== 1 && user.user_id !== currentUser.user_id)
@@ -56,13 +56,13 @@ async function addUserToMenu(user_id, username, avatar, is_connected, muteList) 
 		const muteIcon = muteButton.querySelector('img');
 
 		try {
-			const response = await fetch(`/api/chat/mute_toggle/${userId}/`, {
+			const response = await fetch(`/api/chat/mute_toggle/${currentUser.user_id}/`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					'X-CSRFToken': csrfToken
+					'X-CSRFToken': chatCsrfToken
 				},
-				body: JSON.stringify({target: userId})
+				body: JSON.stringify({target_id: Number(userId)})
 			});
 
 			if (!response.ok) {
@@ -71,13 +71,10 @@ async function addUserToMenu(user_id, username, avatar, is_connected, muteList) 
 
 			const result = await response.json();
 
-			if (result.is_muted) {
-				muteButton.classList.add('muted');
+			if (result.muted)
 				muteIcon.src = '/assets/images/chat/mute_icon.png';
-			} else {
-				muteButton.classList.remove('muted');
+			else
 				muteIcon.src = '/assets/images/chat/chat_icon.png';
-			}
 		} catch (error) {
 			console.error('Error updating mute state:', error);
 		}

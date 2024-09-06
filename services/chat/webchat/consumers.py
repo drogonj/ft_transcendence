@@ -1,4 +1,4 @@
-import json, requests, logging
+import json, requests, logging, asyncio
 from asgiref.sync import sync_to_async
 from datetime import datetime
 from .models import Message, PrivateMessage, InvitationToPlay, MuteList
@@ -11,7 +11,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		cookies = self.scope['cookies']
 		session_id = cookies.get('sessionid')
-		self.user_id = 0
 
 		if not session_id:
 			await self.close()
@@ -25,7 +24,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		else:
 			response_data = session_response.json()
 			if response_data.get('success'):
-				self.user_id = response_data.get('id')
+				self.user_id = int(response_data.get('id'))
 			else:
 				await self.close()
 				return
@@ -62,13 +61,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 	async def receive(self, text_data):
 		data = json.loads(text_data)
-
-		mute_list = MuteList.objects.get_or_create_mute_list(data.get('user_id'))
-		can_send = MuteList.objects.can_send_message(data.get('user_id'), data.get('receiver_id'))
+		logging.info(f'received data {data}')
+		# can_send = await sync_to_async(MuteList.objects.can_send_message)(data.get('user_id'), data.get('receiver_id'))
 
 		if data['type'] == 'join_room':
 			room_name = data['room']
 			self.rooms.add(room_name)
+			logging.info(f'{self.user_id} has connected to {room_name}')
 			await self.channel_layer.group_add(room_name, self.channel_name)
 
 		elif data['type'] == 'leave_room':
@@ -89,24 +88,46 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			)
 
 		elif data['type'] == 'chat_message':
+			connected_users = user_to_consumer.keys()
+			id = data['user_id']
+
 			new_message = await sync_to_async(Message.objects.create)(
 				type = data['type'],
 				content = data['content'],
 				user_id = data['user_id'],
 				username = data['username'],
 				timestamp = datetime.now(),
-			)    
-			await self.channel_layer.group_send(
-				self.room_name,
-				{
-					'messageId': new_message.messageId,
-					'type': new_message.type,
-					'content': new_message.content,
-					'user_id': new_message.user_id,
-					'username': new_message.username,
-					'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-				}
 			)
+
+			for user_id in connected_users:
+				if user_id != id:
+					mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(user_id)
+					muted_users = await sync_to_async(list) (
+						mute_list.muted_users.values_list('user_id', flat=True)
+					)
+					
+					if not id in muted_users:
+						room = f'ID_{user_id}'
+						await self.channel_layer.group_send(
+							room,
+							{
+								'messageId': new_message.messageId,
+								'type': new_message.type,
+								'content': new_message.content,
+								'user_id': new_message.user_id,
+								'username': new_message.username,
+								'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+							}
+						)
+
+			await self.send(text_data=json.dumps({
+				'messageId': new_message.messageId,
+				'type': new_message.type,
+				'content': new_message.content,
+				'user_id': new_message.user_id,
+				'username': new_message.username,
+				'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+			}))
 
 		elif data['type'] == 'private_message':
 			new_message = await sync_to_async(PrivateMessage.objects.create)(

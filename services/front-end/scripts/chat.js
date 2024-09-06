@@ -12,6 +12,10 @@ export async function getChatCsrfToken() {
 	chatCsrfToken = data.csrfToken;
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export async function connectChatWebsocket(user_id, roomName) {
 	if (!chatSocket) {
 		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/`);
@@ -19,7 +23,7 @@ export async function connectChatWebsocket(user_id, roomName) {
 		chatSocket.onopen = function(e) {
 			console.log("Chat-WebSocket connection established.");
 			joinRoom(`ID_${currentUser.user_id}`);
-			joinRoom(roomName);
+			joinRoom(roomName);``
 		};
 
 		chatSocket.onmessage = function(e) {
@@ -31,9 +35,6 @@ export async function connectChatWebsocket(user_id, roomName) {
 					data.timestamp = formatTime(data.timestamp);
 
 				console.log(data);
-
-				if (muteList && muteList.includes(data.user_id))
-					muted = true;
 
 				if (data.type === 'user_status_update')
 					updateUserStatus(data.user_id, data.is_connected, data.content);
@@ -67,21 +68,21 @@ export async function connectChatWebsocket(user_id, roomName) {
 					trollMessage(data);
 			})();
 		}
-	} else
+
+		chatSocket.onclose = function(e) {
+			if (e.wasClean)
+				console.log(`[close] Chat Connection closed cleanly, code=${e.code} reason=${e.reason}`);
+			else
+				console.log('[close] Chat Connection died');
+			leaveAllRooms();
+			chatSocket = null;
+		};
+
+		chatSocket.onerror = function(error) {
+			console.error(`[error] ${error.message}`);
+		};
+	} else 
 		joinRoom(roomName);
-
-	chatSocket.onclose = function(e) {
-		if (e.wasClean)
-			console.log(`[close] Chat Connection closed cleanly, code=${e.code} reason=${e.reason}`);
-		else
-			console.log('[close] Chat Connection died');
-		leaveAllRooms();
-		chatSocket = null;
-	};
-
-	chatSocket.onerror = function(error) {
-		console.error(`[error] ${error.message}`);
-	};
 }
 
 export async function disconnectChatWebsocket() {
@@ -143,9 +144,6 @@ async function removePendingInvitationMessage(invitationId) {
 		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
 	}
 }
-async function joinRooms() {
-
-}
 
 async function joinRoom(roomName) {
 	if (!rooms.has(roomName)) {
@@ -175,7 +173,6 @@ async function leaveAllRooms() {
 	});
 	rooms.clear();
 }
-
 
 function getTrollMessage() {
 	const random = Math.floor(Math.random() * 5);
@@ -414,9 +411,7 @@ export async function handleCancel(data, message) {
 	sendRoomMessage(data, 'cancelled');
 }
 
-
 export async function addChatMenu() {
-	await getChatCsrfToken();
 	await connectChatWebsocket(currentUser.user_id, 'general');
 	const chatContainer = document.querySelector('.chat-menu-container');
 	chatContainer.innerHTML = `
@@ -451,9 +446,11 @@ export async function addChatMenu() {
 	const chatMessages = document.getElementById('chat-messages');
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 
+	await sleep(100);
 	await loadUsers();
-	await loadMessages();
-	await loadInvitations();
+	// await loadMessages();
+	await getChatCsrfToken();
+	// await loadInvitations();
 
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeydown = function(e) {
@@ -593,12 +590,12 @@ async function loadMessages() {
 		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
 
 		allMessages.forEach(message => {
-			if (!muteList.includes(message.user_id)) {
+			// if (!muteList.includes(message.user_id)) {
 				if (message.type === 'private_message')
 					loadAPrivateMessage(message);
 				else if (message.type === 'chat_message')
 					loadAMessage(message);
-			}
+			// }
 		});
 	} catch (error) {
 		console.error('Error loading messages:', error);
@@ -652,30 +649,30 @@ export async function loadAPrivateMessage(data) {
 	}
 }
 
-async function loadInvitations() {
-	try {
-		const response = await fetch('api/chat/invitations/');
-		const data = await response.json();
+// async function loadInvitations() {
+// 	try {
+// 		const response = await fetch('api/chat/invitations/');
+// 		const data = await response.json();
 
-		if (!data || data.length === 0)
-			return;
+// 		if (!data || data.length === 0)
+// 			return;
 
-		data.forEach(invit => {
-			if (invit.status === 'pending') {
-				if (invit.receiver_id === currentUser.user_id || invit.user_id === currentUser.user_id) {
-					if (!muteList.includes(invit.user_id)) {
-						joinRoom(`invitation_${invit.invitationId}`);
-						invitationToPlay(invit);
-					} else if (muteList.includes(invit.user_id))
-						suppressInvitation(invit);
-				}
-			}			
-			// else if (invit.status == 'on-hold') {
-			// 	joinRoom(`invitation_${invit.invitationId}`);
-			// 	invitationToPlay(invit);
-			// }
-		});
-	} catch (error) {
-		console.error('Error loading invitations:', error);
-	}
-}
+// 		data.forEach(invit => {
+// 			if (invit.status === 'pending') {
+// 				if (invit.receiver_id === currentUser.user_id || invit.user_id === currentUser.user_id) {
+// 					// if (!muteList.includes(invit.user_id)) {
+// 						joinRoom(`invitation_${invit.invitationId}`);
+// 						invitationToPlay(invit);
+// 				// 	} else if (muteList.includes(invit.user_id))
+// 				// 		suppressInvitation(invit);
+// 				}
+// 			}			
+// 			// else if (invit.status == 'on-hold') {
+// 			// 	joinRoom(`invitation_${invit.invitationId}`);
+// 			// 	invitationToPlay(invit);
+// 			// }
+// 		});
+// 	} catch (error) {
+// 		console.error('Error loading invitations:', error);
+// 	}
+// }
