@@ -9,7 +9,7 @@ export default function PaddleStun() {
 
 PaddleStun.prototype.executor = function (socketValues) {
 	coolDownRun(this);
-	const targetPaddle = getPlayerWithSide(socketValues["targetPlayer"])
+	const targetPaddle = getPlayerWithSide(socketValues["playerTarget"])
 	setCssProperty(targetPaddle.getPaddleStyle(), "background-color", "#72A0C1");
     setSpellDelay(2).then(() => {
 		setCssProperty(targetPaddle.getPaddleStyle(), "background-color", "#DAE1E7");

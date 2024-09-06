@@ -92,17 +92,6 @@ class TournamentWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
-    def post(self):
-        # Get data from the request body (assuming it's JSON)
-        data = tornado.escape.json_decode(self.request.body)
-        tournament_name = data.get("tournament_name", "Unknown Tournament")
-
-        # Print received data to the console
-        print(f"Received tournament: {tournament_name}")
-
-        # Send a JSON response back
-        self.write({"status": "success", "message": f"Tournament {tournament_name} received"})
-
     def open(self):
         print("[+] A new client is connected to the tournament server.")
 
@@ -125,11 +114,21 @@ class TournamentWebSocket(WebSocketHandler):
         print(f"[-] A user leave the tournament server.")
 
 
+class TournamentRequestHandler(WebSocketHandler):
+    def check_origin(self, origin):
+        return True  # Allow all origins
+
+    def get(self):
+        print("ernter")
+        self.write({"from": "tourn", "c": "d"})
+
+
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
     (r"/ws/tournament", TournamentWebSocket),  # API handler path
+    (r"/api/tournament/get_tournaments/", TournamentRequestHandler),
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 
