@@ -16,7 +16,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export async function connectChatWebsocket(user_id, roomName) {
+export async function connectChatWebsocket(roomName) {
 	if (!chatSocket) {
 		chatSocket = new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${roomName}/`);
 
@@ -39,9 +39,8 @@ export async function connectChatWebsocket(user_id, roomName) {
 				if (data.type === 'user_status_update')
 					updateUserStatus(data.user_id, data.is_connected, data.content);
 
-				else if (data.type === 'private_message' && (data.receiver_id === currentUser.user_id
-					|| data.user_id === currentUser.user_id))
-						privateMessage(data);
+				else if (data.type === 'private_message')
+					privateMessage(data);
 
 				else if (data.type === 'invitation_to_play') {
 						joinRoom(`invitation_${data.invitationId}`);
@@ -334,10 +333,6 @@ async function invitationToPlay(data) {
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
-	// if (getUserStatus(data.receiver_id) === 'online')
-		// inviteConnectedUser(data);
-	// else if (getUserStatus(data.receiver_id) === 'offline')
-		// inviteDisconnectedUser(data);
 	if (data.receiver_id === currentUser.user_id) {
 		newMessage.classList.add('chat-message');
 		newMessage.id = `pending-invitation-${data.invitationId}`;
@@ -412,7 +407,7 @@ export async function handleCancel(data, message) {
 }
 
 export async function addChatMenu() {
-	await connectChatWebsocket(currentUser.user_id, 'general');
+	await connectChatWebsocket('general');
 	const chatContainer = document.querySelector('.chat-menu-container');
 	chatContainer.innerHTML = `
 		<div id="chat-menu-container" class="chat-menu-container">
@@ -463,9 +458,9 @@ export async function addChatMenu() {
 		const messageInputDom = document.getElementById('chat-input');
 		const message = messageInputDom.value;
 
-		if (!message.trim()) {
+		if (!message.trim())
 			return;
-		} else { 
+		else { 
 			parseMessage(message);
 			messageInputDom.value = '';
 		};
@@ -484,9 +479,6 @@ async function parseMessage(message) {
 				const usersData = await response.json();
 
 				for (const user of usersData.users) {
-					const checkMute = await getMuteListOf(user.user_id);
-					const amIMuted = checkMute.includes(currentUser.user_id);
-
 					if (user.username === username) {
 						if (user.username === currentUser.username) {
 							let troll = getTrollMessage();
@@ -497,7 +489,7 @@ async function parseMessage(message) {
 								'username': currentUser.username,
 							}));
 						}
-						else if (!amIMuted && cmd === 'dm') {
+						else if (cmd === 'dm') {
 							chatSocket.send(JSON.stringify({
 								'type': 'private_message',
 								'content': convertURL(parts.slice(2).join(' ')),
@@ -506,7 +498,7 @@ async function parseMessage(message) {
 								'receiver_id': user.user_id,
 								'receiver_username': user.username
 							}));
-						} else if (!amIMuted && cmd === 'play') {
+						} else if (cmd === 'play') {
 							chatSocket.send(JSON.stringify({
 								'room': `ID_${currentUser.user_id}`,
 								'type': 'invitation_to_play',
@@ -515,20 +507,15 @@ async function parseMessage(message) {
 								'receiver_id': user.user_id,
 								'receiver_username': user.username
 							}));
-						} else
-							muteMessage(user.username, cmd);
-						return;
+						}
 					}
 				}
 			} catch (error) {
 				console.error('Error fetching users or processing message:', error);
 			}
-		} else {
-			sendChatMessage(message);
 		}
-	} else {
+	} else
 		sendChatMessage(message);
-	}
 }
 
 function convertURL(text) {

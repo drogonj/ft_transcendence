@@ -52,9 +52,8 @@ class MuteListManager(models.Manager):
 		try:
 			mute_list = self.get_mute_list(user_id)
 			muted_users_ids = mute_list.muted_users.values_list('user_id', flat=True)
-			logging.info(f'List of muted users: {muted_users_ids}')
+
 			is_muted = receiver_id in muted_users_ids
-			logging.info(f'is muted? {is_muted}')
 			return not is_muted
 		except MuteList.DoesNotExist:
 			return True

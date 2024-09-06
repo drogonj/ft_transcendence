@@ -62,7 +62,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 	async def receive(self, text_data):
 		data = json.loads(text_data)
 		logging.info(f'received data {data}')
-		# can_send = await sync_to_async(MuteList.objects.can_send_message)(data.get('user_id'), data.get('receiver_id'))
 
 		if data['type'] == 'join_room':
 			room_name = data['room']
@@ -102,9 +101,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			for user_id in connected_users:
 				if user_id != id:
 					mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(user_id)
-					muted_users = await sync_to_async(list) (
-						mute_list.muted_users.values_list('user_id', flat=True)
-					)
+					muted_users = await sync_to_async(list)(mute_list.muted_users.values_list('user_id', flat=True))
 					
 					if not id in muted_users:
 						room = f'ID_{user_id}'
@@ -130,18 +127,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			}))
 
 		elif data['type'] == 'private_message':
-			new_message = await sync_to_async(PrivateMessage.objects.create)(
-				type = data['type'],
-				content = data['content'],
-				user_id = data['user_id'],
-				username = data['username'],
-				timestamp = datetime.now(),
-				receiver_id = data['receiver_id'],
-				receiver_username = data['receiver_username']
-			)
-			await self.channel_layer.group_send(
-				self.room_name,
-				{
+			id = data['user_id']
+			receiver = data['receiver_id']
+			connected_users = user_to_consumer.keys()
+			muted = True
+
+			for user_id in connected_users:
+				if user_id != id:
+					mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(receiver)
+					muted_users = await sync_to_async(list)(mute_list.muted_users.values_list('user_id', flat=True))
+				
+					if not id in muted_users:
+						muted = False
+						new_message = await sync_to_async(PrivateMessage.objects.create)(
+							type = data['type'],
+							content = data['content'],
+							user_id = data['user_id'],
+							username = data['username'],
+							timestamp = datetime.now(),
+							receiver_id = data['receiver_id'],
+							receiver_username = data['receiver_username']
+						)
+
+						room = f'ID_{receiver}'
+						await self.channel_layer.group_send(
+							room,
+							{
+								'messageId': new_message.messageId,
+								'type': new_message.type,
+								'content': new_message.content,
+								'user_id': new_message.user_id,
+								'username': new_message.username,
+								'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+								'receiver_id': new_message.receiver_id,
+								'receiver_username': new_message.receiver_username
+							}
+						)
+
+			if not muted:
+				await self.send(text_data=json.dumps({
 					'messageId': new_message.messageId,
 					'type': new_message.type,
 					'content': new_message.content,
@@ -150,13 +174,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
 					'receiver_id': new_message.receiver_id,
 					'receiver_username': new_message.receiver_username
-				}
-			)
+				}))
+			else:
+				await self.send(text_data=json.dumps({
+					'type': 'system',
+					'content': f'DM not delivered (Reason: Muted).',
+				}))
 
 		elif data['type'] == 'invitation_to_play':
+			connected_users = user_to_consumer.keys()
+			id = data['user_id']
 			receiver = data.get('receiver_id')
 			room_name = data.get('room')
 			room_name2 = f'ID_{receiver}'
+			muted = True
 			uri = f'http://user-management:8000/api/user/get_user/{receiver}/'
 			
 			try:
@@ -167,41 +198,50 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				logger.error(f"Error fetching user data: {e}")
 				user = []
 
-			if user['is_connected'] is False:
+
+			if not user['is_connected']:
 				await self.channel_layer.group_send(
-					room_name,
-					{
-						'invitationId': None,
+					room_name, {
 						'type': 'system',
-						'content': f'{data["receiver_username"]} is not connected',
-						'user_id': data['user_id'],
-						'username': data['username'],
-						'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-						'receiver_id': data['receiver_id'],
-						'receiver_username': data['receiver_username']
+						'content': f'Invitation not delivered (Reason: Disconnected).',
 					}
 				)
 			else:
-				new_message = await sync_to_async(InvitationToPlay.objects.create)(
-					type = data['type'],
-					user_id = data['user_id'],
-					username = data['username'],
-					timestamp = datetime.now(),
-					receiver_id = data['receiver_id'],
-					receiver_username = data['receiver_username']
-				)
-				message_data = {
-					'invitationId': new_message.invitationId,
-					'status': new_message.status,
-					'type': new_message.type,
-					'user_id': new_message.user_id,
-					'username': new_message.username,
-					'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-					'receiver_id': new_message.receiver_id,
-					'receiver_username': new_message.receiver_username
-				}
-				await self.channel_layer.group_send(room_name, message_data)
-				await self.channel_layer.group_send(room_name2, message_data)
+				for user_id in connected_users:
+					if user_id != id:
+						mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(receiver)
+						muted_users = await sync_to_async(list)(mute_list.muted_users.values_list('user_id', flat=True))
+
+						if not id in muted_users:
+							muted = False
+
+							new_message = await sync_to_async(InvitationToPlay.objects.create)(
+								type = data['type'],
+								user_id = data['user_id'],
+								username = data['username'],
+								timestamp = datetime.now(),
+								receiver_id = data['receiver_id'],
+								receiver_username = data['receiver_username']
+							)
+
+							message_data = {
+								'invitationId': new_message.invitationId,
+								'status': new_message.status,
+								'type': new_message.type,
+								'user_id': new_message.user_id,
+								'username': new_message.username,
+								'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+								'receiver_id': new_message.receiver_id,
+								'receiver_username': new_message.receiver_username
+							}
+							await self.channel_layer.group_send(room_name, message_data)
+							await self.channel_layer.group_send(room_name2, message_data)
+						
+						else:
+							await self.send(text_data=json.dumps({
+								'type': 'system',
+								'content': f'Invitation not delivered (Reason: Muted).',
+						}))
 		
 		elif data['type'] == 'invitation_response':
 			room_name = data.get('room')
