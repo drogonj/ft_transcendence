@@ -1,16 +1,14 @@
 export function test() {
-    const tournamentName = "exemple tour"
-
-    fetch("https://back-tournament:2610/ws/tournament", {
-                method: "POST",
+    fetch("api/tournament/get_tournaments/", {
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ tournament_name: tournamentName }),
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("tournament").textContent = data.message;
+                console.log(data.message);
+                document.getElementById("tournament").textContent = data.message['from'];
             })
             .catch(error => {
                 console.error("Error:", error);

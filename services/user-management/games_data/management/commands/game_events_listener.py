@@ -7,7 +7,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from games_data.models import Match
-from friends.consumers import notify_user_status
+from friends.consumers import change_and_notify_user_status
 
 
 logger = logging.getLogger(__name__)
@@ -105,10 +105,10 @@ class Command(BaseCommand):
             p2 = User.objects.get(id=data['player1']['playerId'])
             channel_layer = get_channel_layer()
             if game_status == 'start':
-                async_to_sync(notify_user_status)(channel_layer, p1, 'ingame')
-                async_to_sync(notify_user_status)(channel_layer, p2, 'ingame')
+                async_to_sync(change_and_notify_user_status)(channel_layer, p1, 'in-game')
+                async_to_sync(change_and_notify_user_status)(channel_layer, p2, 'in-game')
             else:
-                async_to_sync(notify_user_status)(channel_layer, p1, 'online')
-                async_to_sync(notify_user_status)(channel_layer, p2, 'online')
+                if p1.is_connected: async_to_sync(change_and_notify_user_status)(channel_layer, p1, 'online')
+                if p2.is_connected: async_to_sync(change_and_notify_user_status)(channel_layer, p2, 'online')
         except Exception as e:
             logger.error(f'GameError: {e}')
