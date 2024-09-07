@@ -200,6 +200,7 @@ class GetAllUsersDataView(View):
 				'user_id': user.id,
 				'avatar': user.profil_image.url if user.profil_image else None,
 				'is_connected': user.is_connected,
+				'status': user.status,
 			}
 			for user in users if user.register_complete == True
 		]
@@ -212,6 +213,7 @@ class GetOneUserDataView(View):
 			user_data = {
 				'username': user.username,
 				'is_connected': user.is_connected,
+				'status': user.status,
 			}
 			return JsonResponse(user_data)
 		except User.DoesNotExist:

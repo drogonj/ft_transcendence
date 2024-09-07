@@ -61,7 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 	async def receive(self, text_data):
 		data = json.loads(text_data)
-		logging.info(f'received data {data}')
+		logging.info(f'received data: {data}')
 
 		if data['type'] == 'join_room':
 			room_name = data['room']
@@ -88,7 +88,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 		elif data['type'] == 'chat_message':
 			connected_users = user_to_consumer.keys()
-			id = data['user_id']
+			id = data.get('user_id')
 
 			new_message = await sync_to_async(Message.objects.create)(
 				type = data['type'],
@@ -127,8 +127,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			}))
 
 		elif data['type'] == 'private_message':
-			id = data['user_id']
-			receiver = data['receiver_id']
+			id = data.get('user_id')
+			receiver = data.get('receiver_id')
 			connected_users = user_to_consumer.keys()
 			muted = True
 
@@ -183,9 +183,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 		elif data['type'] == 'invitation_to_play':
 			connected_users = user_to_consumer.keys()
-			id = data['user_id']
+			id = data.get('user_id')
 			receiver = data.get('receiver_id')
-			room_name = data.get('room')
+			room_name = f'ID_{id}'
 			room_name2 = f'ID_{receiver}'
 			muted = True
 			uri = f'http://user-management:8000/api/user/get_user/{receiver}/'
@@ -198,14 +198,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				logger.error(f"Error fetching user data: {e}")
 				user = []
 
-
-			if not user['is_connected']:
+			if user['status'] == 'offline':
 				await self.channel_layer.group_send(
 					room_name, {
 						'type': 'system',
-						'content': f'Invitation not delivered (Reason: Disconnected).',
+						'content': f'Invitation not delivered (Reason: Offline).',
 					}
 				)
+
+			elif user['status'] == 'in-game':
+				await self.channel_layer.group_send(
+					room_name, {
+						'type': 'system',
+						'content': f'Invitation not delivered (Reason: In Game).',
+					}
+				)
+
 			else:
 				for user_id in connected_users:
 					if user_id != id:
@@ -234,6 +242,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 								'receiver_id': new_message.receiver_id,
 								'receiver_username': new_message.receiver_username
 							}
+
 							await self.channel_layer.group_send(room_name, message_data)
 							await self.channel_layer.group_send(room_name2, message_data)
 						
@@ -244,25 +253,72 @@ class ChatConsumer(AsyncWebsocketConsumer):
 						}))
 		
 		elif data['type'] == 'invitation_response':
-			room_name = data.get('room')
-			await self.channel_layer.group_send(
-				room_name,
-				{
-					'invitationId': data['invitationId'],
-					'status': data['status'],
-					'type': data['type'],
-					'user_id': data['user_id'],
-					'username': data['username'],
-					'receiver_id': data['receiver_id'],
-					'receiver_username': data['receiver_username']
-				}
-			)
+			connected_users = user_to_consumer.keys()
+			id = data.get('user_id')
+			receiver = data.get('receiver_id')
+			room_name = f'ID_{id}'
+			room_name2 = f'ID_{receiver}'
+			muted = True
+			uri = f'http://user-management:8000/api/user/get_user/{receiver}/'
+			
+			try:
+				response = requests.get(uri)
+				response.raise_for_status()
+				user = response.json()
+			except requests.exceptions.RequestException as e:
+				logger.error(f"Error fetching user data: {e}")
+				user = []
 
-		elif data['type'] == 'cancel_invitation':
-			room_name = data.get('room')
-			await self.channel_layer.group_send(
-				room_name,
-				{
+			if user['status'] == 'offline':
+				try:
+					invitation = await sync_to_async(InvitationToPlay.objects.get)(invitationId=data['invitationId'])
+					invitation.status = 'cancelled'
+					await sync_to_async(invitation.save)()
+
+					await self.channel_layer.group_send(
+						room_name, {
+							'type': 'cancelled_invitation',
+							'invitationId': data['invitationId'],
+							'status': 'offline',
+							'receiver_id': data['receiver_id'],
+							'receiver_username': data['receiver_username'],
+							'user_id': data['user_id'],
+							'username': data['username']
+						}
+					)
+
+				except InvitationToPlay.DoesNotExist:
+					await self.send(text_data=json.dumps({
+						'type': 'system',
+						'content': 'Invitation not found.',
+					}))
+
+			elif user['status'] == 'in-game':
+				try:
+					invitation = await sync_to_async(InvitationToPlay.objects.get)(invitationId=data['invitationId'])
+					invitation.status = 'cancelled'
+					await sync_to_async(invitation.save)()
+
+					await self.channel_layer.group_send(
+						room_name, {
+							'type': 'cancelled_invitation',
+							'invitationId': data['invitationId'],
+							'status': 'in-game',
+							'receiver_id': data['receiver_id'],
+							'receiver_username': data['receiver_username'],
+							'user_id': data['user_id'],
+							'username': data['username']
+						}
+					)
+
+				except InvitationToPlay.DoesNotExist:
+					await self.send(text_data=json.dumps({
+						'type': 'system',
+						'content': 'Invitation not found.',
+					}))
+
+			else:
+				message_data = {
 					'invitationId': data['invitationId'],
 					'status': data['status'],
 					'type': data['type'],
@@ -271,7 +327,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'receiver_id': data['receiver_id'],
 					'receiver_username': data['receiver_username']
 				}
-			)
+
+				if data['status'] == 'accepted':
+					await self.channel_layer.group_send(room_name, message_data)
+				await self.channel_layer.group_send(room_name2, message_data)
+
+		elif data['type'] == 'cancelled_invitation':
+			receiver = data.get('receiver_id')
+			room_name2 = f'ID_{receiver}'
+
+			message_data = {
+				'invitationId': data['invitationId'],
+				'status': data['status'],
+				'type': data['type'],
+				'user_id': data['user_id'],
+				'username': data['username'],
+				'receiver_id': data['receiver_id'],
+				'receiver_username': data['receiver_username']
+			}
+			
+			await self.channel_layer.group_send(room_name2, message_data)
 
 		elif data['type'] == 'troll_message':
 			await self.channel_layer.group_send(
@@ -365,7 +440,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		receiver_username = event['receiver_username']
 		logger.info(f'{receiver_username} {status} {username}\'s invitation')
 
-	async def cancel_invitation(self, event):
+	async def cancelled_invitation(self, event):
 		await self.send(text_data=json.dumps({
 			'invitationId': event['invitationId'],
 			'status': event['status'],

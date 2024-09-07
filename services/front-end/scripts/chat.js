@@ -42,10 +42,9 @@ export async function connectChatWebsocket(roomName) {
 				else if (data.type === 'private_message')
 					privateMessage(data);
 
-				else if (data.type === 'invitation_to_play') {
-						joinRoom(`invitation_${data.invitationId}`);
-						invitationToPlay(data);
-				}
+				else if (data.type === 'invitation_to_play')
+					invitationToPlay(data);
+
 				else if (data.type === 'invitation_response') {
 					if (data.status === 'accepted')
 						connectToGame(data);
@@ -53,9 +52,8 @@ export async function connectChatWebsocket(roomName) {
 						declinedInvitation(data);
 				}
 
-				else if (data.type === 'cancelled_invitation') {
+				else if (data.type === 'cancelled_invitation')
 					cancelledInvitation(data);
-				}
 
 				else if (data.type === 'system')
 					systemMessage(data);
@@ -93,11 +91,13 @@ export async function disconnectChatWebsocket() {
 async function 	connectToGame(data) {
 	removePendingInvitationMessage(data.invitationId);
 	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
-	leaveRoom(`invitation_${data.invitationId}`);
 	launchFriendGame(data);
 }
 
 async function declinedInvitation(data) {
+	if (!chatWindowOn())
+		return ;
+
 	if (data.receiver_id === currentUser.user_id) {
 		removePendingInvitationMessage(data.invitationId); 
 
@@ -112,11 +112,12 @@ async function declinedInvitation(data) {
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
-
-	leaveRoom(`invitation_${data.invitationId}`);
 }
 
 async function cancelledInvitation(data) {
+	if (!chatWindowOn())
+		return ;
+
 	removePendingInvitationMessage(data.invitationId);
 
 	if (data.receiver_id === currentUser.user_id) {
@@ -124,24 +125,25 @@ async function cancelledInvitation(data) {
 		const newMessage = document.createElement('li');``
 	
 		newMessage.classList.add('chat-message');
-		newMessage.textContent = `${data.username} cancelled the invitation.`;
+		newMessage.textContent = `${data.username} cancelled the invitation (Reason: ${data.status}).`;
 
 		messageList.insertBefore(newMessage, messageList.firstChild);
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
-
-	leaveRoom(`invitation_${data.invitationId}`);
 }
 
 async function removePendingInvitationMessage(invitationId) {
+	if (!chatWindowOn())
+		return ;
+
 	const pendingMessageElement = document.getElementById(`pending-invitation-${invitationId}`);
-	if (pendingMessageElement) {
+
+	if (pendingMessageElement)
 		pendingMessageElement.remove();
-	} else {
+	else
 		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
-	}
 }
 
 async function joinRoom(roomName) {
@@ -186,6 +188,9 @@ function getTrollMessage() {
 }
 
 export async function trollMessage(data) {
+	if (!chatWindowOn())
+		return ;
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 	const random = Math.floor(Math.random() * 5);
@@ -211,23 +216,10 @@ export async function trollMessage(data) {
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-async function muteMessage(username, cmd) {
-	const messageList = document.getElementById('message-content');
-	const newMessage = document.createElement('li');
-
-	newMessage.classList.add('chat-message');
-	if (cmd === 'dm')
-		newMessage.textContent = `DM not delivered to : ${username} (reason : muted).`;
-	else if (cmd === 'play')
-		newMessage.textContent = `Invitation not delivered to : ${username} (reason : muted).`;
-
-	messageList.insertBefore(newMessage, messageList.firstChild);
-	
-	const chatMessages = document.getElementById('chat-messages');
-	chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
 async function chatMessage(data) {
+	if (!chatWindowOn())
+		return ;
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
@@ -241,6 +233,9 @@ async function chatMessage(data) {
 }
 
 async function systemMessage(data) {
+	if (!chatWindowOn())
+		return ;
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
@@ -254,6 +249,9 @@ async function systemMessage(data) {
 }
 
 async function privateMessage(data) {
+	if (!chatWindowOn())
+		return ;
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
@@ -277,59 +275,10 @@ async function privateMessage(data) {
 	}
 }
 
-function inviteConnectedUser(data) {
-	if (data.receiver_id === currentUser.user_id) {
-		newMessage.classList.add('chat-message');
-		newMessage.id = `pending-invitation-${data.invitationId}`;
-		newMessage.innerHTML = `
-			Invited to play with ${data.username} : \
-			<button class="accept-button" data-invitation-id="${data.invitationId}">Accept</button> / \
-			<button class="decline-button" data-invitation-id="${data.invitationId}">Decline</button>
-		`;
-
-		messageList.insertBefore(newMessage, messageList.firstChild);
-		
-		const chatMessages = document.getElementById('chat-messages');
-		chatMessages.scrollTop = chatMessages.scrollHeight;
-
-		newMessage.querySelector('.accept-button').addEventListener('click', async () => handleAccept(data, newMessage));
-		newMessage.querySelector('.decline-button').addEventListener('click', async () => handleDecline(data, newMessage));
-	} else if (data.user_id === currentUser.user_id) {
-			newMessage.classList.add('chat-message');
-			newMessage.id = `pending-invitation-${data.invitationId}`;
-			newMessage.innerHTML = `
-				Waiting for ${data.receiver_username}... \
-				<button class="cancel-button" data-invitation-id="${data.invitationId}">Cancel</button>
-			`;
-		
-			messageList.insertBefore(newMessage, messageList.firstChild);
-			
-			const chatMessages = document.getElementById('chat-messages');
-			chatMessages.scrollTop = chatMessages.scrollHeight;
-
-			newMessage.querySelector('.cancel-button').addEventListener('click', async () => handleCancel(data, newMessage));
-	}
-}
-
-function inviteDisconnectedUser(data) {
-	if (data.user_id === currentUser.user_id) {
-		newMessage.classList.add('chat-message');
-		newMessage.id = `pending-invitation-${data.invitationId}`;
-		newMessage.innerHTML = `
-			${data.receiver_username} is Offline... \
-			<button class="cancel-button" data-invitation-id="${data.invitationId}">Cancel</button>
-		`;
-	
-		messageList.insertBefore(newMessage, messageList.firstChild);
-		
-		const chatMessages = document.getElementById('chat-messages');
-		chatMessages.scrollTop = chatMessages.scrollHeight;
-
-		newMessage.querySelector('.cancel-button').addEventListener('click', async () => handleCancel(data, newMessage));
-	}
-}
-
 async function invitationToPlay(data) {
+	if (!chatWindowOn())
+		return ;
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 
@@ -381,7 +330,8 @@ async function handleAccept(data, message) {
 }
 
 export async function handleDecline(data, message) {
-	message.remove();
+	if (message)
+		message.remove();
 	await fetch(`/api/chat/invitations/declined/${data.invitationId}/`, {
 		method: 'POST',
 		headers: {
@@ -431,7 +381,7 @@ export async function addChatMenu() {
 	const newMessage = document.createElement('li');
 
 	newMessage.classList.add('chat-message');
-	newMessage.innerHTML = `Welcome to the chat ${currentUser.username}! <br> \
+	newMessage.innerHTML = `Welcome ${currentUser.username}! <br> \
 		For private message: "/dm username message" <br> \
 		For private game: "/play username" \
 	`;
@@ -443,9 +393,9 @@ export async function addChatMenu() {
 
 	await sleep(100);
 	await loadUsers();
-	// await loadMessages();
+	await loadMessages();
 	await getChatCsrfToken();
-	// await loadInvitations();
+	await loadInvitations();
 
 	document.getElementById('chat-input').focus();
 	document.getElementById('chat-input').onkeydown = function(e) {
@@ -537,7 +487,6 @@ async function sendChatMessage(message) {
 async function sendRoomMessage(data, status) {
 	if (status === 'cancelled') {
 		chatSocket.send(JSON.stringify({
-			'room': `invitation_${data.invitationId}`,
 			'type': 'cancelled_invitation',
 			'invitationId': data.invitationId,
 			'status': status,
@@ -548,7 +497,6 @@ async function sendRoomMessage(data, status) {
 		}));
 	} else {
 		chatSocket.send(JSON.stringify({
-			'room': `invitation_${data.invitationId}`,
 			'type': 'invitation_response',
 			'invitationId': data.invitationId,
 			'status': status,
@@ -576,13 +524,14 @@ async function loadMessages() {
 
 		allMessages.sort((first, second) => new Date(first.timestamp) - new Date(second.timestamp));
 
+		const muteList = await getMuteListOf(currentUser.user_id);
 		allMessages.forEach(message => {
-			// if (!muteList.includes(message.user_id)) {
+			if (!muteList.includes(message.user_id)) {
 				if (message.type === 'private_message')
 					loadAPrivateMessage(message);
 				else if (message.type === 'chat_message')
 					loadAMessage(message);
-			// }
+			}
 		});
 	} catch (error) {
 		console.error('Error loading messages:', error);
@@ -598,6 +547,9 @@ export function formatTime(timestamp) {
 }
 
 export async function loadAMessage(data) {
+	if (!chatWindowOn())
+		return ;
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 	data.timestamp = formatTime(data.timestamp);
@@ -612,6 +564,9 @@ export async function loadAMessage(data) {
 }
 
 export async function loadAPrivateMessage(data) {
+	if (!chatWindowOn())
+		return ;
+
 	const messageList = document.getElementById('message-content');
 	const newMessage = document.createElement('li');
 	data.timestamp = formatTime(data.timestamp);
@@ -636,30 +591,39 @@ export async function loadAPrivateMessage(data) {
 	}
 }
 
-// async function loadInvitations() {
-// 	try {
-// 		const response = await fetch('api/chat/invitations/');
-// 		const data = await response.json();
+async function loadInvitations() {
+	if (!chatWindowOn())
+		return ;
 
-// 		if (!data || data.length === 0)
-// 			return;
+	try {
+		const response = await fetch('api/chat/invitations/');
+		const data = await response.json();
 
-// 		data.forEach(invit => {
-// 			if (invit.status === 'pending') {
-// 				if (invit.receiver_id === currentUser.user_id || invit.user_id === currentUser.user_id) {
-// 					// if (!muteList.includes(invit.user_id)) {
-// 						joinRoom(`invitation_${invit.invitationId}`);
-// 						invitationToPlay(invit);
-// 				// 	} else if (muteList.includes(invit.user_id))
-// 				// 		suppressInvitation(invit);
-// 				}
-// 			}			
-// 			// else if (invit.status == 'on-hold') {
-// 			// 	joinRoom(`invitation_${invit.invitationId}`);
-// 			// 	invitationToPlay(invit);
-// 			// }
-// 		});
-// 	} catch (error) {
-// 		console.error('Error loading invitations:', error);
-// 	}
-// }
+		if (!data || data.length === 0)
+			return;
+
+		const muteList = await getMuteListOf(currentUser.user_id);
+
+		data.forEach(invit => {
+			if (invit.status === 'pending') {
+				if (invit.receiver_id === currentUser.user_id || invit.user_id === currentUser.user_id) {
+					if (!muteList.includes(invit.user_id))
+						invitationToPlay(invit);
+					else
+						handleDecline(invit, null)
+				}
+			}			
+		});
+	} catch (error) {
+		console.error('Error loading invitations:', error);
+	}
+}
+
+function chatWindowOn() {
+	const chatMessages = document.getElementById('chat-messages');
+	if (!chatMessages) {
+		console.log('User is not on the chat page.');
+		return false;
+	}
+	return true;
+}
