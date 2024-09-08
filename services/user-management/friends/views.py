@@ -200,6 +200,7 @@ class GetAllUsersDataView(View):
 				'user_id': user.id,
 				'avatar': user.profil_image.url if user.profil_image else None,
 				'is_connected': user.is_connected,
+				'status': user.status,
 			}
 			for user in users if user.register_complete == True
 		]
@@ -212,44 +213,8 @@ class GetOneUserDataView(View):
 			user_data = {
 				'username': user.username,
 				'is_connected': user.is_connected,
+				'status': user.status,
 			}
 			return JsonResponse(user_data)
 		except User.DoesNotExist:
 			return JsonResponse({'error': 'User not found'}, status=404)
-
-class GetMuteListView(View):
-    def get(self, request, user_id):
-        try:
-            user = User.objects.get(id=user_id)
-            muted_users = user.muted_users.values_list('id', flat=True)
-            user_data = {
-            'muted_users': list(muted_users)
-            }
-            return JsonResponse(user_data)
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
-        except ValueError:
-            return HttpResponseBadRequest()
-
-@method_decorator(csrf_exempt, name='dispatch')
-class MuteToggleView(View):
-    def post(self, request, user_id):
-        try:
-            user = User.objects.get(id=user_id)
-            data = json.loads(request.body)
-            muted = data.get('muted', False)
-            current_user = request.user
-
-            if not current_user.is_authenticated:
-                return JsonResponse({'error': 'User not authenticated'}, status=401)
-
-            if muted:
-                if user.id not in current_user.muted_users.values_list('id', flat=True):
-                    current_user.muted_users.add(user)
-                else:
-                    if user in current_user.muted_users.all():
-                        current_user.muted_users.remove(user)
-                return JsonResponse({'success': True})
-
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
