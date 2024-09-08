@@ -1,7 +1,7 @@
 class Player:
-    def __init__(self, socket, socket_values):
+    def __init__(self, socket, user_id):
         self.__socket = socket
-        self.__player_id = socket_values["userId"]
+        self.__player_id = user_id
 
     def get_socket(self):
         return self.__socket

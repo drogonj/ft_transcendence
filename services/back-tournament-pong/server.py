@@ -20,6 +20,7 @@ from websockets.exceptions import (
     WebSocketException
 )
 import random
+import requests
 
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backtournamentpong.settings')
@@ -27,6 +28,7 @@ django.setup()
 
 users_in_queue = []
 tournaments = []
+tournaments_id = 0
 
 
 def get_tournament_with_id(tournament_id):
@@ -88,12 +90,54 @@ def get_two_users():
     return random.sample(users_in_queue, 2)
 
 
+def is_user_already_in_tournament(user_id):
+    for tournament in tournaments:
+        if tournament.is_user_in_tournament(user_id):
+            return True
+    return False
+
+
 class TournamentWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
     def open(self):
-        print("[+] A new client is connected to the tournament server.")
+        cookies = self.request.cookies
+        print(cookies)
+        session_id = cookies.get("sessionid").value
+
+        request_response = requests.post("http://user-management:8000/api/user/get_session_user/", json={"sessionId": session_id})
+        if request_response.status_code != 200:
+            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
+            self.close()
+            return
+
+        request_data = request_response.json()
+        user_id = request_data["id"]
+        if is_user_already_in_tournament(user_id):
+            print(f"An error occured with the session_id: {session_id}. The user is already in queue")
+            self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
+            return
+        player = Player(self, user_id)
+
+        try:
+            action_type = cookies.get("type").value
+        except AttributeError:
+            print(f"No action type found.")
+            self.close()
+            return
+
+        print(action_type)
+
+        if action_type == "createTournament":
+            global tournaments_id
+            tournaments.append(Tournament(player, tournaments_id))
+            tournaments_id += 1
+        elif action_type == "joinTournament":
+            get_tournament_with_id(cookies.get("tournamentId").value).add_player(player)
+            print("join")
+
+        print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
     def on_message(self, message):
         socket = json.loads(message)

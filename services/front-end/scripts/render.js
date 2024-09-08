@@ -18,7 +18,7 @@ import {
 import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
-import {test} from "../tournament/tournament.js";
+import {createTournament, refreshTournamentList} from "../tournament/tournament.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -238,7 +238,7 @@ export async function renderHome() {
     });
 
     document.getElementById('tournament').addEventListener('click', (event) => {
-        test();
+        navigateTo('/tournament', true);
     });
 }
 
@@ -532,6 +532,98 @@ export async function renderGameWaiting() {
 
     document.getElementById('matchMakingCancel').addEventListener('click', (event) => {
         closeWebSocket();
+        event.preventDefault();
+        navigateTo('/home', true);
+    });
+}
+
+export async function renderTournament() {
+    app.innerHTML = `
+        <div id="tournamentmain">
+            <h1 id="headerTournament">Welcome to tournament</h1>
+            <div id="tournamentList">
+                <div class="tournamentCard">
+                    <div class="gameByHost">
+                        Game of PLAYER
+                    </div>
+                    <button class="joinTournament tournamentButton">
+                        Join the actual X players
+                    </button>
+                </div>
+
+                <div class="tournamentCard">
+                    <div class="gameByHost">
+                        Game of PLAYER
+                    </div>
+                    <button class="joinTournament tournamentButton">
+                        Join the actual X players
+                    </button>
+                </div>
+            </div>
+            <div id="footerTournament">
+                <button id="createTournament" class="tournamentButton">Create</button>
+                <button id="refreshTournament" class="tournamentButton">Refresh</button>
+                <button id="homeTournament" class="tournamentButton">Home</button>
+            </div>
+        </div>
+    `;
+    refreshTournamentList();
+
+    document.getElementById("createTournament").addEventListener('click', (event) => {
+        createTournament();
+    })
+
+    document.getElementById("refreshTournament").addEventListener('click', (event) => {
+        refreshTournamentList();
+    })
+
+    document.getElementById('homeTournament').addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo('/home', true);
+    });
+}
+
+export async function renderTournamentLobby() {
+    app.innerHTML = `
+        <div id="tournamentmain">
+            <h1 id="headerTournament">Welcome to tournament</h1>
+            <div id="tournamentList">
+                <div class="tournamentCard">
+                    <div class="gameByHost">
+                        Game of PLAYER
+                    </div>
+                    <button class="joinTournament tournamentButton">
+                        Join the actual X players
+                    </button>
+                </div>
+
+                <div class="tournamentCard">
+                    <div class="gameByHost">
+                        Game of PLAYER
+                    </div>
+                    <button class="joinTournament tournamentButton">
+                        Join the actual X players
+                    </button>
+                </div>
+            </div>
+            <div id="footerTournament">
+                <button id="createTournament" class="tournamentButton">Create</button>
+                <button id="refreshTournament" class="tournamentButton">Refresh</button>
+                <button id="homeTournament" class="tournamentButton">Home</button>
+            </div>
+        </div>
+    `;
+    refreshTournamentList();
+
+    document.getElementById("createTournament").addEventListener('click', (event) => {
+        createTournament();
+    })
+
+    document.getElementById("refreshTournament").addEventListener('click', (event) => {
+        refreshTournamentList();
+    })
+
+    document.getElementById('homeTournament').addEventListener('click', (event) => {
         event.preventDefault();
         navigateTo('/home', true);
     });
