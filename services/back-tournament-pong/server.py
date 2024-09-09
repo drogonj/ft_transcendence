@@ -33,13 +33,20 @@ tournaments_id = 0
 
 def get_tournament_with_id(tournament_id):
     for tournament in tournaments:
-        if tournament.id == tournament_id:
+        if int(tournament.id) == int(tournament_id):
             return tournament
 
 
-async def ping_users():
-    for user in users_in_queue:
-        user.send_message_to_user("ping", {})
+def get_tournament_from_player_socket(socket):
+    for tournament in tournaments:
+        tournament = tournament.contain_player_with_socket(socket)
+        if tournament is not None:
+            return tournament
+
+
+async def ping_all_tournaments():
+    for tournament in tournaments:
+        tournament.send_message_to_tournament("refreshLobby", tournament.dump_players_in_tournament())
 
 
 async def bind_to_game_server():
@@ -74,15 +81,13 @@ async def send_users_to_server():
 
 async def main_check_loop():
     while True:
+        await ping_all_tournaments()
         if not await check_game_server_health():
             await gen.sleep(3)
             continue
-        await ping_users()
-        if random.randrange(0, 15) == 0:
-            print("Looking for two users..")
-        if len(users_in_queue) > 1:
-            print("2 players founds, sending to game server..")
-            await send_users_to_server()
+        #if len(users_in_queue) > 1:
+         #   print("2 players founds, sending to game server..")
+         #   await send_users_to_server()
         await gen.sleep(1)
 
 
@@ -103,7 +108,6 @@ class TournamentWebSocket(WebSocketHandler):
 
     def open(self):
         cookies = self.request.cookies
-        print(cookies)
         session_id = cookies.get("sessionid").value
 
         request_response = requests.post("http://user-management:8000/api/user/get_session_user/", json={"sessionId": session_id})
@@ -115,10 +119,10 @@ class TournamentWebSocket(WebSocketHandler):
         request_data = request_response.json()
         user_id = request_data["id"]
         if is_user_already_in_tournament(user_id):
-            print(f"An error occured with the session_id: {session_id}. The user is already in queue")
+            print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
             self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
             return
-        player = Player(self, user_id)
+        player = Player(self, user_id, request_data["username"])
 
         try:
             action_type = cookies.get("type").value
@@ -134,6 +138,7 @@ class TournamentWebSocket(WebSocketHandler):
             tournaments.append(Tournament(player, tournaments_id))
             tournaments_id += 1
         elif action_type == "joinTournament":
+            #todo if tournament is not available
             get_tournament_with_id(cookies.get("tournamentId").value).add_player(player)
             print("join")
 
@@ -155,6 +160,12 @@ class TournamentWebSocket(WebSocketHandler):
                 print("bind to tournament")
 
     def on_close(self):
+        tournament = get_tournament_from_player_socket(self)
+        if tournament:
+            tournament.remove_player_with_socket(self)
+            if tournament.is_tournament_done():
+                print(f"The tournament with id {tournament.get_id()} is done and removed.")
+                tournaments.remove(tournament)
         print(f"[-] A user leave the tournament server.")
 
 
@@ -163,8 +174,10 @@ class TournamentRequestHandler(WebSocketHandler):
         return True  # Allow all origins
 
     def get(self):
-        print("ernter")
-        self.write({"from": "tourn", "c": "d"})
+        tournaments_to_send = []
+        for tournament in tournaments:
+            tournaments_to_send.append(tournament.dump_tournament())
+        self.write(json.dumps(tournaments_to_send))
 
 
 # WSGI container for Django

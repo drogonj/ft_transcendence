@@ -1,4 +1,4 @@
-import {getHostNameFromURL} from "../scripts/contentLoader.js";
+import {getHostNameFromURL, navigateTo} from "../scripts/contentLoader.js";
 
 let tournamentWebSocket
 
@@ -11,13 +11,31 @@ export function refreshTournamentList() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                console.log(data.from);
-                //document.getElementById("tournament").textContent = data.message['from'];
+                document.getElementById("tournamentList").innerHTML = ''
+                data.forEach((value) => {
+                    const newDiv = document.createElement('div');
+                    const newDivHeader = document.createElement('div');
+                    const newDivButton = document.createElement('button');
+
+                    newDivButton.classList.add("joinTournament");
+                    newDivButton.classList.add("tournamentButton");
+                    newDivButton.textContent = `Join the actual ${value['playersNumber']} players`
+                    newDivButton.addEventListener("click", event => {
+                        joinTournament(value["tournamentId"])
+                    })
+
+                    newDiv.classList.add("tournamentCard");
+                    newDiv.textContent = `Tournament of ${value['hostUsername']}`
+                    newDiv.append(newDivHeader);
+                    newDiv.append(newDivButton);
+
+                    document.getElementById("tournamentList").appendChild(newDiv);
+                });
+                if (document.getElementById("tournamentList").innerHTML === "")
+                    document.getElementById("tournamentList").innerHTML = '<p1>There is no tournament</p1>'
             })
             .catch(error => {
                 console.error("Error:", error);
-                //document.getElementById("tournament").textContent = "Error submitting tournament.";
             });
 }
 
@@ -27,6 +45,7 @@ export function createTournament() {
     tournamentWebSocket = new WebSocket(`wss://${getHostNameFromURL()}/ws/tournament`);
     tournamentWebSocket.onopen = function () {
         console.log("on open");
+        navigateTo('/tournament-lobby', true);
     }
 
     tournamentWebSocket.onmessage = function () {
@@ -58,6 +77,12 @@ export function joinTournament(tournamentId) {
     tournamentWebSocket.onclose = function () {
         console.log("on close j ");
     }
+}
 
+export function refreshTournamentLobby() {
 
+}
+
+export function closeTournamentWebSocket() {
+    tournamentWebSocket.close();
 }
