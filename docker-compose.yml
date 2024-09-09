@@ -78,8 +78,8 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
-      - vault-token:/vault/token:ro
-      - vault-ssl:/vault/ssl:ro
+      - vault-token:/vault/token
+      - vault-ssl:/vault/ssl
       - pg_certs:/opt/bitnami/pgpool/certs
     networks:
       - network
@@ -114,9 +114,6 @@ services:
       - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
-    environment:
-      - VAULT_ADDR=https://vault_1:8200
-      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
     ports:
@@ -130,9 +127,6 @@ services:
       - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
-    environment:
-      - VAULT_ADDR=https://vault_2:8200
-      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
     env_file:
@@ -149,9 +143,6 @@ services:
       - vault-ssl:/vault/ssl/
     cap_add:
       - IPC_LOCK
-    environment:
-      - VAULT_ADDR=https://vault_3:8200
-      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
     ports:
@@ -165,9 +156,6 @@ services:
       - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
-    environment:
-      - VAULT_ADDR=https://vault_4:8200
-      - VAULT_CACERT=/vault/ssl/ca.crt
     networks:
       - network
     ports:

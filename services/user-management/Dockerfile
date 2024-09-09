@@ -9,7 +9,8 @@ COPY requirements.txt .
 RUN apt-get update && apt-get upgrade -y && \
 	apt-get install -y --no-install-recommends \
         build-essential \
-		libpq-dev && \
+		libpq-dev \
+		curl && \
 		apt-get clean && \
 		rm -rf /var/lib/apt/lists/* && \
 		pip install --upgrade pip && \
