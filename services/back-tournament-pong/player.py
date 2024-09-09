@@ -1,13 +1,17 @@
 class Player:
-    def __init__(self, socket, socket_values):
+    def __init__(self, socket, user_id, username):
         self.__socket = socket
-        self.__player_id = socket_values["userId"]
+        self.__player_id = user_id
+        self.__username = username
 
     def get_socket(self):
         return self.__socket
 
     def get_player_id(self):
         return self.__player_id
+
+    def get_username(self):
+        return self.__username
 
     def send_message_to_player(self, message_type, message_values):
         message = {}
@@ -17,3 +21,6 @@ class Player:
 
     def kill_connection(self):
         self.__socket.close()
+
+    def dumps_player(self):
+        return {"playerId": self.__player_id, "username": self.__username}

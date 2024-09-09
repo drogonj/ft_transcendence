@@ -9,7 +9,7 @@ import {
     renderGameOnline,
     renderGameEnd,
     renderUserProfile,
-    renderSelfProfile
+    renderSelfProfile, renderTournament, renderTournamentLobby
 } from './render.js';
 import {currentUser, getCsrfToken, getCurrentUserInfo, handleLogin} from "./auth.js";
 import {connectFriendsWebsocket} from "./friends.js";
@@ -70,6 +70,10 @@ export function navigateTo(route, pushState, data) {
             renderGameWaiting();
         } else if (route === '/game-end' || route === '/game-end/') {
             renderGameEnd();
+        } else if (route === '/tournament' || route === '/tournament/') {
+            renderTournament();
+        } else if (route === '/tournament-lobby' || route === '/tournament-lobby/') {
+            renderTournamentLobby();
         } else {
             navigateTo('/home', false);
         }

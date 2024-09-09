@@ -12,7 +12,5 @@ urlpatterns = [
 	path('api/user/search/', views.search_users, name='search_users'),
 	path('api/user/get_users/', views.GetAllUsersDataView.as_view(), name='get_users'),
 	path('api/user/get_user/<int:user_id>/', views.GetOneUserDataView.as_view(), name='get_user'),
-	path('api/user/mute_toggle/<str:user_id>/', views.MuteToggleView.as_view(), name='mute_toggle'),
-	path('api/user/get_mutelist/<str:user_id>/', views.GetMuteListView.as_view(), name='mute_list'),
 	path('api/user/ws_token/', AsgiValidateTokenView.as_view(), name='ws_token')
 ]

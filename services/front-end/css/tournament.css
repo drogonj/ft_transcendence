@@ -1,0 +1,43 @@
+#tournamentmain {
+    left: 50%;
+    transform: translate(-50%);
+    position: absolute;
+    text-align: center;
+    color: white;
+}
+
+.tournamentCard {
+    margin: 2%;
+}
+
+#tournamentList, #playerList {
+    background-color: rgb(0 0 0 / 34%);
+}
+
+.tournamentButton {
+    background-color: rgb(43 38 109 / 31%);;
+    color: white;
+    border: none;
+    margin: 0;
+    padding: 4%;
+    cursor: pointer;
+    text-align: center;
+    box-sizing: border-box;
+    transition: ease-in 0.1s;
+    border-radius: 5px 5px 0 0;
+}
+
+.playerCard {
+    display: flex;
+}
+
+.playerIcon img {
+    height: 32px;
+    width: 32px;
+}
+
+.playerUsername {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

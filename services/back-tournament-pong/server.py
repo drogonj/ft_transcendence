@@ -20,6 +20,7 @@ from websockets.exceptions import (
     WebSocketException
 )
 import random
+import requests
 
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backtournamentpong.settings')
@@ -27,17 +28,25 @@ django.setup()
 
 users_in_queue = []
 tournaments = []
+tournaments_id = 0
 
 
 def get_tournament_with_id(tournament_id):
     for tournament in tournaments:
-        if tournament.id == tournament_id:
+        if int(tournament.id) == int(tournament_id):
             return tournament
 
 
-async def ping_users():
-    for user in users_in_queue:
-        user.send_message_to_user("ping", {})
+def get_tournament_from_player_socket(socket):
+    for tournament in tournaments:
+        tournament = tournament.contain_player_with_socket(socket)
+        if tournament is not None:
+            return tournament
+
+
+async def ping_all_tournaments():
+    for tournament in tournaments:
+        tournament.send_message_to_tournament("refreshLobby", tournament.dump_players_in_tournament())
 
 
 async def bind_to_game_server():
@@ -72,15 +81,13 @@ async def send_users_to_server():
 
 async def main_check_loop():
     while True:
+        await ping_all_tournaments()
         if not await check_game_server_health():
             await gen.sleep(3)
             continue
-        await ping_users()
-        if random.randrange(0, 15) == 0:
-            print("Looking for two users..")
-        if len(users_in_queue) > 1:
-            print("2 players founds, sending to game server..")
-            await send_users_to_server()
+        #if len(users_in_queue) > 1:
+         #   print("2 players founds, sending to game server..")
+         #   await send_users_to_server()
         await gen.sleep(1)
 
 
@@ -88,23 +95,54 @@ def get_two_users():
     return random.sample(users_in_queue, 2)
 
 
+def is_user_already_in_tournament(user_id):
+    for tournament in tournaments:
+        if tournament.is_user_in_tournament(user_id):
+            return True
+    return False
+
+
 class TournamentWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
 
-    def post(self):
-        # Get data from the request body (assuming it's JSON)
-        data = tornado.escape.json_decode(self.request.body)
-        tournament_name = data.get("tournament_name", "Unknown Tournament")
-
-        # Print received data to the console
-        print(f"Received tournament: {tournament_name}")
-
-        # Send a JSON response back
-        self.write({"status": "success", "message": f"Tournament {tournament_name} received"})
-
     def open(self):
-        print("[+] A new client is connected to the tournament server.")
+        cookies = self.request.cookies
+        session_id = cookies.get("sessionid").value
+
+        request_response = requests.post("http://user-management:8000/api/user/get_session_user/", json={"sessionId": session_id})
+        if request_response.status_code != 200:
+            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
+            self.close()
+            return
+
+        request_data = request_response.json()
+        user_id = request_data["id"]
+        if is_user_already_in_tournament(user_id):
+            print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
+            self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
+            return
+        player = Player(self, user_id, request_data["username"])
+
+        try:
+            action_type = cookies.get("type").value
+        except AttributeError:
+            print(f"No action type found.")
+            self.close()
+            return
+
+        print(action_type)
+
+        if action_type == "createTournament":
+            global tournaments_id
+            tournaments.append(Tournament(player, tournaments_id))
+            tournaments_id += 1
+        elif action_type == "joinTournament":
+            #todo if tournament is not available
+            get_tournament_with_id(cookies.get("tournamentId").value).add_player(player)
+            print("join")
+
+        print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
     def on_message(self, message):
         socket = json.loads(message)
@@ -122,7 +160,24 @@ class TournamentWebSocket(WebSocketHandler):
                 print("bind to tournament")
 
     def on_close(self):
+        tournament = get_tournament_from_player_socket(self)
+        if tournament:
+            tournament.remove_player_with_socket(self)
+            if tournament.is_tournament_done():
+                print(f"The tournament with id {tournament.get_id()} is done and removed.")
+                tournaments.remove(tournament)
         print(f"[-] A user leave the tournament server.")
+
+
+class TournamentRequestHandler(WebSocketHandler):
+    def check_origin(self, origin):
+        return True  # Allow all origins
+
+    def get(self):
+        tournaments_to_send = []
+        for tournament in tournaments:
+            tournaments_to_send.append(tournament.dump_tournament())
+        self.write(json.dumps(tournaments_to_send))
 
 
 # WSGI container for Django
@@ -130,6 +185,7 @@ django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
     (r"/ws/tournament", TournamentWebSocket),  # API handler path
+    (r"/api/tournament/get_tournaments/", TournamentRequestHandler),
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 

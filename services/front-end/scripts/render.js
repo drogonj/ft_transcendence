@@ -18,7 +18,7 @@ import {
 import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
-import {test} from "../tournament/tournament.js";
+import {closeTournamentWebSocket, createTournament, refreshTournamentList} from "../tournament/tournament.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -238,7 +238,7 @@ export async function renderHome() {
     });
 
     document.getElementById('tournament').addEventListener('click', (event) => {
-        test();
+        navigateTo('/tournament', true);
     });
 }
 
@@ -537,6 +537,72 @@ export async function renderGameWaiting() {
     });
 }
 
+export async function renderTournament() {
+    app.innerHTML = `
+        <div id="tournamentmain">
+            <h1 id="headerTournament">Welcome to tournament</h1>
+            <div id="tournamentList">
+           </div>
+            <div id="footerTournament">
+                <button id="createTournament" class="tournamentButton">Create</button>
+                <button id="refreshTournament" class="tournamentButton">Refresh</button>
+                <button id="homeTournament" class="tournamentButton">Home</button>
+            </div>
+        </div>
+    `;
+    refreshTournamentList();
+
+    document.getElementById("createTournament").addEventListener('click', (event) => {
+        createTournament();
+    })
+
+    document.getElementById("refreshTournament").addEventListener('click', (event) => {
+        refreshTournamentList();
+    })
+
+    document.getElementById('homeTournament').addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo('/home', true);
+    });
+}
+
+export async function renderTournamentLobby() {
+    app.innerHTML = `
+        <div id="tournamentmain">
+            <h1 id="headerTournament">Tournament Lobby</h1>
+            <p1>Waiting for players..</p1>
+            <div id="playerList">
+                <div class="playerCard">
+                    <div class="playerIcon">
+                        <img src="../../assets/images/iconleft.jpg">
+                    </div>
+                    <div class="playerUsername">
+                        PlayerName
+                    </div>
+                </div>
+
+                <div class="playerCard">
+                    <div class="playerIcon">
+                        <img src="../../assets/images/iconleft.jpg">
+                    </div>
+                    <div class="playerUsername">
+                        PlayerName
+                    </div>
+                </div>
+            </div>
+            <div id="footerTournament">
+                <button id="leaveTournament" class="tournamentButton">Leave the lobby</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('leaveTournament').addEventListener('click', (event) => {
+        event.preventDefault();
+        closeTournamentWebSocket();
+        navigateTo('/home', true);
+    });
+}
+
 export async function renderGameEnd() {
     app.innerHTML = `
         <div id="menuEnd">
@@ -580,7 +646,7 @@ export async function renderGameSettings() {
             <h1>Game settings</h1>
         
             <output class="menuItem">Paddle Move Speed</output>
-            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="10">
+            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="15">
         
             <output class="menuItem">Paddle Size</output>
             <input id="inputPaddleSize" class="menuItem slider" type="range" min="5" max="40" value="20">
