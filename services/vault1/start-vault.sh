@@ -36,38 +36,61 @@ start_vault() {
   VAULT_TOKEN=$VAULT_TOKEN VAULT_API_ADDR=$vault_network_address vault server -log-level=trace -config "$vault_config_file" > "$vault_log_file" 2>&1 &
 }
 
+check_vault_status() {
+  vault status -format=json 2>/dev/null
+}
+
 export VAULT_CACERT=/vault/ssl/ca.crt
 start_vault "vault_1"
 
 echo "Waiting for Vault server to start..."
-sleep 2
+sleep 10
 
-echo "Initializing Vault..."
-vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/token/init1.json
-chmod 600 /vault/token/init1.json
-sleep 2
+if [ ! -f "/vault/token/init1.json" ]; then
+  echo "Initializing Vault..."
+  vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/token/init1.json
+  chmod 600 /vault/token/init1.json
+  echo "Extracting unseal key and root token..."
+  UNSEAL_KEY=$(jq -r '.unseal_keys_b64[0]' /vault/token/init1.json)
+  VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init1.json)
+  echo $VAULT_TOKEN > /vault/token/root_token-vault_1
+  chmod 600 /vault/token/root_token-vault_1
+else
+  echo "Vault is already initialized."
+  if [ -f "/vault/token/init1.json" ]; then
+    UNSEAL_KEY=$(jq -r '.unseal_keys_b64[0]' /vault/token/init1.json)
+    VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init1.json)
+  else
+    echo "Error: init1.json not found. Cannot retrieve unseal key and root token."
+    exit 1
+  fi
+fi
 
-echo "Extracting unseal key and root token..."
-UNSEAL_KEY=$(jq -r '.unseal_keys_b64[0]' /vault/token/init1.json)
-VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init1.json)
-echo $VAULT_TOKEN > /vault/token/root_token-vault_1
-chmod 600 /vault/token/root_token-vault_1
-echo "Unsealing Vault..."
-vault operator unseal $UNSEAL_KEY
+if vault status -format=json 2>/dev/null | jq -e '.sealed == true' >/dev/null; then
+  echo "Unsealing Vault..."
+  vault operator unseal $UNSEAL_KEY
+fi
+
 export VAULT_TOKEN=$VAULT_TOKEN
-sleep 2
 
-# echo "Logging in with root token..."
-# vault login $VAULT_TOKEN
-# sleep 2
+sleep 3
+if ! vault secrets list | grep -q '^transit/'; then
+  echo "Enabling transit secrets engine..."
+  vault secrets enable transit
+else
+  echo "Transit secrets engine is already enabled."
+fi
 
-echo "Enabling transit secrets engine..."
-vault secrets enable transit
+if ! vault read transit/keys/unseal_key >/dev/null 2>&1; then
+  echo "Creating unseal key for auto-unseal..."
+  vault write -f transit/keys/unseal_key
+else
+  echo "Unseal key already exists."
+fi
 
-echo "Creating unseal key for auto-unseal..."
-vault write -f transit/keys/unseal_key
-echo "Creating policy for auto-unseal..."
-vault policy write unseal_key - <<EOF
+if ! vault policy read unseal_key >/dev/null 2>&1; then
+  echo "Creating policy for auto-unseal..."
+  vault policy write unseal_key - <<EOF
 path "transit/encrypt/unseal_key" {
    capabilities = [ "update" ]
 }
@@ -76,11 +99,26 @@ path "transit/decrypt/unseal_key" {
    capabilities = [ "update" ]
 }
 EOF
-vault audit enable file file_path=/vault/logs/vault_audit.log
-echo "Creating token with unseal policy..."
-vault token create -policy="unseal_key" -orphan -period=24h -format=json > /vault/token/unseal_token
-chmod 600 /vault/token/unseal_token /vault/logs/vault_audit.log
-UNSEAL_TOKEN=$(jq -r '.auth.client_token' /vault/token/unseal_token)
-echo $UNSEAL_TOKEN > /vault/token/unseal_token
+else
+  echo "Unseal key policy already exists."
+fi
+
+if ! vault audit list | grep -q 'file/'; then
+  echo "Enabling audit logging..."
+  vault audit enable file file_path=/vault/logs/vault_audit.log
+else
+  echo "Audit logging is already enabled."
+fi
+
+if [ ! -f "/vault/token/unseal_token" ]; then
+  echo "Creating token with unseal policy..."
+  vault token create -policy="unseal_key" -orphan -period=24h -format=json > /vault/token/unseal_token
+  chmod 600 /vault/token/unseal_token
+  UNSEAL_TOKEN=$(jq -r '.auth.client_token' /vault/token/unseal_token)
+  echo $UNSEAL_TOKEN > /vault/token/unseal_token
+else
+  echo "Unseal token already exists."
+fi
+
 echo "Setup complete."
 tail -f /dev/null
