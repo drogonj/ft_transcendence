@@ -7,8 +7,8 @@ wait_for_vault1() {
       echo "Vault 1 is ready. Proceeding with startup."
       break
     fi
-    echo "Vault 1 is not ready yet. Retrying in 10 seconds..."
-    sleep 10
+    echo "Vault 1 is not ready yet. Retrying in 20 seconds..."
+    sleep 20
   done
 }
 
@@ -21,6 +21,11 @@ vault_to_network_address() {
     vault_4) echo "https://vault_4:8200" ;;
     *) echo "Unknown vault node name: $vault_node_name" ;;
   esac
+}
+
+check_raft_status() {
+  vault operator raft list-peers >/dev/null 2>&1
+  return $?
 }
 
 start_vault() {
@@ -48,46 +53,51 @@ start_vault() {
   chmod 600 $vault_config_file $vault_log_file
 }
 
+
 export VAULT_CACERT=/vault/ssl/ca.crt
 wait_for_vault1
-
+sleep 10
 start_vault "vault_2"
-
-sleep 2
-
-
-# vault operator init -recovery-shares=1 -recovery-threshold=1 -format=json > /vault/token/init2.json
-# chmod 600 /vault/token/init2.json
-# sleep 2
-# RECOVERY_KEY=$(jq -r '.recovery_keys_b64[0]' /vault/token/init2.json)
-# echo $RECOVERY_KEY > /vault/token/recovery-key
-# VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init2.json)
-# echo $VAULT_TOKEN > /vault/token/root_token-vault_2
-# chmod 600 /vault/token/root_token-vault_2
+sleep 5
 
 if [ ! -f "/vault/token/init2.json" ]; then
     echo "Initializing Vault..."
     vault operator init -recovery-shares=1 -recovery-threshold=1 -format=json > /vault/token/init2.json
-    sleep 2
+    sleep 15
     chmod 600 /vault/token/init2.json
     
     VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init2.json)
     echo $VAULT_TOKEN > /vault/token/root_token-vault_2
-    export VAULT_TOKEN=$VAULT_TOKEN
     chmod 600 /vault/token/root_token-vault_2
     echo "Root token: $VAULT_TOKEN"
+    export VAULT_TOKEN=$VAULT_TOKEN
 else
+    sleep 15
     echo "Vault already initialized. Using existing root token."
     VAULT_TOKEN=$(cat /vault/token/root_token-vault_2)
     export VAULT_TOKEN=$VAULT_TOKEN
+    echo "Waiting for Raft cluster to stabilize..."
+    for i in {1..30}; do
+        if check_raft_status; then
+            echo "Raft cluster is stable."
+            break
+        fi
+        if [ $i -eq 30 ]; then
+            echo "Timeout waiting for Raft cluster to stabilize. Proceeding anyway."
+        fi
+        echo "Waiting for Raft cluster... Attempt $i/30"
+        sleep 5
+    done
 fi
 
 if ! vault secrets list | grep -q '^secret/'; then
     echo "Enabling KV v2 secret engine at path 'secret/'"
     vault secrets enable -path=secret kv-v2
+else
+    echo "KV v2 secret engine already enabled at path 'secret/'"
 fi
 
-
+echo "Updating secrets in Vault..."
 vault kv put secret/ft_transcendence/database \
     DJANGO_KEY="$DJANGO_KEY" \
     DJANGO_SUPERUSER_USERNAME="$DJANGO_SUPERUSER_USERNAME" \
@@ -104,18 +114,33 @@ vault kv put secret/ft_transcendence/database \
     OAUTH_STATE="$OAUTH_STATE" \
     WEBSITE_URL="$WEBSITE_URL"
 
-cat <<EOF > /vault/config/django-policy.hcl
+if ! vault policy read django-policy >/dev/null 2>&1; then
+    echo "Creating Django policy..."
+    cat <<EOF > /vault/config/django-policy.hcl
 path "secret/data/ft_transcendence/*" {
   capabilities = ["read"]
 }
 EOF
+    vault policy write django-policy /vault/config/django-policy.hcl
+    chmod 600 /vault/config/django-policy.hcl
+else
+    echo "Django policy already exists."
+fi
 
-vault policy write django-policy /vault/config/django-policy.hcl
-DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
-echo "$DJANGO_TOKEN" > /vault/token/django-token
-chmod 600 /vault/token/django-token /vault/config/django-policy.hcl
+if [ ! -f "/vault/token/django-token" ]; then
+    echo "Creating new Django token..."
+    DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
+    echo "$DJANGO_TOKEN" > /vault/token/django-token
+    chmod 600 /vault/token/django-token
+else
+    echo "Django token already exists."
+fi
+
+echo "Verifying secrets..."
 vault kv get secret/ft_transcendence/database
+
+echo "Vault status:"
 vault status
+
 echo "Vault initialized and configured"
 tail -f /dev/null
-

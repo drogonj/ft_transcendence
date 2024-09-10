@@ -1,14 +1,14 @@
 #!/bin/bash
 
-wait_for_vault2() {
-  echo "Waiting for Vault 2 to be ready..."
+wait_for_vault1() {
+  echo "Waiting for Vault 1 to be ready..."
   while true; do
-    if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/sys/health; then
-      echo "Vault 2 is ready. Proceeding with startup."
+    if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_1:8200/v1/sys/health; then
+      echo "Vault 1 is ready. Proceeding with startup."
       break
     fi
-    echo "Vault 2 is not ready yet. Retrying in 10 seconds..."
-    sleep 10
+    echo "Vault 1 is not ready yet. Retrying in 20 seconds..."
+    sleep 20
   done
 }
 
@@ -49,7 +49,8 @@ start_vault() {
 }
 
 export VAULT_CACERT=/vault/ssl/ca.crt
-wait_for_vault2
+wait_for_vault1
+sleep 40
 start_vault "vault_3"
 
 echo "Waiting for Vault 3 to start and auto-unseal..."

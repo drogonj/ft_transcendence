@@ -46,7 +46,8 @@ start_vault "vault_1"
 echo "Waiting for Vault server to start..."
 sleep 10
 
-if [ ! -f "/vault/token/init1.json" ]; then
+# if vault status -format=json 2>/dev/null | jq -e '.sealed == true' >/dev/null; then
+if vault status -format=json 2>/dev/null | jq -e '.initialized == false' >/dev/null; then
   echo "Initializing Vault..."
   vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/token/init1.json
   chmod 600 /vault/token/init1.json
