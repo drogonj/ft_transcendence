@@ -54,16 +54,15 @@ sleep 40
 start_vault "vault_3"
 
 echo "Waiting for Vault 3 to start and auto-unseal..."
-for i in {1..5}; do
+for i in {1..10}; do
     if vault status -format=json 2>/dev/null | jq -e '.sealed==false' >/dev/null; then
         echo "Vault 3 is unsealed and ready."
         break
     fi
-    if [ $i -eq 5 ]; then
+    if [ $i -eq 10 ]; then
         echo "Timeout waiting for Vault 3 to unseal. Please check logs and configuration."
-        exit 1
     fi
-    echo "Waiting for Vault 3 to unseal... Attempt $i/5"
+    # echo "Waiting for Vault 3 to unseal... Attempt $i/10"
     sleep 10
 done
 
@@ -77,9 +76,8 @@ for i in {1..5}; do
     fi
     if [ $i -eq 5 ]; then
         echo "Failed to join Raft cluster after 5 attempts. Please check logs and configuration."
-        exit 1
     fi
-    echo "Failed to join Raft cluster. Retrying in 10 seconds... Attempt $i/5"
+    # echo "Failed to join Raft cluster. Retrying in 10 seconds... Attempt $i/5"
     sleep 10
 done
 

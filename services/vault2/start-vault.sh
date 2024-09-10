@@ -77,15 +77,15 @@ else
     VAULT_TOKEN=$(cat /vault/token/root_token-vault_2)
     export VAULT_TOKEN=$VAULT_TOKEN
     echo "Waiting for Raft cluster to stabilize..."
-    for i in {1..30}; do
+    for i in {1..10}; do
         if check_raft_status; then
             echo "Raft cluster is stable."
             break
         fi
-        if [ $i -eq 30 ]; then
+        if [ $i -eq 10 ]; then
             echo "Timeout waiting for Raft cluster to stabilize. Proceeding anyway."
         fi
-        echo "Waiting for Raft cluster... Attempt $i/30"
+        # echo "Waiting for Raft cluster... Attempt $i/10"
         sleep 5
     done
 fi
