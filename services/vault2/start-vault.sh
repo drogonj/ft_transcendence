@@ -7,8 +7,7 @@ wait_for_vault1() {
       echo "Vault 1 is ready. Proceeding with startup."
       break
     fi
-    echo "Vault 1 is not ready yet. Retrying in 20 seconds..."
-    sleep 20
+    sleep 10
   done
 }
 
@@ -56,7 +55,7 @@ start_vault() {
 
 export VAULT_CACERT=/vault/ssl/ca.crt
 wait_for_vault1
-sleep 10
+sleep 5
 start_vault "vault_2"
 sleep 5
 
@@ -72,7 +71,7 @@ if [ ! -f "/vault/token/init2.json" ]; then
     echo "Root token: $VAULT_TOKEN"
     export VAULT_TOKEN=$VAULT_TOKEN
 else
-    sleep 15
+    # sleep 15
     echo "Vault already initialized. Using existing root token."
     VAULT_TOKEN=$(cat /vault/token/root_token-vault_2)
     export VAULT_TOKEN=$VAULT_TOKEN
@@ -103,11 +102,11 @@ vault kv put secret/ft_transcendence/database \
     DJANGO_SUPERUSER_USERNAME="$DJANGO_SUPERUSER_USERNAME" \
     DJANGO_SUPERUSER_PASSWORD="$DJANGO_SUPERUSER_PASSWORD" \
     DJANGO_SUPERUSER_EMAIL="$DJANGO_SUPERUSER_EMAIL" \
-    POSTGRES_DB="$POSTGRES_DB" \
-    POSTGRES_USER="$POSTGRES_USER" \
-    POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
-    POSTGRES_HOST="$POSTGRES_HOST" \
-    POSTGRES_PORT="$POSTGRES_PORT" \
+    POSTGRESQL_DATABASE="$POSTGRESQL_DATABASE" \
+    POSTGRESQL_USERNAME="$POSTGRESQL_USERNAME" \
+    POSTGRESQL_PASSWORD="$POSTGRESQL_PASSWORD" \
+    POSTGRESQL_HOST="$POSTGRESQL_HOST" \
+    POSTGRESQL_PORT="$POSTGRESQL_PORT" \
     OAUTH_UID="$OAUTH_UID" \
     OAUTH_SECRET="$OAUTH_SECRET" \
     OAUTH_URI="$OAUTH_URI" \

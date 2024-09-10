@@ -70,6 +70,8 @@ services:
     volumes:
       - pg_certs:/opt/bitnami/pgpool/certs
     restart: on-failure
+    logging:
+      driver: "none"
 
   user-management:
     container_name: user-management

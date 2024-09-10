@@ -43,6 +43,7 @@ DNS.2 = vault_1
 DNS.3 = vault_2
 DNS.4 = vault_3
 DNS.5 = vault_4
+DNS.6 = user-management
 EOF
 
         openssl req -new -key "$DIR/${SERVER_NAME}.key" -out "$DIR/${SERVER_NAME}.csr" -config "$DIR/${SERVER_NAME}.cnf"

@@ -1,20 +1,18 @@
 #!/bin/sh
 
-#!/bin/sh
-
-echo "Waiting for Vault 3 to be ready..."
+echo "Waiting for Vault 2 to be ready and configured..."
 while true; do
-  echo "Attempting to connect to Vault 3..."
-  if curl -v -fs --cacert /vault/ssl/ca.crt https://vault_3:8200/v1/sys/health; then
-    echo "Vault 3 is ready. Proceeding with startup."
-    break
-  else
-    echo "Curl exit code: $?"
-    echo "Vault 3 is not ready yet. Retrying in 20 seconds..."
-    sleep 20
+  if [ -f "/vault/token/django-token" ]; then
+    VAULT_TOKEN=$(cat /vault/token/django-token)
+    if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/sys/health && \
+       curl -fs -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | grep -q '"data"'; then
+      echo "Vault 2 is ready and secrets are configured. Proceeding with startup."
+      break
+    fi
   fi
+  echo "Vault 2 is not ready or secrets are not configured yet. Retrying in 10 seconds..."
+  sleep 10
 done
-
 
 
 echo "----- Collect static files ------ " 

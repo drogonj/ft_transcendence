@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "----------- wait user-management ----------- "
-while ! nc -z user-management 8000; do sleep 1; done
+while ! nc -z user-management 8000; do sleep 5; done
 echo ""
 
 echo "----------- Collect static files ----------- " 

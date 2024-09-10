@@ -7,10 +7,26 @@ wait_for_vault1() {
       echo "Vault 1 is ready. Proceeding with startup."
       break
     fi
-    echo "Vault 1 is not ready yet. Retrying in 20 seconds..."
-    sleep 20
+    sleep 10
   done
+  sleep 2
 }
+
+wait_for_vault2() {
+  echo "Waiting for Vault 2 to be ready and configured..."
+  for i in {1..60}; do 
+    if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/sys/health && \
+       VAULT_TOKEN=$(cat /vault/token/root_token-vault_2) vault status -ca-cert=/vault/ssl/ca.crt >/dev/null 2>&1 && \
+       VAULT_TOKEN=$(cat /vault/token/root_token-vault_2) vault kv get -format=json -ca-cert=/vault/ssl/ca.crt secret/ft_transcendence/database >/dev/null 2>&1; then
+      echo "Vault 2 is ready and secrets are configured. Proceeding with startup."
+      return 0
+    fi
+    sleep 5
+  done
+  echo "Timeout waiting for Vault 2. Proceeding anyway."
+  return 1
+}
+
 
 vault_to_network_address() {
   local vault_node_name=$1
@@ -50,11 +66,9 @@ start_vault() {
 
 export VAULT_CACERT=/vault/ssl/ca.crt
 wait_for_vault1
-sleep 40
 start_vault "vault_3"
-
 echo "Waiting for Vault 3 to start and auto-unseal..."
-for i in {1..10}; do
+for i in {1..100}; do
     if vault status -format=json 2>/dev/null | jq -e '.sealed==false' >/dev/null; then
         echo "Vault 3 is unsealed and ready."
         break
@@ -66,6 +80,9 @@ for i in {1..10}; do
     sleep 10
 done
 
+while [ ! -f /vault/token/root_token-vault_2 ]; do
+  sleep 5
+done
 export VAULT_TOKEN=$(cat /vault/token/root_token-vault_2)
 
 echo "Joining Raft cluster..."
@@ -80,6 +97,25 @@ for i in {1..5}; do
     # echo "Failed to join Raft cluster. Retrying in 10 seconds... Attempt $i/5"
     sleep 10
 done
+
+wait_for_vault2
+
+check_kv_engine_ready() {
+    vault kv list secret/ &>/dev/null
+    return $?
+}
+
+echo "Waiting for KV secrets engine to be ready..."
+for attempt in {1..10}; do
+    if check_kv_engine_ready; then
+        echo "KV secrets engine is ready."
+        break
+    else
+        # echo "KV secrets engine not ready yet. Attempt $attempt/10"
+        sleep 5
+    fi
+done
+
 
 echo "Verifying Vault 3 status..."
 vault status
