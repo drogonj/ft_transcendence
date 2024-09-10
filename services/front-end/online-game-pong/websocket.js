@@ -21,11 +21,9 @@ export function launchFriendGame(data) {
 		if (currentUser.user_id === data.receiver_id) {
 			sendMessageToServer("createGame", {"userId1": data.receiver_id, "userId2": data.user_id})
 			sendMessageToServer("createPlayer", {"id": data.user_id, "side": "Left"})
-			// sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
 		} else {
-			await new Promise(r => setTimeout(r, 50));
+			await new Promise(r => setTimeout(r, 20));
 			sendMessageToServer("createPlayer", {"id": data.receiver_id, "side": "Right"})
-			// sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
 		}
 	};
 	ws.onmessage = onReceive;

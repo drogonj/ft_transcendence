@@ -40,21 +40,10 @@ class GameServerWebSocket(WebSocketHandler):
             self.close()
             return
 
-        request_data = request_response.json()
-        print(f'data: {request_data}')
-        # if not bind_socket_to_player(self, request_data["id"]):
-        #     print(f'An error occured with the id: {request_data["id"]}. No player found')
-        #     self.close()
-        #     return
-
-        print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
-
     def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
         
-        print(f'message: {socket}')
-
         if socket["type"] == "movePlayer":
             get_game_with_client(self).move_player(socket_values)
         elif socket["type"] == "launchSpell":
