@@ -89,7 +89,8 @@ export async function disconnectChatWebsocket() {
 }
 
 async function 	connectToGame(data) {
-	removePendingInvitationMessage(data.invitationId);
+	if (data.receiver_id === currentUser.user_id)
+		removePendingInvitationMessage(data.invitationId);
 	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
 	launchFriendGame(data);
 }
@@ -392,9 +393,9 @@ export async function addChatMenu() {
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 
 	await sleep(100);
+	await getChatCsrfToken();
 	await loadUsers();
 	await loadMessages();
-	await getChatCsrfToken();
 	await loadInvitations();
 
 	document.getElementById('chat-input').focus();

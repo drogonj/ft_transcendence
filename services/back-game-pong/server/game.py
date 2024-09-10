@@ -212,9 +212,12 @@ def disconnect_handle(client):
 
 
 def bind_socket_to_player(socket, user_id):
+	print(f'user_id: {user_id} and socket: {socket} in binding function')
 	for game in games:
 		for player in game.get_players():
+			print('here ?')
 			if player.get_user_id() == user_id:
+				print('or there ?')
 				player.set_socket(socket)
 				game.trigger_game_launch()
 				return True

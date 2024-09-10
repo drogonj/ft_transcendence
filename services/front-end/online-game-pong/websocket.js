@@ -20,12 +20,12 @@ export function launchFriendGame(data) {
 	ws.onopen = async function() {
 		if (currentUser.user_id === data.receiver_id) {
 			sendMessageToServer("createGame", {"userId1": data.receiver_id, "userId2": data.user_id})
-			sendMessageToServer("createPlayer", {"userId": data.user_id, "side": "Left"})
-			sendMessageToServer("createPlayer", {"userId": data.receiver_id, "side": "Right"})
-			sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
+			sendMessageToServer("createPlayer", {"id": data.user_id, "side": "Left"})
+			// sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
 		} else {
 			await new Promise(r => setTimeout(r, 50));
-			sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
+			sendMessageToServer("createPlayer", {"id": data.receiver_id, "side": "Right"})
+			// sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
 		}
 	};
 	ws.onmessage = onReceive;
@@ -65,7 +65,7 @@ export function closeWebSocket() {
 export function sendMessageToServer(type, values) {
     const message = {
         "type": type,
-        "values": values
+        "values": values,
     }
     ws.send(JSON.stringify(message));
 }
