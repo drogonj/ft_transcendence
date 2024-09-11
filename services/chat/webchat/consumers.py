@@ -62,12 +62,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				self.channel_name
 			)
 
+		self.rooms.clear()
+
 	async def logout(self):
 		await self.close()
 
 	async def receive(self, text_data):
 		data = json.loads(text_data)
 		logging.info(f'received data: {data}')
+
+		message_content = data.get('content')
+		if message_content:
+			if len(message_content) > 200:
+				id = data.get('user_id')
+				room_name = f'ID_{user_id}'
+				await self.channel_layer.group_send(
+					room_name, {
+					'type': 'error',
+					'content': f'Nice try buddy! (Reason: Reached max length)'
+				})
 
 		if data['type'] == 'user_status_update':
 			await self.channel_layer.group_send(
@@ -127,54 +140,60 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			id = data.get('user_id')
 			receiver = data.get('receiver_id')
 			room_name = f'ID_{receiver}'
-			connected_users = user_to_consumer.keys()
+			uri = f'http://user-management:8000/api/user/get_user/{receiver}/'
+			
+			try:
+				response = requests.get(uri)
+				response.raise_for_status()
+				user = response.json()
+			except requests.exceptions.RequestException as e:
+				logger.error(f"Error fetching user data: {e}")
+				user = []
 
-			for user_id in connected_users:
-				if user_id == receiver:
-					mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(receiver)
-					muted_users = await sync_to_async(list)(mute_list.muted_users.values_list('user_id', flat=True))
+			mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(receiver)
+			muted_users = await sync_to_async(list)(mute_list.muted_users.values_list('user_id', flat=True))
+		
+			if not id in muted_users:
+				new_message = await sync_to_async(PrivateMessage.objects.create)(
+					type = data['type'],
+					content = data['content'],
+					user_id = data['user_id'],
+					username = data['username'],
+					timestamp = datetime.now(),
+					receiver_id = data['receiver_id'],
+					receiver_username = data['receiver_username']
+				)
 				
-					if not id in muted_users:
-						new_message = await sync_to_async(PrivateMessage.objects.create)(
-							type = data['type'],
-							content = data['content'],
-							user_id = data['user_id'],
-							username = data['username'],
-							timestamp = datetime.now(),
-							receiver_id = data['receiver_id'],
-							receiver_username = data['receiver_username']
-						)
-						
-						await self.channel_layer.group_send(
-							room_name,
-							{
-								'messageId': new_message.messageId,
-								'type': new_message.type,
-								'content': new_message.content,
-								'user_id': new_message.user_id,
-								'username': new_message.username,
-								'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-								'receiver_id': new_message.receiver_id,
-								'receiver_username': new_message.receiver_username
-							}
-						)
+				await self.channel_layer.group_send(
+					room_name,
+					{
+						'messageId': new_message.messageId,
+						'type': new_message.type,
+						'content': new_message.content,
+						'user_id': new_message.user_id,
+						'username': new_message.username,
+						'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+						'receiver_id': new_message.receiver_id,
+						'receiver_username': new_message.receiver_username
+					}
+				)
 
-						await self.send(text_data=json.dumps({
-								'messageId': new_message.messageId,
-								'type': new_message.type,
-								'content': new_message.content,
-								'user_id': new_message.user_id,
-								'username': new_message.username,
-								'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-								'receiver_id': new_message.receiver_id,
-								'receiver_username': new_message.receiver_username
-						}))
+				await self.send(text_data=json.dumps({
+						'messageId': new_message.messageId,
+						'type': new_message.type,
+						'content': new_message.content,
+						'user_id': new_message.user_id,
+						'username': new_message.username,
+						'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+						'receiver_id': new_message.receiver_id,
+						'receiver_username': new_message.receiver_username
+				}))
 
-					else:
-						await self.send(text_data=json.dumps({
-							'type': 'system',
-							'content': f'DM not delivered (Reason: Muted).',
-						}))
+			else:
+				await self.send(text_data=json.dumps({
+					'type': 'system',
+					'content': f'DM not delivered (Reason: Muted).',
+				}))
 
 
 		elif data['type'] == 'invitation_to_play':
@@ -254,23 +273,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				logger.error(f"Error fetching user data: {e}")
 				user = []
 
+			logging.info(user)
+
 			if user['status'] == 'offline':
 				try:
 					invitation = await sync_to_async(InvitationToPlay.objects.get)(invitationId=data['invitationId'])
 					invitation.status = 'cancelled'
 					await sync_to_async(invitation.save)()
 
-					await self.channel_layer.group_send(
-						room_name, {
-							'type': 'cancelled_invitation',
-							'invitationId': data['invitationId'],
-							'status': 'offline',
-							'receiver_id': data['receiver_id'],
-							'receiver_username': data['receiver_username'],
-							'user_id': data['user_id'],
-							'username': data['username']
-						}
-					)
+					message_data = {
+						'type': 'cancelled_invitation',
+						'invitationId': data['invitationId'],
+						'status': 'offline',
+						'user_id': data['user_id'],
+						'username': data['username'],
+						'receiver_id': data['receiver_id'],
+						'receiver_username': data['receiver_username']
+
+					}
+
+					await self.send(text_data=json.dumps(message_data))
 
 				except InvitationToPlay.DoesNotExist:
 					await self.send(text_data=json.dumps({
@@ -284,17 +306,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					invitation.status = 'cancelled'
 					await sync_to_async(invitation.save)()
 
-					await self.channel_layer.group_send(
-						room_name, {
-							'type': 'cancelled_invitation',
-							'invitationId': data['invitationId'],
-							'status': 'in-game',
-							'receiver_id': data['receiver_id'],
-							'receiver_username': data['receiver_username'],
-							'user_id': data['user_id'],
-							'username': data['username']
-						}
-					)
+					message_data = {
+						'type': 'cancelled_invitation',
+						'invitationId': data['invitationId'],
+						'status': 'in-game',
+						'user_id': data['user_id'],
+						'username': data['username'],
+						'receiver_id': data['receiver_id'],
+						'receiver_username': data['receiver_username']
+
+					}
+					
+					await self.send(text_data=json.dumps(message_data))
 
 				except InvitationToPlay.DoesNotExist:
 					await self.send(text_data=json.dumps({
@@ -465,3 +488,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		#log-troll
 		username = event['username']
 		logger.info(f'{username} speaks to self')
+
+	async def error(self, event):
+		await self.send(text_data=json.dumps({
+			'type': event['type'],
+			'content': event['content'],
+		}))
+		#log-error
+		logger.info(f'Trying to hack or being hacked')

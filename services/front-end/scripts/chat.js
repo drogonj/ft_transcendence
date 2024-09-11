@@ -1,5 +1,5 @@
 import { currentUser } from './auth.js';
-import { loadUsers, updateUserStatus, getMuteListOf, getUserStatus} from './users.js';
+import { loadUsers, updateUserStatus, getMuteListOf } from './users.js';
 import { bindGameSocket, launchFriendGame } from '../online-game-pong/websocket.js';
 
 export var chatCsrfToken = '';
@@ -26,7 +26,6 @@ export async function connectChatWebsocket(roomName) {
 		chatSocket.onmessage = function(e) {
 			(async () => {
 				const data = JSON.parse(e.data);
-				let muted = false;
 
 				if (data.timestamp)
 					data.timestamp = formatTime(data.timestamp);
@@ -55,11 +54,14 @@ export async function connectChatWebsocket(roomName) {
 				else if (data.type === 'system')
 					systemMessage(data);
 
-				else if (data.type === 'chat_message' && !muted)
+				else if (data.type === 'chat_message')
 					chatMessage(data);
 
-				else if (data.type === 'troll_message' && !muted)
+				else if (data.type === 'troll_message')
 					trollMessage(data);
+
+				else if (data.type === 'error')
+					error(data)
 			})();
 		}
 
@@ -78,7 +80,7 @@ export async function connectChatWebsocket(roomName) {
 }
 
 export async function disconnectChatWebsocket() {
-    chatSocket.close();
+	chatSocket.close();
 	chatSocket = null;
 }
 
@@ -113,11 +115,9 @@ async function cancelledInvitation(data) {
 	if (!chatWindowOn())
 		return ;
 
-	removePendingInvitationMessage(data.invitationId);
-
-	if (data.receiver_id === currentUser.user_id) {
+	if (data.status === 'offline' || data.status === 'in-game'){
 		const messageList = document.getElementById('message-content');
-		const newMessage = document.createElement('li');``
+		const newMessage = document.createElement('li');
 	
 		newMessage.classList.add('chat-message');
 		newMessage.textContent = `${data.username} cancelled the invitation (Reason: ${data.status}).`;
@@ -126,6 +126,22 @@ async function cancelledInvitation(data) {
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
+		return ;
+	}
+	else {
+		removePendingInvitationMessage(data.invitationId);
+		if (data.receiver_id === currentUser.user_id) {
+			const messageList = document.getElementById('message-content');
+			const newMessage = document.createElement('li');
+		
+			newMessage.classList.add('chat-message');
+			newMessage.textContent = `${data.username} cancelled the invitation (Reason: ${data.status}).`;
+
+			messageList.insertBefore(newMessage, messageList.firstChild);
+			
+			const chatMessages = document.getElementById('chat-messages');
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+		}
 	}
 }
 
@@ -591,4 +607,20 @@ function chatWindowOn() {
 	if (!chatMessages)
 		return false;
 	return true;
+}
+
+async function error(data) {
+	if (!chatWindowOn())
+		return ;
+
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.innerHTML = `${data.content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
