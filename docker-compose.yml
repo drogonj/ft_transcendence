@@ -24,7 +24,7 @@ services:
       - .env
     environment:
       - REPMGR_PRIMARY_HOST=pg-0
-      - REPMGR_PARTNER_NODES=pg-0,pg-1,pg-2
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-0
       - REPMGR_NODE_NETWORK_NAME=pg-0
     networks:
@@ -41,7 +41,7 @@ services:
       - .env
     environment:
       - REPMGR_PRIMARY_HOST=pg-0
-      - REPMGR_PARTNER_NODES=pg-0,pg-1,pg-2
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-1
       - REPMGR_NODE_NETWORK_NAME=pg-1
     networks:
@@ -68,8 +68,6 @@ services:
     networks:
       - db
       - network
-    volumes:
-      - pg_certs:/opt/bitnami/pgpool/certs
     restart: on-failure
 
   user-management:
@@ -81,7 +79,6 @@ services:
       - django:/singlepageapp
       - vault-token:/vault/token:ro
       - vault-ssl:/vault/ssl:ro
-      - pg_certs:/opt/bitnami/pgpool/certs
     networks:
       - network
       - db
@@ -185,8 +182,6 @@ volumes:
   vault-token:
   vault-ssl:
   redis:
-  pg_certs:
-    driver: local
   pg_0_data:
     driver: local
   pg_1_data:

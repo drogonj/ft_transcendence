@@ -46,6 +46,7 @@ class GameServerWebSocket(WebSocketHandler):
             self.close()
             return
 
+        self.user_id = request_data["id"]
         print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
     def on_message(self, message):
@@ -62,7 +63,6 @@ class GameServerWebSocket(WebSocketHandler):
         print("[-] A client leave the server")
         disconnect_handle(self)
         clients.remove(self)
-
 
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())

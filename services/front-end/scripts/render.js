@@ -1,5 +1,18 @@
 import {navigateTo, app, cleanUrl} from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, changeAvatar, changeUsername, changePassword, currentUser, getCsrfToken, csrfToken } from './auth.js';
+import {
+    handleLogin,
+    handleSignup,
+    handleLogout,
+    handleUserUpdate,
+    handleConfirmRegistration,
+    changeAvatar,
+    changeUsername,
+    changePassword,
+    currentUser,
+    getCsrfToken,
+    csrfToken,
+    getCurrentUserInfo
+} from './auth.js';
 import {
     connectFriendsWebsocket,
     disconnectFriendsWebsocket,
@@ -634,8 +647,10 @@ export async function renderGameEnd() {
             </div>
         </div>
     `;
-    document.getElementById('buttonContinue').addEventListener('click', (event) => {
+
+    document.getElementById('buttonContinue').addEventListener('click', async (event) => {
         event.preventDefault();
+        await getCurrentUserInfo();
         navigateTo('/home', true);
     });
 }

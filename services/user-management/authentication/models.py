@@ -127,13 +127,10 @@ class Account(AbstractBaseUser):
         except Exception as e:
             raise e
 
-    async def set_status(self, status):
-        status_list = ['offline', 'online', 'in-game']
-        if status not in status_list:
-            return
+    def set_status(self, status):
         self.status = status
         if status == 'offline':
             self.is_connected = False
         else:
             self.is_connected = True
-        await self.asave()
+        self.save()
