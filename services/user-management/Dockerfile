@@ -7,7 +7,7 @@ WORKDIR /user-management
 COPY requirements.txt .
 
 RUN apt-get update && apt-get upgrade -y && \
-apt-get install -y --no-install-recommends \
+	apt-get install -y --no-install-recommends \
         build-essential \
 		libpq-dev && \
 		apt-get clean && \
