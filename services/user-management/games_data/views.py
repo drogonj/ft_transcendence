@@ -80,16 +80,16 @@ class HandleGameEventsView(View):
         except User.DoesNotExist:
             return JsonResponse({'error': 'Player not found'}, status=404)
 
-        # Set players score to -42 if they disconnected
-        if data['reason'] == f'{player0.id}_disconnected':
-            data['player0']['playerScore'] = -42
-        elif data['reason'] == f'{player1.id}_disconnected':
-            data['player1']['playerScore'] = -42
-
         if data['type'] == 'game_started':
             async_to_sync(change_and_notify_user_status)(channel_layer, player0, 'in-game')
             async_to_sync(change_and_notify_user_status)(channel_layer, player1, 'in-game')
         elif data['type'] == 'game_data':
+            # Set players score to -42 if they disconnected
+            if data['reason'] == f'{player0.id}_disconnected':
+                data['player0']['playerScore'] = -42
+            elif data['reason'] == f'{player1.id}_disconnected':
+                data['player1']['playerScore'] = -42
+
             player0_data = data['player0']
             player1_data = data['player1']
             try:
@@ -115,10 +115,8 @@ class HandleGameEventsView(View):
         async with user_lock:
             await self.updateUser(player0, player1, match)
     async def updateUser(self, player0, player1, match):
-        if match.score0 != -42:
-            await self.updatePlayerStats(player0, player1, match)
-        if match.score1 != -42:
-            await self.updatePlayerStats(player1, player0, match)
+        await self.updatePlayerStats(player0, player1, match)
+        await self.updatePlayerStats(player1, player0, match)
 
         logger.info(connected_users)
 
@@ -140,7 +138,9 @@ class HandleGameEventsView(View):
         total_matches = player.victories + player.defeats
         if total_matches > 0:
             player.winrate = round((player.victories / total_matches) * 100, 2)
-        player.goals += match.score0 if player == match.player0 else match.score1
+        player_score = match.score0 if player == match.player0 else match.score1
+        if player_score > 0:
+            player.goals += player_score
         await sync_to_async(player.save)()
         #Display new stats
-        logger.info(f'{player.username} stats updated: {player.victories} victories, {player.defeats} defeats, {player.trophies} trophies, {player.tournaments_won} tournaments won, {player.goals} goals, {player.winrate}% winrate')
+        #logger.info(f'{player.username} stats updated: {player.victories} victories, {player.defeats} defeats, {player.trophies} trophies, {player.tournaments_won} tournaments won, {player.goals} goals, {player.winrate}% winrate')
