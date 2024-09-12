@@ -21,10 +21,9 @@ django.setup()
 
 clients = []
 
-
-class GameServerWebSocket(WebSocketHandler):
+class ChatGameServerWebSocket(WebSocketHandler):
     def check_origin(self, origin):
-        return True  # Allow all origins
+        return True
 
     def open(self):
         cookies = self.request.cookies
@@ -60,12 +59,55 @@ class GameServerWebSocket(WebSocketHandler):
         disconnect_handle(self)
         clients.remove(self)
 
+class GameServerWebSocket(WebSocketHandler):
+    def check_origin(self, origin):
+        return True  # Allow all origins
+
+    def open(self):
+        cookies = self.request.cookies
+        if not cookies:
+            print(f'[+] Server {self.request.headers.get("server")} is bind to server Game')
+            return
+
+        session_id = cookies.get("sessionid").value
+        request_response = requests.post("http://user-management:8000/api/user/get_session_user/",
+                                         json={"sessionId": session_id})
+        if request_response.status_code != 200:
+            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
+            self.close()
+            return
+
+        request_data = request_response.json()
+        if not bind_socket_to_player(self, request_data["id"]):
+            print(f'An error occured with the id: {request_data["id"]}. No player found')
+            self.close()
+            return
+
+        print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
+
+    def on_message(self, message):
+        socket = json.loads(message)
+        socket_values = socket['values']
+        
+        if socket["type"] == "movePlayer":
+            get_game_with_client(self).move_player(socket_values)
+        elif socket["type"] == "launchSpell":
+            get_game_with_client(self).launch_spell(socket_values)
+        elif socket["type"] == "createGame":
+            Game(0, socket_values)
+    
+    def on_close(self):
+        print("[-] A client leave the server")
+        disconnect_handle(self)
+        clients.remove(self)
+
 
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
     (r"/ws/back", GameServerWebSocket),  # API handler path
+    (r"/ws/back/chat", ChatGameServerWebSocket),
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 

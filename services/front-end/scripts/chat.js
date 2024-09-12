@@ -1,6 +1,6 @@
 import { currentUser } from './auth.js';
 import { loadUsers, updateUserStatus, getMuteListOf } from './users.js';
-import { bindGameSocket, launchFriendGame } from '../online-game-pong/websocket.js';
+// import { bindGameSocket, launchChatGame } from '../online-game-pong/websocket.js';
 
 export var chatCsrfToken = '';
 export var chatSocket = null;
@@ -87,8 +87,8 @@ export async function disconnectChatWebsocket() {
 async function 	connectToGame(data) {
 	if (data.receiver_id === currentUser.user_id)
 		removePendingInvitationMessage(data.invitationId);
-	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
-	launchFriendGame(data);
+	// bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back/chat`));
+	// launchChatGame(data);
 }
 
 async function declinedInvitation(data) {

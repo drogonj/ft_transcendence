@@ -1,4 +1,4 @@
-import json, requests, logging, asyncio
+import json, requests, logging, asyncio, websockets
 from asgiref.sync import sync_to_async
 from datetime import datetime
 from .models import Message, PrivateMessage, InvitationToPlay, MuteList
@@ -338,6 +338,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 				await self.channel_layer.group_send(room_name, message_data)
 				await self.send(text_data=json.dumps(message_data))
+
+				await self.websocket = await websockets.connect(self.uri, extra_headers={"server": "Chat"})
+				await self.websocket.send(json.dumps({'type': 'createGame', 'values': {"userId1": id, "userId2": receiver}}))
 
 		elif data['type'] == 'cancelled_invitation':
 			receiver = data.get('receiver_id')

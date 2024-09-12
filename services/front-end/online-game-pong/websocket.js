@@ -16,7 +16,7 @@ export default function launchClientGame(userId, username) {
     }
 }
 
-export function launchFriendGame(data) {
+export function launchChatGame(data) {
 	ws.onopen = async function() {
 		if (currentUser.user_id === data.receiver_id) {
 			sendMessageToServer("createGame", {"userId1": data.receiver_id, "userId2": data.user_id})
