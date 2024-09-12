@@ -4,19 +4,26 @@ class Tournament:
     def __init__(self, host_player, tournament_id):
         self.id = tournament_id
         self.host_player = host_player
-        self.players = [host_player]
+        self.players = []
+        self.add_player(host_player)
 
     def add_player(self, player):
         self.players.append(player)
+        self.send_message_to_tournament("refreshLobby", self.dump_players_in_tournament())
 
     def remove_player(self, player):
         self.players.remove(player)
+        if player.get_player_id() == self.host_player.get_player_id():
+            if len(self.players):
+                self.host_player = self.players[0]
+                print(f'The new host for the tournament {self.get_id()} is ({self.host_player.get_player_id()}) {self.host_player.get_username()}')
+        self.send_message_to_tournament("refreshLobby", self.dump_players_in_tournament())
 
     def remove_player_with_socket(self, socket):
         for player in self.players:
             if player.get_socket() == socket:
                 print(f"The player {player.get_username()} leave the tournament with id {self.get_id()}")
-                self.players.remove(player)
+                self.remove_player(player)
                 break
 
     def send_message_to_tournament(self, data_type, data_values):
@@ -27,6 +34,9 @@ class Tournament:
         if len(self.players) <= 0:
             return True
         return False
+
+    def is_tournament_full(self):
+        return len(self.players) >= 10
 
     def dump_tournament(self):
         return {"tournamentId": self.id, "hostUsername": self.host_player.get_username(), "playersNumber": len(self.players)}

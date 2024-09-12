@@ -46,7 +46,7 @@ def get_tournament_from_player_socket(socket):
 
 async def ping_all_tournaments():
     for tournament in tournaments:
-        tournament.send_message_to_tournament("refreshLobby", tournament.dump_players_in_tournament())
+        tournament.send_message_to_tournament("ping", {})
 
 
 async def bind_to_game_server():
@@ -131,17 +131,19 @@ class TournamentWebSocket(WebSocketHandler):
             self.close()
             return
 
-        print(action_type)
-
         if action_type == "createTournament":
             global tournaments_id
             tournaments.append(Tournament(player, tournaments_id))
             tournaments_id += 1
         elif action_type == "joinTournament":
             #todo if tournament is not available
-            get_tournament_with_id(cookies.get("tournamentId").value).add_player(player)
-            print("join")
-
+            tournament = get_tournament_with_id(cookies.get("tournamentId").value)
+            if tournament.is_tournament_full():
+                print(f'The user ({player.get_player_id()}) {request_data["username"]} try to join the tournament {tournament.get_id()} but its full')
+                self.close()
+                return
+            tournament.add_player(player)
+            print(f'The user ({player.get_player_id()}) {request_data["username"]} join the tournament {tournament.get_id()}')
         print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
     def on_message(self, message):

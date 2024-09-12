@@ -1,4 +1,5 @@
 import {getHostNameFromURL, navigateTo} from "../scripts/contentLoader.js";
+import {getUserFromId} from "../scripts/auth.js";
 
 let tournamentWebSocket
 
@@ -19,10 +20,14 @@ export function refreshTournamentList() {
 
                     newDivButton.classList.add("joinTournament");
                     newDivButton.classList.add("tournamentButton");
-                    newDivButton.textContent = `Join the actual ${value['playersNumber']} players`
-                    newDivButton.addEventListener("click", event => {
-                        joinTournament(value["tournamentId"])
-                    })
+                    newDivButton.textContent = `Join the actual ${value['playersNumber']}/10 players`
+                    if (parseInt(value['playersNumber']) >= 10)
+                        newDivButton.disabled = true
+                    else {
+                        newDivButton.addEventListener("click", event => {
+                            joinTournament(value["tournamentId"])
+                        })
+                    }
 
                     newDiv.classList.add("tournamentCard");
                     newDiv.textContent = `Tournament of ${value['hostUsername']}`
@@ -40,47 +45,51 @@ export function refreshTournamentList() {
 }
 
 export function createTournament() {
-    console.log("entert create")
     document.cookie = "type=createTournament;max-age=3"
-    tournamentWebSocket = new WebSocket(`wss://${getHostNameFromURL()}/ws/tournament`);
-    tournamentWebSocket.onopen = function () {
-        console.log("on open");
-        navigateTo('/tournament-lobby', true);
-    }
-
-    tournamentWebSocket.onmessage = function () {
-        console.log("on msg");
-    }
-    tournamentWebSocket.onerror = function () {
-        console.log("onr error");
-    }
-    tournamentWebSocket.onclose = function () {
-        console.log("on close");
-    }
+    initWebSocketFunc();
 }
 
 export function joinTournament(tournamentId) {
-    console.log("entert join")
     document.cookie = "type=joinTournament;max-age=3"
     document.cookie = `tournamentId=${tournamentId};max-age=3`
+    initWebSocketFunc();
+}
+
+function initWebSocketFunc() {
     tournamentWebSocket = new WebSocket(`wss://${getHostNameFromURL()}/ws/tournament`);
     tournamentWebSocket.onopen = function () {
-        console.log("on open j");
+        navigateTo('/tournament-lobby', true);
     }
 
-    tournamentWebSocket.onmessage = function () {
-        console.log("on msg j");
-    }
-    tournamentWebSocket.onerror = function () {
-        console.log("onr error j");
-    }
-    tournamentWebSocket.onclose = function () {
-        console.log("on close j ");
+    tournamentWebSocket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        if (data.type === "refreshLobby")
+            refreshTournamentLobby(JSON.parse(data.values));
     }
 }
 
-export function refreshTournamentLobby() {
+export function refreshTournamentLobby(playersList) {
 
+    document.getElementById("playerList").innerHTML = ''
+    playersList.forEach((values) => {
+        const newDiv = document.createElement('div');
+        const newDivUsername = document.createElement('div');
+        const newImg = document.createElement('img');
+
+        newDiv.classList.add("playerCard");
+
+        newDivUsername.classList.add("playerUsername");
+        newDivUsername.textContent = `${values["username"]}`;
+
+        getUserFromId(values["playerId"]).then((promiseValues) => {
+            newImg.src = promiseValues.avatar;
+        });
+
+        newDiv.append(newImg);
+        newDiv.append(newDivUsername);
+
+        document.getElementById("playerList").appendChild(newDiv);
+    });
 }
 
 export function closeTournamentWebSocket() {

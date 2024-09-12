@@ -27,11 +27,16 @@
     border-radius: 5px 5px 0 0;
 }
 
+button:disabled,
+button[disabled]{
+  color: #666666;
+}
+
 .playerCard {
     display: flex;
 }
 
-.playerIcon img {
+.playerCard img {
     height: 32px;
     width: 32px;
 }
