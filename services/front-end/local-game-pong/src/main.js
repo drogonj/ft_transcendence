@@ -7,6 +7,7 @@ import loadSettings from "./controller/settings.js";
 import loadSpell from "./controller/spell.js";
 import {launchGame} from "./controller/game.js";
 import {navigateTo} from "../../scripts/contentLoader.js";
+import {friendSocket} from "../../scripts/friends.js";
 
 export default function launchLocalGame() {
 	loadSettings(document.getElementsByTagName("input"));
@@ -18,4 +19,8 @@ export default function launchLocalGame() {
 	loadBall();
 	loadHeader();
 	launchGame();
+	const message = {
+		"in-game": true,
+	}
+	friendSocket.send(JSON.stringify(message));
 }

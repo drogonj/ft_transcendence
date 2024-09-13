@@ -1,7 +1,7 @@
 import { getCsrfToken, csrfToken } from "./auth.js";
 import { navigateTo } from "./contentLoader.js";
 
-let friendSocket = null;
+export let friendSocket = null;
 
 export async function connectFriendsWebsocket() {
     if (friendSocket !== null)

@@ -13,6 +13,7 @@ import {displayStatistics} from "../view/statistics_view.js";
 import {navigateTo} from "../../../scripts/contentLoader.js";
 import launchAi, {stopAiLoops} from "./ai.js";
 import {aiActive} from "./settings.js";
+import {friendSocket} from "../../../scripts/friends.js";
 
 let globalLoop;
 
@@ -35,6 +36,10 @@ export function isGameEnd() {
 export function endGame() {
 	navigateTo("/game-end", true);
 	displayStatistics(getLeftPaddle().statistics, getRightPaddle().statistics);
+	const message = {
+		"in-game": false,
+	}
+	friendSocket.send(JSON.stringify(message));
 }
 
 export function markPoint(ball, paddle) {

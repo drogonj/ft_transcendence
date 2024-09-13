@@ -8,7 +8,7 @@ import logging, sys, math, json
 from channels.layers import get_channel_layer
 from .models import Match
 from friends.consumers import change_and_notify_user_status
-from friends.consumers import connected_users, user_lock
+from friends.consumers import connected_users, user_lock, get_c_user, c_user, set_c_user_running_games
 from django.db import transaction
 
 User = get_user_model()
@@ -81,10 +81,11 @@ class HandleGameEventsView(View):
             return JsonResponse({'error': 'Player not found'}, status=404)
 
         if data['type'] == 'game_started':
-            async_to_sync(change_and_notify_user_status)(channel_layer, player0, 'in-game')
-            async_to_sync(change_and_notify_user_status)(channel_layer, player1, 'in-game')
+            set_c_user_running_games(player0.id, 1)
+            set_c_user_running_games(player1.id, 1)
         elif data['type'] == 'game_data':
             # Set players score to -42 if they disconnected
+
             if data['reason'] == f'{player0.id}_disconnected':
                 data['player0']['playerScore'] = -42
             elif data['reason'] == f'{player1.id}_disconnected':
@@ -118,13 +119,8 @@ class HandleGameEventsView(View):
         await self.updatePlayerStats(player0, player1, match)
         await self.updatePlayerStats(player1, player0, match)
 
-        logger.info(connected_users)
-
-        if player0.id in connected_users:
-            await change_and_notify_user_status(channel_layer, player0, 'online')
-
-        if player1.id in connected_users:
-            await change_and_notify_user_status(channel_layer, player1, 'online')
+        set_c_user_running_games(player0.id, -1)
+        set_c_user_running_games(player1.id, -1)
 
     async def updatePlayerStats(self, player, opponent, match):
         if player == match.winner:
