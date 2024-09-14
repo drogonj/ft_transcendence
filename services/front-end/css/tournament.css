@@ -39,10 +39,15 @@ button[disabled]{
 .playerCard img {
     height: 32px;
     width: 32px;
+    margin-right: 2%;
 }
 
 .playerUsername {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#footerTournament {
+    margin-top: 2%;
 }

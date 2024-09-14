@@ -1,9 +1,9 @@
 import json
 
+
 class Tournament:
     def __init__(self, host_player, tournament_id):
         self.id = tournament_id
-        self.host_player = host_player
         self.players = []
         self.add_player(host_player)
 
@@ -13,10 +13,10 @@ class Tournament:
 
     def remove_player(self, player):
         self.players.remove(player)
-        if player.get_player_id() == self.host_player.get_player_id():
+        if player.get_is_host():
             if len(self.players):
-                self.host_player = self.players[0]
-                print(f'The new host for the tournament {self.get_id()} is ({self.host_player.get_player_id()}) {self.host_player.get_username()}')
+                self.players[0].set_is_host(True)
+                print(f'The new host for the tournament {self.get_id()} is ({self.players[0].get_player_id()}) {self.players[0].get_username()}')
         self.send_message_to_tournament("refreshLobby", self.dump_players_in_tournament())
 
     def remove_player_with_socket(self, socket):
@@ -39,7 +39,7 @@ class Tournament:
         return len(self.players) >= 10
 
     def dump_tournament(self):
-        return {"tournamentId": self.id, "hostUsername": self.host_player.get_username(), "playersNumber": len(self.players)}
+        return {"tournamentId": self.id, "hostUsername": self.get_host_player().get_username(), "playersNumber": len(self.players)}
 
     def dump_players_in_tournament(self):
         players = []
@@ -60,3 +60,8 @@ class Tournament:
 
     def get_id(self):
         return self.id
+
+    def get_host_player(self):
+        for player in self.players:
+            if player.get_is_host():
+                return player

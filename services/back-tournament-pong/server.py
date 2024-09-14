@@ -110,13 +110,10 @@ class TournamentWebSocket(WebSocketHandler):
         cookies = self.request.cookies
         session_id = cookies.get("sessionid").value
 
-        request_response = requests.post("http://user-management:8000/api/user/get_session_user/", json={"sessionId": session_id})
-        if request_response.status_code != 200:
-            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
-            self.close()
+        request_data = self.get_user_from_session_id(session_id)
+        if request_data is None:
             return
 
-        request_data = request_response.json()
         user_id = request_data["id"]
         if is_user_already_in_tournament(user_id):
             print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
@@ -133,6 +130,7 @@ class TournamentWebSocket(WebSocketHandler):
 
         if action_type == "createTournament":
             global tournaments_id
+            player.set_is_host(True)
             tournaments.append(Tournament(player, tournaments_id))
             tournaments_id += 1
         elif action_type == "joinTournament":
@@ -151,15 +149,6 @@ class TournamentWebSocket(WebSocketHandler):
         socket_values = socket['values']
         if socket['type'] == 'launchTournament':
             print("launchTournament")
-        elif socket['type'] == 'createUser':
-            player = Player(self, socket_values)
-            print(f"User with id {player.get_player_id()} is bind to a client in the tournament server")
-            if socket_values['host']:
-                print("bind host")
-                tournaments.append(Tournament(player, socket_values["tournamentId"]))
-            else:
-                get_tournament_with_id(socket_values['tournamentId']).add_player(player)
-                print("bind to tournament")
 
     def on_close(self):
         tournament = get_tournament_from_player_socket(self)
@@ -169,6 +158,16 @@ class TournamentWebSocket(WebSocketHandler):
                 print(f"The tournament with id {tournament.get_id()} is done and removed.")
                 tournaments.remove(tournament)
         print(f"[-] A user leave the tournament server.")
+
+    def get_user_from_session_id(self, session_id):
+        request_response = requests.post("http://user-management:8000/api/user/get_session_user/",
+                                         json={"sessionId": session_id})
+        if request_response.status_code != 200:
+            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
+            self.close()
+            return None
+
+        return request_response.json()
 
 
 class TournamentRequestHandler(WebSocketHandler):

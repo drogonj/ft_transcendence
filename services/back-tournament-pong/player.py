@@ -3,6 +3,7 @@ class Player:
         self.__socket = socket
         self.__player_id = user_id
         self.__username = username
+        self.__is_host = False
 
     def get_socket(self):
         return self.__socket
@@ -12,6 +13,12 @@ class Player:
 
     def get_username(self):
         return self.__username
+
+    def get_is_host(self):
+        return self.__is_host
+
+    def set_is_host(self, is_host):
+        self.__is_host = is_host
 
     def send_message_to_player(self, message_type, message_values):
         message = {}
@@ -23,4 +30,4 @@ class Player:
         self.__socket.close()
 
     def dumps_player(self):
-        return {"playerId": self.__player_id, "username": self.__username}
+        return {"playerId": self.__player_id, "username": self.__username, "host": self.__is_host}
