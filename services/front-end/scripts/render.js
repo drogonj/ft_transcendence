@@ -18,7 +18,7 @@ import {
 import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
-import {closeTournamentWebSocket, createTournament, refreshTournamentList} from "../tournament/tournament.js";
+import {closeTournamentWebSocket, createTournament, refreshTournamentList} from "./tournament.js";
 
 export function renderLogin() {
     app.innerHTML = `

@@ -6,6 +6,11 @@ class Tournament:
         self.id = tournament_id
         self.players = []
         self.add_player(host_player)
+        self.is_running = False
+
+    def launch_tournament(self):
+        self.is_running = True
+        print("launchTournament")
 
     def add_player(self, player):
         self.players.append(player)

@@ -1,5 +1,5 @@
-import {getHostNameFromURL, navigateTo} from "../scripts/contentLoader.js";
-import {currentUser, getUserFromId} from "../scripts/auth.js";
+import {getHostNameFromURL, navigateTo} from "./contentLoader.js";
+import {currentUser, getUserFromId} from "./auth.js";
 
 let tournamentWebSocket;
 
@@ -56,7 +56,7 @@ export function joinTournament(tournamentId) {
 }
 
 function startTournament() {
-    console.log("try to strat");
+    sendMessageToTournamentServer("launchTournament", {});
 }
 
 function initWebSocketFunc() {
@@ -114,7 +114,6 @@ export function refreshTournamentLobby(playersList) {
             newDivButton.disabled = true
 
         const startDivButton = document.getElementById("startTournament");
-
         if (startDivButton)
             startDivButton.replaceWith(newDivButton);
         else
@@ -124,4 +123,12 @@ export function refreshTournamentLobby(playersList) {
 
 export function closeTournamentWebSocket() {
     tournamentWebSocket.close();
+}
+
+function sendMessageToTournamentServer(type, values) {
+    const message = {
+        "type": type,
+        "values": values,
+    }
+    tournamentWebSocket.send(JSON.stringify(message));
 }
