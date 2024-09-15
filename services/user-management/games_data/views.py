@@ -119,8 +119,8 @@ class HandleGameEventsView(View):
         await self.updatePlayerStats(player0, player1, match)
         await self.updatePlayerStats(player1, player0, match)
 
-        set_c_user_running_games(player0.id, -1)
-        set_c_user_running_games(player1.id, -1)
+        await sync_to_async(set_c_user_running_games)(player0.id, -1)
+        await sync_to_async(set_c_user_running_games)(player1.id, -1)
 
     async def updatePlayerStats(self, player, opponent, match):
         if player == match.winner:

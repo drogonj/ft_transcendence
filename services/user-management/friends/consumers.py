@@ -41,8 +41,10 @@ def set_c_user_running_games(id, value):
 	channel_layer = get_channel_layer()
 	logger.info(f'User {user.id} running games: {new_value}, previous: {user.running_games}')
 	if new_value <= 0 and user.running_games > 0:
+		logger.info(f'set_c_user_running_games: {user.id} is now online')
 		async_to_sync(change_and_notify_user_status)(channel_layer, get_user_model().objects.get(id=id), 'online')
 	elif new_value > 0 and user.running_games <= 0:
+		logger.info(f'set_c_user_running_games: {user.id} is now in-game')
 		async_to_sync(change_and_notify_user_status)(channel_layer, get_user_model().objects.get(id=id), 'in-game')
 	user.running_games = new_value
 
