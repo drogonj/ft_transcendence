@@ -7,7 +7,7 @@ import {launchSpell} from "./spell.js";
 
 let ws;
 
-export default function launchClientGame(userId, username) {
+export default function launchClientGame() {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onmessage = onReceive;
     ws.onerror = onError;
@@ -46,7 +46,7 @@ export function launchClientMatchMaking() {
             document.getElementById("matchMakingCancel").disabled = "disabled"
             document.getElementById("mainTitle").textContent = "Player found ! Setting up the game.."
             ws.close();
-            launchClientGame(currentUser.user_id, currentUser.username);
+            launchClientGame();
         } else if (data.type ===  "error") {
             ws.close();
             navigateTo('/home', true);
@@ -92,7 +92,7 @@ function onReceive(event) {
     else if (data.type === "endGame")
         endGame(data.values);
     else if (data.type === "launchClientGame")
-        launchClientGame(data.values)
+        launchClientGame()
     else
         console.log("Error: Server send a unknown type of data");
 }

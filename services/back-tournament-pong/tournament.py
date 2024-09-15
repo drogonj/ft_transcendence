@@ -1,4 +1,5 @@
 import json
+from websocket import get_game_server
 
 
 class Tournament:
@@ -8,9 +9,14 @@ class Tournament:
         self.add_player(host_player)
         self.is_running = False
 
-    def launch_tournament(self):
+    async def launch_tournament(self):
         self.is_running = True
         print("launchTournament")
+        await get_game_server().send("createGame", {"userId1": self.players[0].get_player_id(),
+                                                    "userId2": self.players[1].get_player_id()})
+
+        self.players[0].send_message_to_player("connectTo", {"server": "gameServer"})
+        self.players[1].send_message_to_player("connectTo", {"server": "gameServer"})
 
     def add_player(self, player):
         self.players.append(player)

@@ -1,5 +1,6 @@
 import {getHostNameFromURL, navigateTo} from "./contentLoader.js";
 import {currentUser, getUserFromId} from "./auth.js";
+import launchClientGame from "../online-game-pong/websocket.js";
 
 let tournamentWebSocket;
 
@@ -69,6 +70,10 @@ function initWebSocketFunc() {
         const data = JSON.parse(event.data);
         if (data.type === "refreshLobby")
             refreshTournamentLobby(JSON.parse(data.values));
+        else if (data.type === "connectTo") {
+            tournamentWebSocket.close();
+            launchClientGame()
+        }
     }
 }
 
@@ -110,7 +115,8 @@ export function refreshTournamentLobby(playersList) {
         newDivButton.addEventListener("click", event => {
             startTournament();
         })
-        if (playersList.length < 4)
+        //todo the value is 4 but for testing I set 2. (same in back)
+        if (playersList.length < 2)
             newDivButton.disabled = true
 
         const startDivButton = document.getElementById("startTournament");

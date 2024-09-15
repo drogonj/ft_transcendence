@@ -144,12 +144,12 @@ class TournamentWebSocket(WebSocketHandler):
             print(f'The user ({player.get_player_id()}) {request_data["username"]} join the tournament {tournament.get_id()}')
         print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
-    def on_message(self, message):
+    async def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
         if socket['type'] == 'launchTournament':
             tournament = get_tournament_from_player_socket(self)
-            tournament.launch_tournament()
+            await tournament.launch_tournament()
 
     def on_close(self):
         tournament = get_tournament_from_player_socket(self)
