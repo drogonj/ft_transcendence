@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export VAULT_ADDR=https://vault_2:8200
+export VAULT_CACERT=/vault/ssl/ca.crt
+
 wait_for_vault1() {
   echo "Waiting for Vault 1 to be ready..."
   while true; do
@@ -52,26 +55,26 @@ start_vault() {
   chmod 600 $vault_config_file $vault_log_file
 }
 
-
-export VAULT_CACERT=/vault/ssl/ca.crt
 wait_for_vault1
-sleep 5
 start_vault "vault_2"
 sleep 5
 
 if [ ! -f "/vault/token/init2.json" ]; then
     echo "Initializing Vault..."
     vault operator init -recovery-shares=1 -recovery-threshold=1 -format=json > /vault/token/init2.json
-    sleep 15
     chmod 600 /vault/token/init2.json
-    
     VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init2.json)
     echo $VAULT_TOKEN > /vault/token/root_token-vault_2
     chmod 600 /vault/token/root_token-vault_2
     echo "Root token: $VAULT_TOKEN"
     export VAULT_TOKEN=$VAULT_TOKEN
+    echo "Waiting for Vault to be ready..."
+    while ! vault status >/dev/null 2>&1; do
+        echo "Vault is not ready yet. Waiting..."
+        sleep 1
+    done
+    echo "Vault is ready!"
 else
-    # sleep 15
     echo "Vault already initialized. Using existing root token."
     VAULT_TOKEN=$(cat /vault/token/root_token-vault_2)
     export VAULT_TOKEN=$VAULT_TOKEN
@@ -84,8 +87,7 @@ else
         if [ $i -eq 10 ]; then
             echo "Timeout waiting for Raft cluster to stabilize. Proceeding anyway."
         fi
-        # echo "Waiting for Raft cluster... Attempt $i/10"
-        sleep 5
+        sleep 10
     done
 fi
 
@@ -95,23 +97,6 @@ if ! vault secrets list | grep -q '^secret/'; then
 else
     echo "KV v2 secret engine already enabled at path 'secret/'"
 fi
-
-echo "Updating secrets in Vault..."
-vault kv put secret/ft_transcendence/database \
-    DJANGO_KEY="$DJANGO_KEY" \
-    DJANGO_SUPERUSER_USERNAME="$DJANGO_SUPERUSER_USERNAME" \
-    DJANGO_SUPERUSER_PASSWORD="$DJANGO_SUPERUSER_PASSWORD" \
-    DJANGO_SUPERUSER_EMAIL="$DJANGO_SUPERUSER_EMAIL" \
-    POSTGRESQL_DATABASE="$POSTGRESQL_DATABASE" \
-    POSTGRESQL_USERNAME="$POSTGRESQL_USERNAME" \
-    POSTGRESQL_PASSWORD="$POSTGRESQL_PASSWORD" \
-    POSTGRESQL_HOST="$POSTGRESQL_HOST" \
-    POSTGRESQL_PORT="$POSTGRESQL_PORT" \
-    OAUTH_UID="$OAUTH_UID" \
-    OAUTH_SECRET="$OAUTH_SECRET" \
-    OAUTH_URI="$OAUTH_URI" \
-    OAUTH_STATE="$OAUTH_STATE" \
-    WEBSITE_URL="$WEBSITE_URL"
 
 if ! vault policy read django-policy >/dev/null 2>&1; then
     echo "Creating Django policy..."

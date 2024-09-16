@@ -86,11 +86,11 @@ services:
     networks:
       - network
       - db
-    depends_on:
-      redis:
-        condition: service_started
-      pgpool:
-        condition: service_healthy
+    # depends_on:
+    #   redis:
+    #     condition: service_started
+    #   pgpool:
+    #     condition: service_healthy
     env_file:
       - .env
     restart: on-failure
@@ -125,7 +125,7 @@ services:
     build: ./services/vault2/
     container_name: vault_2
     volumes:
-      - 'vault-token:/vault/token/'
+      - vault-token:/vault/token/
       - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
@@ -135,7 +135,6 @@ services:
       - .env
     ports:
       - "8202:8200"
-
 
   vault_3:
     build: ./services/vault3/
@@ -163,6 +162,16 @@ services:
     ports:
       - "8204:8200"
 
+  vault-init:
+    build: ./services/vault-init
+    volumes:
+      - vault-token:/vault/token
+      - vault-ssl:/vault/ssl
+    env_file:
+      - .env
+    networks:
+      - network
+      
   back-game:
     container_name: back-game-pong
     build: services/back-game-pong/

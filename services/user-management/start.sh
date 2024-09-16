@@ -4,13 +4,11 @@ echo "Waiting for Vault 2 to be ready and configured..."
 while true; do
   if [ -f "/vault/token/django-token" ]; then
     VAULT_TOKEN=$(cat /vault/token/django-token)
-    if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/sys/health && \
-       curl -fs -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | grep -q '"data"'; then
+      if curl -fs -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | grep -q '"data"'; then
       echo "Vault 2 is ready and secrets are configured. Proceeding with startup."
       break
     fi
   fi
-  echo "Vault 2 is not ready or secrets are not configured yet. Retrying in 10 seconds..."
   sleep 10
 done
 

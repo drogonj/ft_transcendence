@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export VAULT_ADDR=https://vault_4:8200
+export VAULT_CACERT=/vault/ssl/ca.crt
+
 wait_for_vault1() {
   echo "Waiting for Vault 1 to be ready..."
   while true; do
@@ -64,11 +67,11 @@ start_vault() {
   VAULT_TOKEN=$VAULT_TOKEN VAULT_API_ADDR=$vault_network_address vault server -log-level=trace -config "$vault_config_file" > "$vault_log_file" 2>&1 &
 }
 
-export VAULT_CACERT=/vault/ssl/ca.crt
 wait_for_vault1
+sleep 10
 start_vault "vault_4"
 echo "Waiting for Vault 4 to start and auto-unseal..."
-for i in {1..100}; do
+for i in {1..10}; do
     if vault status -format=json 2>/dev/null | jq -e '.sealed==false' >/dev/null; then
         echo "Vault 4 is unsealed and ready."
         break

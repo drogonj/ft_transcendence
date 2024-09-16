@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export VAULT_ADDR=https://vault_1:8200
+export VAULT_CACERT=/vault/ssl/ca.crt
+
 vault_to_network_address() {
   local vault_node_name=$1
   case $vault_node_name in
@@ -40,14 +43,12 @@ check_vault_status() {
   vault status -format=json 2>/dev/null
 }
 
-export VAULT_CACERT=/vault/ssl/ca.crt
 start_vault "vault_1"
-
 echo "Waiting for Vault server to start..."
-sleep 10
+sleep 5
 
 # if vault status -format=json 2>/dev/null | jq -e '.sealed == true' >/dev/null; then
-if vault status -format=json 2>/dev/null | jq -e '.initialized == false' >/dev/null; then
+if vault status -format=json | jq -e '.initialized == false' >/dev/null; then
   echo "Initializing Vault..."
   vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/token/init1.json
   chmod 600 /vault/token/init1.json
@@ -56,6 +57,7 @@ if vault status -format=json 2>/dev/null | jq -e '.initialized == false' >/dev/n
   VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init1.json)
   echo $VAULT_TOKEN > /vault/token/root_token-vault_1
   chmod 600 /vault/token/root_token-vault_1
+  sleep 5
 else
   echo "Vault is already initialized."
   if [ -f "/vault/token/init1.json" ]; then
@@ -63,7 +65,6 @@ else
     VAULT_TOKEN=$(jq -r '.root_token' /vault/token/init1.json)
   else
     echo "Error: init1.json not found. Cannot retrieve unseal key and root token."
-    exit 1
   fi
 fi
 
