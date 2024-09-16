@@ -13,6 +13,11 @@ import json, os, secrets, mimetypes, requests
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from django.contrib.sessions.models import Session
+from authentication.vault_client import get_vault_client
+
+
+vault_client = get_vault_client()
+db_secrets = vault_client.read_secret('ft_transcendence/database')
 
 User = get_user_model()
 
@@ -111,8 +116,8 @@ def get_profile_picture(request):
     return HttpResponse(image.read(), content_type=content_type)
 
 def oauth_redirect(request):
-    uri = os.getenv("OAUTH_URI")
-    uri += "&state=" + os.getenv("OAUTH_STATE")
+    uri = db_secrets.get("OAUTH_URI")
+    uri += "&state=" + db_secrets.get("OAUTH_STATE")
     return redirect(uri)
 
 @csrf_exempt
@@ -120,15 +125,15 @@ def oauth_callback(request):
     # Creating POST to get API authorization token
     code = request.GET.get('code')
     if not code or request.GET.get('error'):
-        return redirect(f"https://{os.getenv('WEBSITE_URL')}/")
+        return redirect(f"https://{db_secrets.get('WEBSITE_URL')}/")
 
     data = {
         'grant_type': 'authorization_code',
-        'client_id': os.getenv("OAUTH_UID"),
-        'client_secret': os.getenv("OAUTH_SECRET"),
+        'client_id': db_secrets.get("OAUTH_UID"),
+        'client_secret': db_secrets.get("OAUTH_SECRET"),
         'code': code,
-        'redirect_uri': f'https://{os.getenv("WEBSITE_URL")}/api/user/oauth/callback/',
-        'state': os.getenv('OAUTH_STATE'),
+        'redirect_uri': f'https://{db_secrets.get("WEBSITE_URL")}/api/user/oauth/callback/',
+        'state': db_secrets.get('OAUTH_STATE'),
     }
 
     try:
@@ -163,15 +168,15 @@ def oauth_callback(request):
             user.get_intra_pic(user_data.get('image', {}).get('versions', {}).get('small'))
             tmp_token = user.generate_tmp_token()
             user.save()
-            return redirect(f"https://{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
+            return redirect(f"https://{db_secrets.get('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
         else:
             # Existing user
             if not user.register_complete:
                 tmp_token = user.generate_tmp_token()
                 user.save()
-                return redirect(f"https://{os.getenv('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
+                return redirect(f"https://{db_secrets.get('WEBSITE_URL')}/confirm-registration/?token={tmp_token}&username={user_data.get('login')}")
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect(f"https://{os.getenv('WEBSITE_URL')}")
+            return redirect(f"https://{db_secrets.get('WEBSITE_URL')}")
 
     except requests.exceptions.RequestException as e:
         return HttpResponseBadRequest(f'Request failed: {e}')

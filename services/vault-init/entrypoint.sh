@@ -31,14 +31,11 @@ setup_secrets() {
     # Insert secrets
     curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d "{
         \"data\": {
-            \"PORT_CONTAINER\": \"$PORT_CONTAINER\",
-            \"PORT\": \"$PORT\",
             \"DJANGO_KEY\": \"$DJANGO_KEY\",
             \"DJANGO_SUPERUSER_USERNAME\": \"$DJANGO_SUPERUSER_USERNAME\",
             \"DJANGO_SUPERUSER_PASSWORD\": \"$DJANGO_SUPERUSER_PASSWORD\",
             \"DJANGO_SUPERUSER_EMAIL\": \"$DJANGO_SUPERUSER_EMAIL\",
             \"CHAT_KEY\": \"$CHAT_KEY\",
-            \"SQL_ENGINE\": \"$SQL_ENGINE\",
             \"PGPOOL_BACKEND_NODES\": \"$PGPOOL_BACKEND_NODES\",
             \"PGPOOL_ENABLE_LDAP\": \"$PGPOOL_ENABLE_LDAP\",
             \"PGPOOL_ADMIN_USERNAME\": \"$PGPOOL_ADMIN_USERNAME\",

@@ -8,7 +8,7 @@ COPY requirements.txt .
 
 RUN apt-get update && apt-get upgrade -y && \
 apt-get install -y --no-install-recommends build-essential \
-libpq-dev redis-server netcat && \
+libpq-dev redis-server netcat jq curl && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/* && \
 pip install --upgrade pip && \

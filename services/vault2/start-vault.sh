@@ -71,7 +71,7 @@ if [ ! -f "/vault/token/init2.json" ]; then
     echo "Waiting for Vault to be ready..."
     while ! vault status >/dev/null 2>&1; do
         echo "Vault is not ready yet. Waiting..."
-        sleep 1
+        sleep 5
     done
     echo "Vault is ready!"
 else

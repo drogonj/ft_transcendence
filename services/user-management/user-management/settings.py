@@ -17,8 +17,8 @@ from authentication.vault_client import get_vault_client
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-BASE_DIR_ENV = Path(__file__).resolve().parent.parent.parent.parent
-load_dotenv(os.path.join(BASE_DIR_ENV, '.env'))
+# BASE_DIR_ENV = Path(__file__).resolve().parent.parent.parent.parent
+# load_dotenv(os.path.join(BASE_DIR_ENV, '.env'))
 vault_client = get_vault_client()
 db_secrets = vault_client.read_secret('ft_transcendence/database')
 
@@ -27,7 +27,7 @@ db_secrets = vault_client.read_secret('ft_transcendence/database')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = db_secrets.get("DJANGO_KEY")
-WEBSITE_URL = db_secrets.get("WEBSITE_URL", "localhost")
+WEBSITE_URL = db_secrets.get("WEBSITE_URL")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

@@ -10,6 +10,7 @@ RUN apt-get update && apt-get upgrade -y && \
 	apt-get install -y --no-install-recommends \
         build-essential \
 		libpq-dev \
+		jq \
 		curl && \
 		apt-get clean && \
 		rm -rf /var/lib/apt/lists/* && \

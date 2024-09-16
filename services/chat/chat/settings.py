@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from vault_client import get_vault_client
+
+vault_client = get_vault_client()
+db_secrets = vault_client.read_secret('ft_transcendence/database')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,8 +26,8 @@ load_dotenv(os.path.join(BASE_DIR_ENV, '.env'))
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('CHAT_KEY')
-WEBSITE_URL = os.getenv('WEBSITE_URL')
+SECRET_KEY = db_secrets.get('CHAT_KEY')
+WEBSITE_URL = db_secrets.get('WEBSITE_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -103,14 +107,14 @@ CSP_CONNECT_SRC = (
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-	"default": {
-		"ENGINE": "django.db.backends.postgresql",
-		"NAME": os.environ.get("POSTGRESQL_DATABASE"),
-		"USER": os.environ.get("POSTGRESQL_USERNAME"),
-		"PASSWORD": os.environ.get("POSTGRESQL_PASSWORD"),
-		"HOST": os.environ.get("POSTGRESQL_HOST"),
-		"PORT": os.environ.get("POSTGRESQL_PORT"),
-	}
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": db_secrets.get("POSTGRESQL_DATABASE"),
+        "USER": db_secrets.get("POSTGRESQL_USERNAME"),
+        "PASSWORD": db_secrets.get("POSTGRESQL_PASSWORD"),
+        "HOST": db_secrets.get("POSTGRESQL_HOST"),
+        "PORT": db_secrets.get("POSTGRESQL_PORT"),
+    }
 }
 
 # Cache configuration

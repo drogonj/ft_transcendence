@@ -6,10 +6,9 @@ services:
       - "8080:443"
     volumes:
       - django:/tmp_static/
+      - vault-token:/vault/token/:ro
     networks:
       - network
-    env_file:
-      - .env
     entrypoint: sh -c "sh /entrypoint.sh"
     restart: on-failure
 
@@ -80,8 +79,8 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
-      - vault-token:/vault/token
-      - vault-ssl:/vault/ssl
+      - vault-token:/vault/token:ro
+      - vault-ssl:/vault/ssl:ro
       - pg_certs:/opt/bitnami/pgpool/certs
     networks:
       - network
@@ -91,8 +90,6 @@ services:
     #     condition: service_started
     #   pgpool:
     #     condition: service_healthy
-    env_file:
-      - .env
     restart: on-failure
 
   chat:
@@ -102,10 +99,10 @@ services:
       - "8001"
     volumes:
       - django:/singlepageapp/chat
+      - vault-token:/vault/token:ro
+      - vault-ssl:/vault/ssl:ro
     networks:
       - network
-    env_file:
-      - .env
     restart: on-failure
 
   vault_1:
@@ -177,7 +174,6 @@ services:
     build: services/back-game-pong/
     expose:
       - "2605"
-    env_file: .env
     networks:
      - network
     restart: on-failure
@@ -187,7 +183,6 @@ services:
     build: services/back-matchmaking-pong/
     expose:
       - "2607"
-    env_file: .env
     networks:
       - network
     restart: on-failure
@@ -197,14 +192,12 @@ services:
     build: services/back-tournament-pong/
     expose:
       - "2610"
-    env_file: .env
     networks:
       - network
 
   redis:
     container_name: redis
     build: ./services/redis/
-    env_file: .env
     expose:
       - "6379"
     volumes:

@@ -4,7 +4,7 @@ LABEL version="0.1"
 LABEL description="This is the base image for our Reverse proxy Nginx"
 
 RUN apk update && apk upgrade && \
-    apk add --no-cache openssl python3 py3-pip py3-websockets && \
+    apk add --no-cache openssl python3 py3-pip py3-websockets jq curl && \
     mkdir -p /etc/nginx/ssl /var/www/transcendence && \
     openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt \
     -keyout /etc/nginx/ssl/inception.key -subj \
