@@ -11,6 +11,7 @@ games = []
 
 class Game:
 	def __init__(self, game_id, socket_values):
+		print(socket_values["userId1"], socket_values["userId2"])
 		self.__game_id = game_id
 		self.__players = [Player(socket_values["userId1"], "Left"), Player(socket_values["userId2"], "Right")]
 		SpellRegistry.set_spells_to_players(self.__players)

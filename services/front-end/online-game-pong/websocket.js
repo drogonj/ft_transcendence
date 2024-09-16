@@ -7,7 +7,7 @@ import {launchSpell} from "./spell.js";
 
 let ws;
 
-export default function launchClientGame(userId, username) {
+export function launchClientGame(userId, username) {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onmessage = onReceive;
     ws.onerror = onError;
@@ -16,22 +16,22 @@ export default function launchClientGame(userId, username) {
     }
 }
 
-export function launchChatGame(data) {
-	ws.onopen = async function() {
-		if (currentUser.user_id === data.receiver_id) {
-			sendMessageToServer("createGame", {"userId1": data.receiver_id, "userId2": data.user_id})
-			sendMessageToServer("createPlayer", {"id": data.user_id, "side": "Left"})
-		} else {
-			await new Promise(r => setTimeout(r, 20));
-			sendMessageToServer("createPlayer", {"id": data.receiver_id, "side": "Right"})
-		}
-	};
-	ws.onmessage = onReceive;
-    ws.onerror = onError;
-    ws.onclose = function () {
-        clearGame();
-    }
-}
+// export function launchChatGame(data) {
+// 	ws.onopen = async function() {
+// 		if (currentUser.user_id === data.receiver_id) {
+// 			sendMessageToServer("createGame", {"userId1": data.receiver_id, "userId2": data.user_id})
+// 			sendMessageToServer("createPlayer", {"id": data.user_id, "side": "Left"})
+// 		} else {
+// 			await new Promise(r => setTimeout(r, 20));
+// 			sendMessageToServer("createPlayer", {"id": data.receiver_id, "side": "Right"})
+// 		}
+// 	};
+// 	ws.onmessage = onReceive;
+//     ws.onerror = onError;
+//     ws.onclose = function () {
+//         clearGame();
+//     }
+// }
 
 export function launchClientMatchMaking() {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/matchmaking`);

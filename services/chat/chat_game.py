@@ -34,15 +34,3 @@ class WebSocketClient:
 
 def get_game_server():
 	return WebSocketClient.game_server
-
-async def start_websocket_client():
-	uri = "ws://back-game:2605/ws/back"
-	client = WebSocketClient(uri)
-	await client.connect()
-	return client
-
-game_ws_client = None
-
-async def init_websocket_client():
-	global game_ws_client
-	game_ws_client = await start_websocket_client()

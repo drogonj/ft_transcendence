@@ -337,16 +337,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'receiver_username': data['receiver_username']
 				}
 
-				await self.channel_layer.group_send(room_name, message_data)
-				await self.send(text_data=json.dumps(message_data))
-
-				# await self.websocket = await websockets.connect(self.uri, extra_headers={"server": "Chat"})
-				# await game_ws_client.send(json.dumps({'type': 'createGame', 'values': {"userId1": id, "userId2": receiver}}))
 
 				game_ws_client = get_game_server()
-				if game_ws_client and game_ws_client.is_connected():
-					# await game_ws_client.send("createGame", {"userId1": id, "userId2": receiver})
-					await game_ws_client.send(json.dumps({'type': 'createGame', 'values': {"userId1": id, "userId2": receiver}}))
+				# if game_ws_client and game_ws_client.is_connected():
+				await game_ws_client.send("createGame", {"userId1": id, "userId2": receiver})
+
+				await self.channel_layer.group_send(room_name, message_data)
+				await self.send(text_data=json.dumps(message_data))
 
 		elif data['type'] == 'cancelled_invitation':
 			receiver = data.get('receiver_id')

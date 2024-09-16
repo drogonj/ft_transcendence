@@ -1,9 +1,11 @@
 import asyncio
-from chat_game import init_websocket_client
+from chat_game import WebSocketClient, get_game_server
 
 async def main():
-    await init_websocket_client()
-    print("WebSocket client started.")
+	while True:
+		await asyncio.sleep(1)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+	WebSocketClient("ws://back-game:2605/ws/back")
+	get_game_server().connect()
+	asyncio.run(main())
