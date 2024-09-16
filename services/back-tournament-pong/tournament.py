@@ -13,7 +13,7 @@ class Tournament:
         self.is_running = True
         print("launchTournament")
         await get_game_server().send("createGame", {"userId1": self.players[0].get_player_id(),
-                                                    "userId2": self.players[1].get_player_id()})
+                                                    "userId2": self.players[1].get_player_id(), "tournamentId": self.id})
 
         self.players[0].send_message_to_player("connectTo", {"server": "gameServer"})
         self.players[1].send_message_to_player("connectTo", {"server": "gameServer"})

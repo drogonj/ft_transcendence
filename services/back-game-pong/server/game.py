@@ -18,7 +18,7 @@ class Game:
 		self.__is_game_end = False
 		self.__tournament_id = -1
 		if socket_values.get("tournamentId"):
-			self.__tournament_id = socket_values["tournamentId"]
+			self.__tournament_id = int(socket_values["tournamentId"])
 		games.append(self)
 
 	def launch_game(self):
@@ -133,7 +133,9 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
+		print(self.__tournament_id)
 		if self.__tournament_id >= 0:
+			print("enter")
 			self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
 			return
 

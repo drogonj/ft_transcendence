@@ -65,7 +65,6 @@ export function clearGame() {
 export function endGame(socketValues) {
 	clearGame();
 	closeWebSocket();
-
 	if (socketValues["tournamentId"]) {
 		joinTournament(socketValues["tournamentId"]);
 		return;

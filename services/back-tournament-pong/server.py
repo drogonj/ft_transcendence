@@ -155,7 +155,7 @@ class TournamentWebSocket(WebSocketHandler):
         tournament = get_tournament_from_player_socket(self)
         if tournament:
             tournament.remove_player_with_socket(self)
-            if tournament.is_tournament_done():
+            if not tournament.is_running and tournament.is_tournament_done():
                 print(f"The tournament with id {tournament.get_id()} is done and removed.")
                 tournaments.remove(tournament)
         print(f"[-] A user leave the tournament server.")
