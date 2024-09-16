@@ -9,3 +9,4 @@ django-cors-headers==4.4.0
 pillow==10.4.0
 requests==2.32.3
 hiredis==3.0.0
+websockets==13.0.1

@@ -21,6 +21,10 @@ python manage.py showmigrations
 echo "----------- Migration applied ----------- "
 echo ""
 
+# echo "----------- Start WebSocket for game communication ----------- "
+# python ./chat_game.py &
+# echo ""
+
 echo "----------- Run daphne server ----------- "
 daphne -b 0.0.0.0 -p 8001 chat.asgi:application
 echo ""

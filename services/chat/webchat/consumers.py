@@ -3,6 +3,7 @@ from asgiref.sync import sync_to_async
 from datetime import datetime
 from .models import Message, PrivateMessage, InvitationToPlay, MuteList
 from channels.generic.websocket import AsyncWebsocketConsumer
+from chat_game import get_game_server
 
 logger = logging.getLogger(__name__)
 user_to_consumer = {}
@@ -339,8 +340,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				await self.channel_layer.group_send(room_name, message_data)
 				await self.send(text_data=json.dumps(message_data))
 
-				await self.websocket = await websockets.connect(self.uri, extra_headers={"server": "Chat"})
-				await self.websocket.send(json.dumps({'type': 'createGame', 'values': {"userId1": id, "userId2": receiver}}))
+				# await self.websocket = await websockets.connect(self.uri, extra_headers={"server": "Chat"})
+				# await game_ws_client.send(json.dumps({'type': 'createGame', 'values': {"userId1": id, "userId2": receiver}}))
+
+				game_ws_client = get_game_server()
+				if game_ws_client and game_ws_client.is_connected():
+					# await game_ws_client.send("createGame", {"userId1": id, "userId2": receiver})
+					await game_ws_client.send(json.dumps({'type': 'createGame', 'values': {"userId1": id, "userId2": receiver}}))
 
 		elif data['type'] == 'cancelled_invitation':
 			receiver = data.get('receiver_id')
