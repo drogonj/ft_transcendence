@@ -7,7 +7,7 @@ import {launchSpell} from "./spell.js";
 
 let ws;
 
-export default function launchClientGame(userId, username) {
+export default function launchClientGame() {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onmessage = onReceive;
     ws.onerror = onError;
@@ -20,12 +20,10 @@ export function launchFriendGame(data) {
 	ws.onopen = async function() {
 		if (currentUser.user_id === data.receiver_id) {
 			sendMessageToServer("createGame", {"userId1": data.receiver_id, "userId2": data.user_id})
-			sendMessageToServer("createPlayer", {"userId": data.user_id, "side": "Left"})
-			sendMessageToServer("createPlayer", {"userId": data.receiver_id, "side": "Right"})
-			sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
+			sendMessageToServer("createPlayer", {"id": data.user_id, "side": "Left"})
 		} else {
-			await new Promise(r => setTimeout(r, 50));
-			sendMessageToServer("bindSocket", {"userId": currentUser.user_id, "username": currentUser.username})
+			await new Promise(r => setTimeout(r, 20));
+			sendMessageToServer("createPlayer", {"id": data.receiver_id, "side": "Right"})
 		}
 	};
 	ws.onmessage = onReceive;
@@ -48,7 +46,7 @@ export function launchClientMatchMaking() {
             document.getElementById("matchMakingCancel").disabled = "disabled"
             document.getElementById("mainTitle").textContent = "Player found ! Setting up the game.."
             ws.close();
-            launchClientGame(currentUser.user_id, currentUser.username);
+            launchClientGame();
         } else if (data.type ===  "error") {
             ws.close();
             navigateTo('/home', true);
@@ -65,7 +63,7 @@ export function closeWebSocket() {
 export function sendMessageToServer(type, values) {
     const message = {
         "type": type,
-        "values": values
+        "values": values,
     }
     ws.send(JSON.stringify(message));
 }
@@ -94,7 +92,7 @@ function onReceive(event) {
     else if (data.type === "endGame")
         endGame(data.values);
     else if (data.type === "launchClientGame")
-        launchClientGame(data.values)
+        launchClientGame()
     else
         console.log("Error: Server send a unknown type of data");
 }

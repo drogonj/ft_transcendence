@@ -27,17 +27,27 @@
     border-radius: 5px 5px 0 0;
 }
 
+button:disabled,
+button[disabled]{
+  color: #666666;
+}
+
 .playerCard {
     display: flex;
 }
 
-.playerIcon img {
+.playerCard img {
     height: 32px;
     width: 32px;
+    margin-right: 2%;
 }
 
 .playerUsername {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#footerTournament {
+    margin-top: 2%;
 }

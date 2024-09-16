@@ -46,7 +46,7 @@ def get_tournament_from_player_socket(socket):
 
 async def ping_all_tournaments():
     for tournament in tournaments:
-        tournament.send_message_to_tournament("refreshLobby", tournament.dump_players_in_tournament())
+        tournament.send_message_to_tournament("ping", {})
 
 
 async def bind_to_game_server():
@@ -110,13 +110,10 @@ class TournamentWebSocket(WebSocketHandler):
         cookies = self.request.cookies
         session_id = cookies.get("sessionid").value
 
-        request_response = requests.post("http://user-management:8000/api/user/get_session_user/", json={"sessionId": session_id})
-        if request_response.status_code != 200:
-            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
-            self.close()
+        request_data = self.get_userdata_from_session_id(session_id)
+        if request_data is None:
             return
 
-        request_data = request_response.json()
         user_id = request_data["id"]
         if is_user_already_in_tournament(user_id):
             print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
@@ -131,33 +128,28 @@ class TournamentWebSocket(WebSocketHandler):
             self.close()
             return
 
-        print(action_type)
-
         if action_type == "createTournament":
             global tournaments_id
+            player.set_is_host(True)
             tournaments.append(Tournament(player, tournaments_id))
             tournaments_id += 1
         elif action_type == "joinTournament":
             #todo if tournament is not available
-            get_tournament_with_id(cookies.get("tournamentId").value).add_player(player)
-            print("join")
-
+            tournament = get_tournament_with_id(cookies.get("tournamentId").value)
+            if tournament.is_tournament_full():
+                print(f'The user ({player.get_player_id()}) {request_data["username"]} try to join the tournament {tournament.get_id()} but its full')
+                self.close()
+                return
+            tournament.add_player(player)
+            print(f'The user ({player.get_player_id()}) {request_data["username"]} join the tournament {tournament.get_id()}')
         print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
-    def on_message(self, message):
+    async def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
         if socket['type'] == 'launchTournament':
-            print("launchTournament")
-        elif socket['type'] == 'createUser':
-            player = Player(self, socket_values)
-            print(f"User with id {player.get_player_id()} is bind to a client in the tournament server")
-            if socket_values['host']:
-                print("bind host")
-                tournaments.append(Tournament(player, socket_values["tournamentId"]))
-            else:
-                get_tournament_with_id(socket_values['tournamentId']).add_player(player)
-                print("bind to tournament")
+            tournament = get_tournament_from_player_socket(self)
+            await tournament.launch_tournament()
 
     def on_close(self):
         tournament = get_tournament_from_player_socket(self)
@@ -168,6 +160,16 @@ class TournamentWebSocket(WebSocketHandler):
                 tournaments.remove(tournament)
         print(f"[-] A user leave the tournament server.")
 
+    def get_userdata_from_session_id(self, session_id):
+        request_response = requests.post("http://user-management:8000/api/user/get_session_user/",
+                                         json={"sessionId": session_id})
+        if request_response.status_code != 200:
+            print(f"An error occured with the session_id: {session_id}. Error code: {request_response.status_code}")
+            self.close()
+            return None
+
+        return request_response.json()
+
 
 class TournamentRequestHandler(WebSocketHandler):
     def check_origin(self, origin):
@@ -176,7 +178,8 @@ class TournamentRequestHandler(WebSocketHandler):
     def get(self):
         tournaments_to_send = []
         for tournament in tournaments:
-            tournaments_to_send.append(tournament.dump_tournament())
+            if not tournament.is_running:
+                tournaments_to_send.append(tournament.dump_tournament())
         self.write(json.dumps(tournaments_to_send))
 
 

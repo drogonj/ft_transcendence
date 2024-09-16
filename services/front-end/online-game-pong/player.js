@@ -2,7 +2,6 @@ import {keyDown} from "./listeners.js";
 import {sendMessageToServer} from "./websocket.js";
 import {getSpellWithId} from "./spell.js";
 import {addSpellsToHeader} from "./header.js";
-import {getGameId} from "./game.js";
 import {getUserFromId} from "../scripts/auth.js";
 
 let playerLoop;
@@ -101,9 +100,9 @@ function startPlayerLoop() {
 	for (const [key, value] of Object.entries(playerKeys)) {
 		if (keyDown.has(value)) {
 			if (key.includes("move"))
-				sendMessageToServer("movePlayer", {"direction": key, "clientSide": getClientSide(), "gameId": getGameId()})
+				sendMessageToServer("movePlayer", {"direction": key, "clientSide": getClientSide()})
 			else
-				sendMessageToServer("launchSpell", {"playerSide": clientSide, "spellNumber": key.charAt(key.length - 1), "gameId": getGameId()})
+				sendMessageToServer("launchSpell", {"playerSide": clientSide, "spellNumber": key.charAt(key.length - 1)})
 		}
 	}
 	playerLoop = setTimeout(startPlayerLoop, 5);

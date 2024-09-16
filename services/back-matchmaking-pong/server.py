@@ -100,6 +100,20 @@ class MatchMakingWebSocket(WebSocketHandler):
             print(f"An error occured with the session_id: {session_id}. The user is already in queue")
             self.write_message({"type": "error", "values": {"message": "You are already in the Matchmaking"}})
             return
+
+        request_response = requests.get(f'http://user-management:8000/api/user/get_user/{user_id}/')
+        if request_response.status_code != 200:
+            print(f"An error occured with the id: {user_id}. Error code: {request_response.status_code}")
+            self.close()
+            return
+
+        user_status = request_response.json()["status"]
+        print(user_status)
+        if user_status == "inGame":
+            print(f"An error occured with the session_id: {session_id}. The user is already in game")
+            self.write_message({"type": "error", "values": {"message": "You are already in a game"}})
+            return
+
         user = User(self, user_id)
         users_in_queue.append(user)
 
