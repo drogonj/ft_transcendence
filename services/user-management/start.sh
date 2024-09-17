@@ -12,6 +12,7 @@ while true; do
   sleep 10
 done
 
+sleep 30
 VAULT_ADDR=$(curl -s -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | jq -r '.data.data.VAULT_ADDR')
 VAULT_TOKEN_FILE=$(curl -s -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | jq -r '.data.data.VAULT_TOKEN_FILE')
 VAULT_CA_CERT_PATH=$(curl -s -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | jq -r '.data.data.VAULT_CA_CERT_PATH')

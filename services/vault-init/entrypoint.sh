@@ -61,6 +61,16 @@ setup_secrets() {
     }" $VAULT_ADDR/v1/secret/data/ft_transcendence/database
 }
 
+enable_kv_v2() {
+    VAULT_TOKEN=$(get_root_token)
+    
+    if curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" $VAULT_ADDR/v1/sys/mounts | jq -e '.data."secret/" == null' > /dev/null; then
+        curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d '{"type":"kv", "options": {"version": "2"}}' $VAULT_ADDR/v1/sys/mounts/secret
+        echo "KV v2 secrets engine enabled at path 'secret'"
+    else
+        echo "KV secrets engine already exists at path 'secret'"
+    fi
+}
 
 setup_django_policy() {
     VAULT_TOKEN=$(get_root_token)
@@ -75,9 +85,11 @@ setup_django_policy() {
 
     echo "$DJANGO_TOKEN" > /vault/token/django-token
     chmod 600 /vault/token/django-token
+    chmod +r /vault/token/django-token
 }
 
 wait_for_vault
+enable_kv_v2
 setup_secrets
 setup_django_policy
 

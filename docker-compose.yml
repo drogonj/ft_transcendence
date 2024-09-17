@@ -14,11 +14,14 @@ services:
     restart: on-failure
 
   pg-0:
-    image: bitnami/postgresql-repmgr:14
+    build: services/pg-0
+    container_name: pg-0
     expose:
       - 5432
     volumes:
       - pg_0_data:/bitnami/postgresql
+      - vault-token:/vault/token/:ro
+      - vault-ssl:/vault/ssl:ro
     env_file:
       - .env
     environment:
@@ -28,14 +31,18 @@ services:
       - REPMGR_NODE_NETWORK_NAME=pg-0
     networks:
       - db
+      - network
     restart: on-failure
 
   pg-1:
-    image: bitnami/postgresql-repmgr:14
+    build: services/pg-1
+    container_name: pg-1
     expose:
       - 5432
     volumes:
       - pg_1_data:/bitnami/postgresql
+      - vault-token:/vault/token/:ro
+      - vault-ssl:/vault/ssl:ro
     env_file:
       - .env
     environment:
@@ -45,20 +52,14 @@ services:
       - REPMGR_NODE_NETWORK_NAME=pg-1
     networks:
       - db
+      - network
     restart: on-failure
 
   pgpool:
     build: ./services/pgpool/
+    container_name: pgpool
     expose:
       - 5432
-    env_file:
-      - .env
-    environment:
-      - PGPOOL_POSTGRES_USERNAME=${POSTGRESQL_USERNAME}
-      - PGPOOL_POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
-      - PGPOOL_SR_CHECK_USER=${POSTGRESQL_USERNAME}
-      - PGPOOL_SR_CHECK_PASSWORD=${POSTGRESQL_PASSWORD}
-      - PGPOOL_SR_CHECK_DATABASE=${POSTGRESQL_DATABASE}
     healthcheck:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
@@ -69,6 +70,8 @@ services:
       - network
     volumes:
       - pg_certs:/opt/bitnami/pgpool/certs
+      - vault-token:/vault/token/:ro
+      - vault-ssl:/vault/ssl:ro
     restart: on-failure
     logging:
       driver: "none"
@@ -87,8 +90,6 @@ services:
       - network
       - db
     # depends_on:
-    #   redis:
-    #     condition: service_started
     #   pgpool:
     #     condition: service_healthy
     restart: on-failure
@@ -104,6 +105,9 @@ services:
       - vault-ssl:/vault/ssl:ro
     networks:
       - network
+    # depends_on:
+    #   pgpool:
+    #     condition: service_healthy
     restart: on-failure
 
   vault_1:

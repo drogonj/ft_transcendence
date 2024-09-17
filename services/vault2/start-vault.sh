@@ -91,37 +91,34 @@ else
     done
 fi
 
-if ! vault secrets list | grep -q '^secret/'; then
-    echo "Enabling KV v2 secret engine at path 'secret/'"
-    vault secrets enable -path=secret kv-v2
-else
-    echo "KV v2 secret engine already enabled at path 'secret/'"
-fi
+# if ! vault secrets list | grep -q '^secret/'; then
+#     echo "Enabling KV v2 secret engine at path 'secret/'"
+#     vault secrets enable -path=secret kv-v2
+# else
+#     echo "KV v2 secret engine already enabled at path 'secret/'"
+# fi
 
-if ! vault policy read django-policy >/dev/null 2>&1; then
-    echo "Creating Django policy..."
-    cat <<EOF > /vault/config/django-policy.hcl
-path "secret/data/ft_transcendence/*" {
-  capabilities = ["read"]
-}
-EOF
-    vault policy write django-policy /vault/config/django-policy.hcl
-    chmod 600 /vault/config/django-policy.hcl
-else
-    echo "Django policy already exists."
-fi
+# if ! vault policy read django-policy >/dev/null 2>&1; then
+#     echo "Creating Django policy..."
+#     cat <<EOF > /vault/config/django-policy.hcl
+# path "secret/data/ft_transcendence/*" {
+#   capabilities = ["read"]
+# }
+# EOF
+#     vault policy write django-policy /vault/config/django-policy.hcl
+#     chmod 600 /vault/config/django-policy.hcl
+# else
+#     echo "Django policy already exists."
+# fi
 
-if [ ! -f "/vault/token/django-token" ]; then
-    echo "Creating new Django token..."
-    DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
-    echo "$DJANGO_TOKEN" > /vault/token/django-token
-    chmod 600 /vault/token/django-token
-else
-    echo "Django token already exists."
-fi
-
-echo "Verifying secrets..."
-vault kv get secret/ft_transcendence/database
+# if [ ! -f "/vault/token/django-token" ]; then
+#     echo "Creating new Django token..."
+#     DJANGO_TOKEN=$(vault token create -policy=django-policy -format=json | jq -r '.auth.client_token')
+#     echo "$DJANGO_TOKEN" > /vault/token/django-token
+#     chmod 600 /vault/token/django-token
+# else
+#     echo "Django token already exists."
+# fi
 
 echo "Vault status:"
 vault status
