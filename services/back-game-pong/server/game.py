@@ -16,10 +16,12 @@ class Game:
 		self.__user_ids = [socket_values["userId1"], socket_values["userId2"]]
 		self.__balls = [Ball()]
 		self.__is_game_end = False
-		self.__tournament_id = -1
+		self.__tournament_id = 0
+		#tournamentID received will start at 1
 		if socket_values.get("tournamentId"):
 			self.__tournament_id = int(socket_values["tournamentId"])
 		games.append(self)
+		print(f"A new game is created with playerIds: {self.__players[0].get_user_id()} and {self.__players[0].get_user_id()}")
 
 	def launch_game(self):
 		self.send_message_to_game("renderPage", {"url": "/game-online"})
@@ -133,9 +135,7 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
-		print(self.__tournament_id)
-		if self.__tournament_id >= 0:
-			print("enter")
+		if self.__tournament_id >= 1:
 			self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
 			return
 

@@ -28,7 +28,7 @@ django.setup()
 
 users_in_queue = []
 tournaments = []
-tournaments_id = 0
+tournaments_id = 1
 
 
 def get_tournament_with_id(tournament_id):
