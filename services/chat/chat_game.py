@@ -14,6 +14,7 @@ class WebSocketClient:
 	async def connect(self):
 		self.websocket = await websockets.connect(self.uri, extra_headers={"server": "Chat"})
 		print("Connection with game server established.")
+		asyncio.ensure_future(self.keep_alive())
 		asyncio.ensure_future(self.close_handle())
 
 	async def send(self, message_type, values):
@@ -28,6 +29,15 @@ class WebSocketClient:
 		await self.websocket.wait_closed()
 		self.websocket = None
 		print("Connection with game server lost..")
+
+	async def keep_alive(self):
+		while True:
+			try:
+				await self.websocket.ping()
+				await asyncio.sleep(10)
+			except (ConnectionClosed, WebSocketException):
+				print("Connection lost. Reconnecting...")
+				await self.connect()
 
 	def is_connected(self):
 		return self.websocket is not None
