@@ -126,17 +126,16 @@ class Game:
 		self.__balls.append(new_ball)
 		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 
-    async def launch_max_time(self):
-        await asyncio.sleep(120)
-        self.__game_end_reason = 'max_time_reached'
-        self.__is_game_end = True
+	async def launch_max_time(self):
+		await asyncio.sleep(120)
+		self.__game_end_reason = 'max_time_reached'
+		self.__is_game_end = True
 
-    def game_end(self):
-        if self.__tournament_id >= 1:
-        self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
-            return
-        store_game_data(self.__players, self.__game_end_reason)
-        store_game_data(self.__players)
+	def game_end(self):
+		if self.__tournament_id >= 1:
+			self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
+			return
+		store_game_data(self.__players, self.__game_end_reason)
 		send_game_data_to_redis()
 
 		data_values = {}
