@@ -5,7 +5,6 @@ from .redis_communication import send_game_data_to_redis, store_game_data, send_
 from .spell.spell_registry import SpellRegistry
 from .player import Player
 
-
 games = []
 
 
@@ -37,9 +36,6 @@ class Game:
 
 		socket_values["clientSide"] = "Right"
 		player_right.send_message_to_player("launchGame", socket_values)
-
-		store_game_started_data(self.__players)
-		send_game_started_to_redis()
 
 		asyncio.create_task(self.main_loop())
 		asyncio.create_task(self.launch_max_time())

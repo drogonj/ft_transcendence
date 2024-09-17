@@ -7,7 +7,7 @@ import loadSettings from "./controller/settings.js";
 import loadSpell from "./controller/spell.js";
 import {launchGame} from "./controller/game.js";
 import {navigateTo} from "../../scripts/contentLoader.js";
-import {friendSocket} from "../../scripts/friends.js";
+import {getCsrfToken, csrfToken} from "../../scripts/auth.js";
 
 export default function launchLocalGame() {
 	loadSettings(document.getElementsByTagName("input"));
@@ -19,8 +19,33 @@ export default function launchLocalGame() {
 	loadBall();
 	loadHeader();
 	launchGame();
-	const message = {
-		"in-game": true,
-	}
-	friendSocket.send(JSON.stringify(message));
+	setIngame();
+}
+
+async function setIngame() {
+	await getCsrfToken();
+	const response = await fetch('/api/user/statement/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrfToken
+		},
+		body: JSON.stringify({
+			"game_state": 1,
+		})
+	});
+}
+
+export async function unsetIngame(event) {
+	await getCsrfToken();
+	const response = await fetch('/api/user/statement/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrfToken
+		},
+		body: JSON.stringify({
+			"game_state": 0,
+		})
+	});
 }

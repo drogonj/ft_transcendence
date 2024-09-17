@@ -14,6 +14,7 @@ import {navigateTo} from "../../../scripts/contentLoader.js";
 import launchAi, {stopAiLoops} from "./ai.js";
 import {aiActive} from "./settings.js";
 import {friendSocket} from "../../../scripts/friends.js";
+import {unsetIngame} from "../main.js";
 
 let globalLoop;
 
@@ -36,10 +37,8 @@ export function isGameEnd() {
 export function endGame() {
 	navigateTo("/game-end", true);
 	displayStatistics(getLeftPaddle().statistics, getRightPaddle().statistics);
-	const message = {
-		"in-game": false,
-	}
-	friendSocket.send(JSON.stringify(message));
+	unsetIngame();
+	window.removeEventListener('popstate', unsetIngame);
 }
 
 export function markPoint(ball, paddle) {

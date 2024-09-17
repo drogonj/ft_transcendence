@@ -32,6 +32,7 @@ import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
 import {closeTournamentWebSocket, createTournament, refreshTournamentList} from "../tournament/tournament.js";
+import { unsetIngame } from "../local-game-pong/src/main.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -752,6 +753,9 @@ export async function renderGameLocal() {
             </div>
         </div>
     `;
+    window.addEventListener('popstate', async function(event) {
+        await unsetIngame();
+    }, { once: true });
 }
 
 export async function renderGameOnline() {

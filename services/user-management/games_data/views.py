@@ -3,13 +3,16 @@ from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 from asgiref.sync import sync_to_async, async_to_sync
 import logging, sys, math, json
 from channels.layers import get_channel_layer
 from .models import Match
 from friends.consumers import change_and_notify_user_status
-from friends.consumers import connected_users, user_lock, get_c_user, c_user, set_c_user_running_games
+from friends.consumers import user_lock, connected_users
 from django.db import transaction
+from urllib.parse import urlparse
+import asyncio
 
 User = get_user_model()
 channel_layer = get_channel_layer()
@@ -69,8 +72,8 @@ class HandleGameEventsView(View):
         except json.JSONDecodeError:
             return HttpResponseBadRequest('Invalid JSON')
 
-        if 'type' not in data:
-            return HttpResponseBadRequest('No type provided')
+        if 'type' not in data or data['type'] != 'game_data':
+            return HttpResponseBadRequest('Wrong type of data')
         if 'player0' not in data or 'player1' not in data:
             return HttpResponseBadRequest('Missing player data')
 
@@ -80,36 +83,29 @@ class HandleGameEventsView(View):
         except User.DoesNotExist:
             return JsonResponse({'error': 'Player not found'}, status=404)
 
-        if data['type'] == 'game_started':
-            set_c_user_running_games(player0.id, 1)
-            set_c_user_running_games(player1.id, 1)
-        elif data['type'] == 'game_data':
-            # Set players score to -42 if they disconnected
+        if data['reason'] == f'{player0.id}_disconnected':
+            data['player0']['playerScore'] = -42
+        elif data['reason'] == f'{player1.id}_disconnected':
+            data['player1']['playerScore'] = -42
 
-            if data['reason'] == f'{player0.id}_disconnected':
-                data['player0']['playerScore'] = -42
-            elif data['reason'] == f'{player1.id}_disconnected':
-                data['player1']['playerScore'] = -42
+        player0_data = data['player0']
+        player1_data = data['player1']
+        try:
+            tournament = data.get('tournament', False)
+            match = Match.objects.create(
+                player0=player0,
+                player1=player1,
+                score0=player0_data['playerScore'],
+                score1=player1_data['playerScore'],
+                winner=player0 if player0_data['playerScore'] > player1_data['playerScore'] else (player1 if player0_data['playerScore'] < player1_data['playerScore'] else None),
+                tournament=tournament
+            )
+            match.save()
+            async_to_sync(self.safe_operate)(player0, player1, match)
 
-            player0_data = data['player0']
-            player1_data = data['player1']
-            try:
-                tournament = data.get('tournament', False)
-                match = Match.objects.create(
-                    player0=player0,
-                    player1=player1,
-                    score0=player0_data['playerScore'],
-                    score1=player1_data['playerScore'],
-                    winner=player0 if player0_data['playerScore'] > player1_data['playerScore'] else (player1 if player0_data['playerScore'] < player1_data['playerScore'] else None),
-                    tournament=tournament
-                )
-                match.save()
-                async_to_sync(self.safe_operate)(player0, player1, match)
-                #Display player 0 new stats
-                logger.info(f'{player0.username} stats updated: {player0.victories} victories, {player0.defeats} defeats, {player0.trophies} trophies, {player0.tournaments_won} tournaments won, {player0.goals} goals, {player0.winrate}% winrate')
+        except Exception as e:
+            return JsonResponse({'error': f'Failed to store match data: {e}'}, status=500)
 
-            except Exception as e:
-                return JsonResponse({'error': f'Failed to store match data: {e}'}, status=500)
         return HttpResponse('Game event handled')
 
     async def safe_operate(self, player0, player1, match):
@@ -118,9 +114,6 @@ class HandleGameEventsView(View):
     async def updateUser(self, player0, player1, match):
         await self.updatePlayerStats(player0, player1, match)
         await self.updatePlayerStats(player1, player0, match)
-
-        await sync_to_async(set_c_user_running_games)(player0.id, -1)
-        await sync_to_async(set_c_user_running_games)(player1.id, -1)
 
     async def updatePlayerStats(self, player, opponent, match):
         if player == match.winner:
@@ -140,3 +133,83 @@ class HandleGameEventsView(View):
         await sync_to_async(player.save)()
         #Display new stats
         #logger.info(f'{player.username} stats updated: {player.victories} victories, {player.defeats} defeats, {player.trophies} trophies, {player.tournaments_won} tournaments won, {player.goals} goals, {player.winrate}% winrate')
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required, name='dispatch')
+class user_statement_front(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        user = request.user
+        game_state = data.get('game_state') # '1' for in-game, '0' for end-game
+
+        if not user or game_state is None:
+            return JsonResponse({'error': 'Missing data'}, status=400)
+
+        logger.info(f'Received: {data}')
+        logger.info(f'Connected users: {connected_users}')
+
+        async_to_sync(self.safe_operate)(user, game_state)
+
+        return HttpResponse('OK')
+
+    async def safe_operate(self, user, game_state):
+        async with user_lock:
+            await asyncio.sleep(0.1)
+            # Check if user is connected, if not, tell the modification is not applied
+            if user.id not in connected_users:
+                return JsonResponse({'error': 'User not connected'}, status=400)
+            try:
+                await change_and_notify_user_status(channel_layer, user, 'in-game' if int(game_state) == 1 else 'online')
+            except:
+                return JsonResponse({'error': 'Failed to update user status'}, status=500)
+@method_decorator(csrf_exempt, name='dispatch')
+class user_statement_back(View):
+    async def get(self, request):
+        user_id = request.GET.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'No user provided'}, status=400)
+        try:
+            user = await async_to_sync(User.objects.get)(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except:
+            return JsonResponse({'error': 'Failed to get user status'}, status=500)
+
+        #Send user statement
+        return JsonResponse({'status': user.status})
+
+    async def post(self, request):
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        user_id = data.get('user_id')
+        game_state = data.get('game_state') # '1' for in-game, '0' for end-game
+
+        if not user_id or game_state is None:
+            return JsonResponse({'error': 'Missing data'}, status=400)
+
+        user_id = int(user_id)
+
+        logger.info(f'Received: {data}')
+        logger.info(f'Connected users: {connected_users}')
+
+        async with user_lock:
+            await asyncio.sleep(0.1)
+            # Check if user is connected, if not, tell the modification is not applied
+            if user_id not in connected_users:
+                return JsonResponse({'error': 'User not connected'}, status=400)
+            try:
+                user = await User.objects.aget(id=user_id)
+                await change_and_notify_user_status(channel_layer, user, 'in-game' if game_state == 1 else 'online')
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
+            except:
+                return JsonResponse({'error': 'Failed to update user status'}, status=500)
+
+        return HttpResponse('OK')
+

@@ -22,32 +22,6 @@ logging.basicConfig(
 
 connected_users = set()
 
-class c_user:
-	def __init__(self, id):
-		self.id = id
-		self.running_games = 0  # Number of running games
-
-def get_c_user(id):
-	for user in connected_users:
-		if user.id == id:
-			return user
-	return None
-
-def set_c_user_running_games(id, value):
-	user = get_c_user(id)
-	if user is None:
-		return
-	new_value = user.running_games + value
-	channel_layer = get_channel_layer()
-	logger.info(f'User {user.id} running games: {new_value}, previous: {user.running_games}')
-	if new_value <= 0 and user.running_games > 0:
-		logger.info(f'set_c_user_running_games: {user.id} is now online')
-		async_to_sync(change_and_notify_user_status)(channel_layer, get_user_model().objects.get(id=id), 'online')
-	elif new_value > 0 and user.running_games <= 0:
-		logger.info(f'set_c_user_running_games: {user.id} is now in-game')
-		async_to_sync(change_and_notify_user_status)(channel_layer, get_user_model().objects.get(id=id), 'in-game')
-	user.running_games = new_value
-
 user_lock = asyncio.Lock()
 
 async def change_and_notify_user_status(channel_layer, user, status):
@@ -68,6 +42,7 @@ async def change_and_notify_user_status(channel_layer, user, status):
 	else:
 		logger.error(f'Friends Notification Bad Type: {status}')
 		return
+
 	await sync_to_async(user.save)()
 
 	for friend in connected_friends:
@@ -112,13 +87,11 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 			await sync_to_async(self.user.refresh_from_db)()
 			self.user.active_connections += value
 			if self.user.active_connections > 0 and not self.user.is_connected:
-				connected_users.add(c_user(self.user.id))
+				connected_users.add(self.user.id)
 				await self.notify_chat_user_connected(self.user)
 				await change_and_notify_user_status(self.channel_layer, self.user, 'online')
 			elif self.user.active_connections <= 0:
-				user = get_c_user(self.user.id)
-				if user:
-					connected_users.discard(user)
+				connected_users.discard(self.user.id)
 				await self.notify_chat_user_disconnected(self.user)
 				await change_and_notify_user_status(self.channel_layer, self.user, 'offline')
 			await sync_to_async(self.user.save)()
