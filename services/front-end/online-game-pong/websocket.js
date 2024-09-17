@@ -7,7 +7,7 @@ import {launchSpell} from "./spell.js";
 
 let ws;
 
-export default function launchClientGame() {
+export function launchClientGame() {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onmessage = onReceive;
     ws.onerror = onError;
