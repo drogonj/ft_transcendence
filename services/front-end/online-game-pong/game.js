@@ -6,12 +6,11 @@ import {createPlayers, getPlayerWithSide, stopPlayerLoop} from "./player.js";
 import {closeWebSocket} from "./websocket.js";
 import {navigateTo} from "../scripts/contentLoader.js";
 import {displayStatistics} from "./statistics.js";
+import {joinTournament} from "../scripts/tournament.js";
 
-let gameId;
 let globalGameLoop;
 
 export function launchGame(socketValues) {
-	gameId = socketValues["gameId"];
 	createPlayers(socketValues);
 	loadListeners();
 	loadMap();
@@ -19,12 +18,6 @@ export function launchGame(socketValues) {
 	createBall(socketValues);
 	startGlobalGameLoop();
 }
-
-/*
-export function endGame() {
-	renderPageWithName("menu-end.html");
-	displayStatistics(getLeftPaddle().statistics, getRightPaddle().statistics);
-}*/
 
 function startGlobalGameLoop() {
 	timerDecrease();
@@ -54,10 +47,6 @@ export function newImage(imagePath, id, className) {
 	return img;
 }
 
-export function getGameId() {
-	return gameId;
-}
-
 export function markPoint(socketValues) {
 	const ball = getBallWithId(socketValues["ballId"]);
 	const targetPlayer = getPlayerWithSide(socketValues["targetPlayer"]);
@@ -76,6 +65,11 @@ export function clearGame() {
 export function endGame(socketValues) {
 	clearGame();
 	closeWebSocket();
+	if (socketValues["tournamentId"]) {
+		joinTournament(socketValues["tournamentId"]);
+		return;
+	}
+
 	navigateTo("/game-end", true);
 	displayStatistics(socketValues);
 }

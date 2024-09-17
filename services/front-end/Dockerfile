@@ -50,7 +50,6 @@ COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./conf/transcendence.conf /etc/nginx/conf.d/transcendence.conf
 COPY ./local-game-pong /singlepageapp/local-game-pong/
 COPY ./online-game-pong /singlepageapp/online-game-pong/
-COPY ./tournament /singlepageapp/tournament/
 COPY ./scripts /singlepageapp/scripts/
 COPY ./assets /singlepageapp/assets/
 COPY ./css /singlepageapp/css/

@@ -12,7 +12,7 @@ class Message(models.Model):
 class PrivateMessage(models.Model):
 	messageId = models.AutoField(primary_key=True)
 	type = models.CharField(max_length=255)
-	content = models.TextField(max_length=500)
+	content = models.TextField(max_length=200)
 	user_id = models.IntegerField()
 	username = models.CharField(max_length=255)
 	timestamp = models.DateTimeField()
@@ -47,16 +47,6 @@ class MuteListManager(models.Manager):
 	
 	def get_mute_list(self, user_id):
 		return self.get(user_id=user_id)
-	
-	def can_send_message(self, user_id, receiver_id):
-		try:
-			mute_list = self.get_mute_list(user_id)
-			muted_users_ids = mute_list.muted_users.values_list('user_id', flat=True)
-
-			is_muted = receiver_id in muted_users_ids
-			return not is_muted
-		except MuteList.DoesNotExist:
-			return True
 
 class MuteList(models.Model):
 	user_id = models.IntegerField(primary_key=True)

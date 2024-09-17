@@ -1,10 +1,9 @@
 import { currentUser } from './auth.js';
-import { loadUsers, updateUserStatus, getMuteListOf, getUserStatus} from './users.js';
+import { loadUsers, updateUserStatus, getMuteListOf } from './users.js';
 import { bindGameSocket, launchFriendGame } from '../online-game-pong/websocket.js';
 
 export var chatCsrfToken = '';
 export var chatSocket = null;
-var rooms = new Set();
 
 export async function getChatCsrfToken() {
 	const response = await fetch('/api/chat/csrf/');
@@ -22,14 +21,11 @@ export async function connectChatWebsocket(roomName) {
 
 		chatSocket.onopen = function(e) {
 			console.log("Chat-WebSocket connection established.");
-			joinRoom(`ID_${currentUser.user_id}`);
-			joinRoom(roomName);``
 		};
 
 		chatSocket.onmessage = function(e) {
 			(async () => {
 				const data = JSON.parse(e.data);
-				let muted = false;
 
 				if (data.timestamp)
 					data.timestamp = formatTime(data.timestamp);
@@ -58,11 +54,14 @@ export async function connectChatWebsocket(roomName) {
 				else if (data.type === 'system')
 					systemMessage(data);
 
-				else if (data.type === 'chat_message' && !muted)
+				else if (data.type === 'chat_message')
 					chatMessage(data);
 
-				else if (data.type === 'troll_message' && !muted)
+				else if (data.type === 'troll_message')
 					trollMessage(data);
+
+				else if (data.type === 'error')
+					error(data)
 			})();
 		}
 
@@ -71,25 +70,23 @@ export async function connectChatWebsocket(roomName) {
 				console.log(`[close] Chat Connection closed cleanly, code=${e.code} reason=${e.reason}`);
 			else
 				console.log('[close] Chat Connection died');
-			leaveAllRooms();
 			chatSocket = null;
 		};
 
 		chatSocket.onerror = function(error) {
 			console.error(`[error] ${error.message}`);
 		};
-	} else 
-		joinRoom(roomName);
+	}
 }
 
 export async function disconnectChatWebsocket() {
-	await leaveAllRooms();
-    chatSocket.close();
+	chatSocket.close();
 	chatSocket = null;
 }
 
 async function 	connectToGame(data) {
-	removePendingInvitationMessage(data.invitationId);
+	if (data.receiver_id === currentUser.user_id)
+		removePendingInvitationMessage(data.invitationId);
 	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
 	launchFriendGame(data);
 }
@@ -118,11 +115,9 @@ async function cancelledInvitation(data) {
 	if (!chatWindowOn())
 		return ;
 
-	removePendingInvitationMessage(data.invitationId);
-
-	if (data.receiver_id === currentUser.user_id) {
+	if (data.status === 'offline' || data.status === 'in-game'){
 		const messageList = document.getElementById('message-content');
-		const newMessage = document.createElement('li');``
+		const newMessage = document.createElement('li');
 	
 		newMessage.classList.add('chat-message');
 		newMessage.textContent = `${data.username} cancelled the invitation (Reason: ${data.status}).`;
@@ -131,6 +126,22 @@ async function cancelledInvitation(data) {
 		
 		const chatMessages = document.getElementById('chat-messages');
 		chatMessages.scrollTop = chatMessages.scrollHeight;
+		return ;
+	}
+	else {
+		removePendingInvitationMessage(data.invitationId);
+		if (data.receiver_id === currentUser.user_id) {
+			const messageList = document.getElementById('message-content');
+			const newMessage = document.createElement('li');
+		
+			newMessage.classList.add('chat-message');
+			newMessage.textContent = `${data.username} cancelled the invitation (Reason: ${data.status}).`;
+
+			messageList.insertBefore(newMessage, messageList.firstChild);
+			
+			const chatMessages = document.getElementById('chat-messages');
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+		}
 	}
 }
 
@@ -144,35 +155,6 @@ async function removePendingInvitationMessage(invitationId) {
 		pendingMessageElement.remove();
 	else
 		console.log(`No pending invitation message found with ID: pending-invitation-${invitationId}`);
-}
-
-async function joinRoom(roomName) {
-	if (!rooms.has(roomName)) {
-		chatSocket.send(JSON.stringify({
-			type: 'join_room',
-			room: roomName
-		}));
-		rooms.add(roomName);
-	}
-}
-
-async function leaveRoom(roomName){
-	if (!rooms.has(roomName)) {
-		chatSocket.send(JSON.stringify({
-			type: 'leave_room',
-			room: roomName
-		}));
-	};
-}
-
-async function leaveAllRooms() {
-	rooms.forEach(roomName => {
-		chatSocket.send(JSON.stringify({
-			type: 'leave_room',
-			room: roomName
-		}));
-	});
-	rooms.clear();
 }
 
 function getTrollMessage() {
@@ -391,10 +373,10 @@ export async function addChatMenu() {
 	const chatMessages = document.getElementById('chat-messages');
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 
-	await sleep(100);
+	await sleep(200);
+	await getChatCsrfToken();
 	await loadUsers();
 	await loadMessages();
-	await getChatCsrfToken();
 	await loadInvitations();
 
 	document.getElementById('chat-input').focus();
@@ -430,6 +412,7 @@ async function parseMessage(message) {
 
 				for (const user of usersData.users) {
 					if (user.username === username) {
+						console.log(`User: ${user.username}`)
 						if (user.username === currentUser.username) {
 							let troll = getTrollMessage();
 							chatSocket.send(JSON.stringify({
@@ -621,9 +604,23 @@ async function loadInvitations() {
 
 function chatWindowOn() {
 	const chatMessages = document.getElementById('chat-messages');
-	if (!chatMessages) {
-		console.log('User is not on the chat page.');
+	if (!chatMessages)
 		return false;
-	}
 	return true;
+}
+
+async function error(data) {
+	if (!chatWindowOn())
+		return ;
+
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('chat-message');
+	newMessage.innerHTML = `${data.content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
 }

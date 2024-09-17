@@ -55,13 +55,14 @@ class GameServerWebSocket(WebSocketHandler):
     def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
+        
         if socket["type"] == "movePlayer":
             get_game_with_client(self).move_player(socket_values)
         elif socket["type"] == "launchSpell":
             get_game_with_client(self).launch_spell(socket_values)
         elif socket["type"] == "createGame":
-            Game(0, socket_values)
-
+            Game(socket_values)
+    
     def on_close(self):
         print("[-] A client leave the server")
         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 0})

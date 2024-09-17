@@ -172,24 +172,3 @@ export async function getMuteListOf(user_id) {
 		return [];
 	}
 }
-
-async function amIInvitedToPlayBy(userId) {
-	try {
-		const response = await fetch(`/api/chat/invitations/`);
-		const data = await response.json();
-
-		let invitationList = [];
-
-		data.forEach((invit) => {
-			if (invit.status === 'pending') {
-				if (invit.user_id === Number(userId) && invit.receiver_id === currentUser.user_id) {
-					console.log(`Invitation ${invit.invitationId} is for me`);
-					invitationList.push(invit.invitationId);
-				}
-			}
-		});
-		return invitationList;
-	} catch (error) {
-		console.error('Error loading invitations', error.message);
-	}
-}

@@ -31,8 +31,8 @@ import {
 import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
-import {closeTournamentWebSocket, createTournament, refreshTournamentList} from "../tournament/tournament.js";
 import { unsetIngame } from "../local-game-pong/src/main.js";
+import {closeTournamentWebSocket, createTournament, refreshTournamentList} from "./tournament.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -586,23 +586,6 @@ export async function renderTournamentLobby() {
             <h1 id="headerTournament">Tournament Lobby</h1>
             <p1>Waiting for players..</p1>
             <div id="playerList">
-                <div class="playerCard">
-                    <div class="playerIcon">
-                        <img src="../../assets/images/iconleft.jpg">
-                    </div>
-                    <div class="playerUsername">
-                        PlayerName
-                    </div>
-                </div>
-
-                <div class="playerCard">
-                    <div class="playerIcon">
-                        <img src="../../assets/images/iconleft.jpg">
-                    </div>
-                    <div class="playerUsername">
-                        PlayerName
-                    </div>
-                </div>
             </div>
             <div id="footerTournament">
                 <button id="leaveTournament" class="tournamentButton">Leave the lobby</button>

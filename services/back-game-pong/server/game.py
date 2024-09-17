@@ -7,17 +7,20 @@ from .player import Player
 
 games = []
 
-
 class Game:
-	def __init__(self, game_id, socket_values):
-		self.__game_id = game_id
+	def __init__(self, socket_values):
 		self.__players = [Player(socket_values["userId1"], "Left"), Player(socket_values["userId2"], "Right")]
 		SpellRegistry.set_spells_to_players(self.__players)
 		self.__user_ids = [socket_values["userId1"], socket_values["userId2"]]
 		self.__balls = [Ball()]
 		self.__is_game_end = False
 		self.__game_end_reason = None
+		self.__tournament_id = 0
+		#tournamentID received will start at 1
+		if socket_values.get("tournamentId"):
+			self.__tournament_id = int(socket_values["tournamentId"])
 		games.append(self)
+		print(f"A new game is created with playerIds: {self.__players[0].get_user_id()} and {self.__players[0].get_user_id()}")
 
 	def launch_game(self):
 		self.send_message_to_game("renderPage", {"url": "/game-online"})
@@ -26,7 +29,6 @@ class Game:
 		player_left = self.get_player("Left")
 		player_right = self.get_player("Right")
 
-		socket_values["gameId"] = self.get_id()
 		socket_values["ballId"] = self.__balls[0].get_id()
 		socket_values["playerLeft"] = player_left.dumps_player_for_socket()
 		socket_values["playerRight"] = player_right.dumps_player_for_socket()
@@ -124,13 +126,17 @@ class Game:
 		self.__balls.append(new_ball)
 		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 
-	async def launch_max_time(self):
-		await asyncio.sleep(120)
-		self.__game_end_reason = 'max_time_reached'
-		self.__is_game_end = True
+    async def launch_max_time(self):
+        await asyncio.sleep(120)
+        self.__game_end_reason = 'max_time_reached'
+        self.__is_game_end = True
 
-	def game_end(self):
-		store_game_data(self.__players, self.__game_end_reason)
+    def game_end(self):
+        if self.__tournament_id >= 1:
+        self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
+            return
+        store_game_data(self.__players, self.__game_end_reason)
+        store_game_data(self.__players)
 		send_game_data_to_redis()
 
 		data_values = {}
@@ -151,19 +157,12 @@ class Game:
 	def get_players(self):
 		return self.__players
 
-	def get_id(self):
-		return self.__game_id
-
-	def get_ball_with_id(self, ball_id):
-		return self.__balls[0].get_id()
-
 	def get_balls_in_direction(self, direction):
 		balls = []
 		for ball in self.__balls:
 			if ball.get_ball_direction() == direction:
 				balls.append(ball)
 		return balls
-
 
 	def set_game_state(self, state, reason=None):
 		self.__is_game_end = state
@@ -187,12 +186,6 @@ class Game:
 			if player.statistics.score >= 10:
 				return True
 		return False
-
-
-def get_game_with_id(game_id):
-	for game in games:
-		if game.get_id() == game_id:
-			return game
 
 
 def get_game_with_client(client):
