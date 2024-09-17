@@ -10,7 +10,6 @@ from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from server.game import Game, get_game_with_client, disconnect_handle, bind_socket_to_player
 
-
 # Server will send websocket as json with the followed possible keys
 # type : Type of data: such as moveBall, movePlayer, createPlayer ...
 # values: The values, need to be sent according to the type, send as dictionary
@@ -46,6 +45,11 @@ class GameServerWebSocket(WebSocketHandler):
             self.close()
             return
 
+        self.user_id = request_data["id"]
+
+        # Update User Status
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 1})
+
         print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
     def on_message(self, message):
@@ -61,9 +65,9 @@ class GameServerWebSocket(WebSocketHandler):
     
     def on_close(self):
         print("[-] A client leave the server")
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 0})
         disconnect_handle(self)
         clients.remove(self)
-
 
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())

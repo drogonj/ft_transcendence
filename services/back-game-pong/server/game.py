@@ -5,9 +5,7 @@ from .redis_communication import send_game_data_to_redis, store_game_data, send_
 from .spell.spell_registry import SpellRegistry
 from .player import Player
 
-
 games = []
-
 
 class Game:
 	def __init__(self, socket_values):
@@ -16,6 +14,7 @@ class Game:
 		self.__user_ids = [socket_values["userId1"], socket_values["userId2"]]
 		self.__balls = [Ball()]
 		self.__is_game_end = False
+		self.__game_end_reason = None
 		self.__tournament_id = 0
 		#tournamentID received will start at 1
 		if socket_values.get("tournamentId"):
@@ -39,9 +38,6 @@ class Game:
 
 		socket_values["clientSide"] = "Right"
 		player_right.send_message_to_player("launchGame", socket_values)
-
-		store_game_started_data(self.__players)
-		send_game_started_to_redis()
 
 		asyncio.create_task(self.main_loop())
 		asyncio.create_task(self.launch_max_time())
@@ -111,7 +107,7 @@ class Game:
 		self.delete_ball(ball)
 		self.send_message_to_game("displayScore", socket_values)
 		if self.have_player_with_max_score():
-			self.set_game_state(True)
+			self.set_game_state(True, 'max_score_reached')
 		if len(self.__balls) == 0:
 			self.create_ball()
 
@@ -132,14 +128,14 @@ class Game:
 
 	async def launch_max_time(self):
 		await asyncio.sleep(120)
+		self.__game_end_reason = 'max_time_reached'
 		self.__is_game_end = True
 
 	def game_end(self):
 		if self.__tournament_id >= 1:
 			self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
 			return
-
-		store_game_data(self.__players)
+		store_game_data(self.__players, self.__game_end_reason)
 		send_game_data_to_redis()
 
 		data_values = {}
@@ -167,8 +163,10 @@ class Game:
 				balls.append(ball)
 		return balls
 
-	def set_game_state(self, state):
+	def set_game_state(self, state, reason=None):
 		self.__is_game_end = state
+		if reason is not None:
+			self.__game_end_reason = reason
 
 	def is_game_containing_client(self, client):
 		for player in self.__players:
@@ -199,7 +197,7 @@ def disconnect_handle(client):
 	game = get_game_with_client(client)
 
 	game.disconnect_player_with_socket(client)
-	game.set_game_state(True)
+	game.set_game_state(True, f'{client.user_id}_disconnected')
 
 	if not game.is_game_containing_players():
 		games.remove(game)

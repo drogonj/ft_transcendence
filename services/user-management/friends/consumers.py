@@ -3,8 +3,10 @@ import os, django, json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async, async_to_sync
-
+from django.db import transaction
+from channels.layers import get_channel_layer
 from .models import Friendship
+import asyncio
 
 # logging setup for info logs
 import logging
@@ -18,21 +20,31 @@ logging.basicConfig(
 	]
 )
 
+connected_users = set()
+
+user_lock = asyncio.Lock()
+
 async def change_and_notify_user_status(channel_layer, user, status):
 	connected_friends = await sync_to_async(Friendship.objects.get_connected_friends)(user)
 
 	if status == 'online':
-		await user.set_status('online')
+		user.status = 'online'
+		user.is_connected = True
 		event_type = 'friend_connected_notification'
 	elif status == 'offline':
-		await user.set_status('offline')
+		user.status = 'offline'
+		user.is_connected = False
 		event_type = 'friend_disconnected_notification'
 	elif status == 'in-game':
-		await user.set_status('in-game')
+		user.status = 'in-game'
+		user.is_connected = True
 		event_type = 'friend_ingame_notification'
 	else:
 		logger.error(f'Friends Notification Bad Type: {status}')
 		return
+
+	await sync_to_async(user.save)()
+
 	for friend in connected_friends:
 		group_name = f'user_{friend.id}'
 		await channel_layer.group_send(
@@ -47,6 +59,7 @@ async def change_and_notify_user_status(channel_layer, user, status):
 class FriendRequestConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		self.user = self.scope['user']
+		self.local_game = False
 
 		if self.user.is_authenticated:
 			await self.channel_layer.group_add(
@@ -70,20 +83,25 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 			await self.set_active_connection(-1)
 
 	async def set_active_connection(self, value):
-		self.user.active_connections += value
-		if self.user.active_connections > 0 and not self.user.is_connected:
-			await self.notify_chat_user_connected(self.user)
-			await change_and_notify_user_status(self.channel_layer, self.user, 'online')
-		elif self.user.active_connections <= 0:
-			await self.notify_chat_user_disconnected(self.user)
-			await change_and_notify_user_status(self.channel_layer, self.user, 'offline')
+		async with user_lock:
+			await sync_to_async(self.user.refresh_from_db)()
+			self.user.active_connections += value
+			if self.user.active_connections > 0 and not self.user.is_connected:
+				connected_users.add(self.user.id)
+				await self.notify_chat_user_connected(self.user)
+				await change_and_notify_user_status(self.channel_layer, self.user, 'online')
+			elif self.user.active_connections <= 0:
+				connected_users.discard(self.user.id)
+				await self.notify_chat_user_disconnected(self.user)
+				await change_and_notify_user_status(self.channel_layer, self.user, 'offline')
+			await sync_to_async(self.user.save)()
+			await sync_to_async(self.user.refresh_from_db)()
 
 	async def close_websocket(self, event):
 		await self.close()
 
 	async def receive(self, text_data):
-		# Logique pour traiter les messages reçus si nécessaire
-		pass
+		logger.info(f'Websocket received: {text_data}')
 
 	async def notify_chat_user_connected(self, user):
 		await self.channel_layer.group_send(
