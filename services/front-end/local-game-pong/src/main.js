@@ -31,7 +31,7 @@ async function setIngame() {
 			'X-CSRFToken': csrfToken
 		},
 		body: JSON.stringify({
-			"game_state": 1,
+			"state": "local_game_started",
 		})
 	});
 }
@@ -45,7 +45,7 @@ export async function unsetIngame(event) {
 			'X-CSRFToken': csrfToken
 		},
 		body: JSON.stringify({
-			"game_state": 0,
+			"state": "local_game_ended",
 		})
 	});
 }

@@ -114,12 +114,12 @@ class TournamentWebSocket(WebSocketHandler):
         if request_data is None:
             return
 
-        user_id = request_data["id"]
-        if is_user_already_in_tournament(user_id):
+        selfuser_id = request_data["id"]
+        if is_user_already_in_tournament(self.user_id):
             print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
             self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
             return
-        player = Player(self, user_id, request_data["username"])
+        player = Player(self, self.user_id, request_data["username"])
 
         try:
             action_type = cookies.get("type").value
@@ -142,6 +142,8 @@ class TournamentWebSocket(WebSocketHandler):
                 return
             tournament.add_player(player)
             print(f'The user ({player.get_player_id()}) {request_data["username"]} join the tournament {tournament.get_id()}')
+
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_started"})
         print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
     async def on_message(self, message):
@@ -158,6 +160,7 @@ class TournamentWebSocket(WebSocketHandler):
             if not tournament.is_running and tournament.is_tournament_done():
                 print(f"The tournament with id {tournament.get_id()} is done and removed.")
                 tournaments.remove(tournament)
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_ended"})
         print(f"[-] A user leave the tournament server.")
 
     def get_userdata_from_session_id(self, session_id):

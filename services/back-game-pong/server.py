@@ -48,7 +48,7 @@ class GameServerWebSocket(WebSocketHandler):
         self.user_id = request_data["id"]
 
         # Update User Status
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 1})
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_started"})
 
         print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
@@ -65,7 +65,7 @@ class GameServerWebSocket(WebSocketHandler):
     
     def on_close(self):
         print("[-] A client leave the server")
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 0})
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_ended"})
         disconnect_handle(self)
         clients.remove(self)
 

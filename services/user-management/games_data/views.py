@@ -188,15 +188,19 @@ class user_statement_back(View):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         user_id = data.get('user_id')
-        game_state = data.get('game_state') # '1' for in-game, '0' for end-game
+        state = data.get('state') # '1' for in-game, '0' for end-game
 
-        if not user_id or game_state is None:
+        if not user_id or state is None:
             return JsonResponse({'error': 'Missing data'}, status=400)
 
         user_id = int(user_id)
 
         logger.info(f'Received: {data}')
         logger.info(f'Connected users: {connected_users}')
+
+        states_list = ["remote_game_started", "remote_game_ended", "tournament_started", "tournament_ended", "matchmaking_started", "matchmaking_ended"]
+        if state not in states_list:
+            return JsonResponse({'error': 'Invalid state'}, status=400)
 
         async with user_lock:
             await asyncio.sleep(0.1)
@@ -205,10 +209,19 @@ class user_statement_back(View):
                 return JsonResponse({'error': 'User not connected'}, status=400)
             try:
                 user = await User.objects.aget(id=user_id)
-                await change_and_notify_user_status(channel_layer, user, 'in-game' if game_state == 1 else 'online')
+                if state == "remote_game_started":
+                    await change_and_notify_user_status(channel_layer, user, 'in-game')
+                elif state == "tournament_started":
+                    await change_and_notify_user_status(channel_layer, user, 'tournament')
+                elif state in ["remote_game_ended", "tournament_ended", "matchmaking_ended"]:
+                    await change_and_notify_user_status(channel_layer, user, 'online')
+
+                await user.asave()
+
             except User.DoesNotExist:
                 return JsonResponse({'error': 'User not found'}, status=404)
-            except:
+            except Exception as e:
+                logger.info(f'--- ERROR: {e}')
                 return JsonResponse({'error': 'Failed to update user status'}, status=500)
 
         return HttpResponse('OK')
