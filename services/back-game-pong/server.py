@@ -9,6 +9,7 @@ from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from server.game import Game, get_game_with_client, disconnect_handle, bind_socket_to_player
+from websocket import WebSocketClient, main_check_loop
 
 # Server will send websocket as json with the followed possible keys
 # type : Type of data: such as moveBall, movePlayer, createPlayer ...
@@ -64,6 +65,10 @@ class GameServerWebSocket(WebSocketHandler):
             Game(socket_values)
     
     def on_close(self):
+        if not hasattr(self, 'user_id'):
+            print("Connection with tournament server lost..")
+            return
+
         print("[-] A client leave the server")
         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 0})
         disconnect_handle(self)
@@ -81,4 +86,6 @@ if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2605)
     print("Starting Tornado server on port 2605")
+    WebSocketClient("ws://back-tournament:2610/ws/tournament")
+    IOLoop.current().spawn_callback(main_check_loop)
     IOLoop.current().start()

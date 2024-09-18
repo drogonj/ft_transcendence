@@ -1,9 +1,10 @@
 import asyncio
 from .ball import Ball
 from .utils import reverse_side
-from .redis_communication import send_game_data_to_redis, store_game_data, send_game_started_to_redis, store_game_started_data
+from .redis_communication import send_game_data_to_redis, store_game_data
 from .spell.spell_registry import SpellRegistry
 from .player import Player
+from websocket import check_tournament_server_health
 
 games = []
 
@@ -132,7 +133,7 @@ class Game:
 		self.__is_game_end = True
 
 	def game_end(self):
-		if self.__tournament_id >= 1:
+		if self.__tournament_id >= 1 and check_tournament_server_health():
 			self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
 			return
 		store_game_data(self.__players, self.__game_end_reason)

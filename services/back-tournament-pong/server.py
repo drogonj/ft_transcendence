@@ -108,6 +108,11 @@ class TournamentWebSocket(WebSocketHandler):
 
     def open(self):
         cookies = self.request.cookies
+
+        if not cookies:
+            print(f'[+] Server {self.request.headers.get("server")} is bind to server Tournament')
+            return
+
         session_id = cookies.get("sessionid").value
 
         request_data = self.get_userdata_from_session_id(session_id)
