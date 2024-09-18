@@ -198,6 +198,9 @@ def get_game_with_client(client):
 def disconnect_handle(client):
 	game = get_game_with_client(client)
 
+	if not game:
+		return
+
 	game.disconnect_player_with_socket(client)
 	game.set_game_state(True)
 
@@ -208,7 +211,7 @@ def disconnect_handle(client):
 def bind_socket_to_player(socket, user_id):
 	for game in games:
 		for player in game.get_players():
-			if player.get_user_id() == user_id:
+			if player.get_user_id() == int(user_id):
 				player.set_socket(socket)
 				game.trigger_game_launch()
 				return True

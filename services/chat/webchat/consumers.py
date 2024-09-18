@@ -336,12 +336,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'receiver_id': data['receiver_id'],
 					'receiver_username': data['receiver_username']
 				}
-
 				game_ws_client = get_game_server()
-				if game_ws_client and game_ws_client.is_connected():
-					await game_ws_client.send("createGame", {"userId1": id, "userId2": receiver})
-				else:
-					print("Game WebSocket client is not connected.")
+				if not game_ws_client and not game_ws_client.is_connected():
+					print("The connection with game server is not established..")
+					return
+				#envoyer les id en tant que int et non pas str
+				await game_ws_client.send("createGame", {"userId1": int(id), "userId2": int(receiver)})
 
 				await self.channel_layer.group_send(room_name, message_data)
 				await self.send(text_data=json.dumps(message_data))
