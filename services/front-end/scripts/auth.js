@@ -18,6 +18,7 @@ export async function getCsrfToken() {
     const response = await fetch('/api/user/get_csrf_token/');
     const data = await response.json();
     csrfToken = data.csrfToken;
+    return csrfToken;
 }
 
 export async function handleLogin(event) {

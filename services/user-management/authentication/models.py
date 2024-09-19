@@ -52,7 +52,7 @@ class Account(AbstractBaseUser):
     profil_image        = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
 
     is_connected        = models.BooleanField(default=False)
-    status              = models.CharField(default='offline', max_length=10)
+    status              = models.CharField(default='offline', max_length=12)
     active_connections  = models.IntegerField(default=0)
 
     intra_id            = models.IntegerField(default=0)
@@ -127,13 +127,10 @@ class Account(AbstractBaseUser):
         except Exception as e:
             raise e
 
-    async def set_status(self, status):
-        status_list = ['offline', 'online', 'in-game']
-        if status not in status_list:
-            return
+    def set_status(self, status):
         self.status = status
         if status == 'offline':
             self.is_connected = False
         else:
             self.is_connected = True
-        await self.asave()
+        self.save()

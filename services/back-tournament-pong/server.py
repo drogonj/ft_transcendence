@@ -28,7 +28,7 @@ django.setup()
 
 users_in_queue = []
 tournaments = []
-tournaments_id = 0
+tournaments_id = 1
 
 
 def get_tournament_with_id(tournament_id):
@@ -108,18 +108,23 @@ class TournamentWebSocket(WebSocketHandler):
 
     def open(self):
         cookies = self.request.cookies
+
+        if not cookies:
+            print(f'[+] Server {self.request.headers.get("server")} is bind to server Tournament')
+            return
+
         session_id = cookies.get("sessionid").value
 
         request_data = self.get_userdata_from_session_id(session_id)
         if request_data is None:
             return
 
-        user_id = request_data["id"]
-        if is_user_already_in_tournament(user_id):
+        self.user_id = request_data["id"]
+        if is_user_already_in_tournament(self.user_id):
             print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
             self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
             return
-        player = Player(self, user_id, request_data["username"])
+        player = Player(self, self.user_id, request_data["username"])
 
         try:
             action_type = cookies.get("type").value
@@ -142,6 +147,8 @@ class TournamentWebSocket(WebSocketHandler):
                 return
             tournament.add_player(player)
             print(f'The user ({player.get_player_id()}) {request_data["username"]} join the tournament {tournament.get_id()}')
+
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_started"})
         print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
     async def on_message(self, message):
@@ -150,14 +157,17 @@ class TournamentWebSocket(WebSocketHandler):
         if socket['type'] == 'launchTournament':
             tournament = get_tournament_from_player_socket(self)
             await tournament.launch_tournament()
+        elif socket['type'] == 'endGame':
+            tournament = get_tournament_with_id(socket_values["tournamentId"])
 
     def on_close(self):
         tournament = get_tournament_from_player_socket(self)
         if tournament:
             tournament.remove_player_with_socket(self)
-            if tournament.is_tournament_done():
+            if not tournament.is_running and tournament.is_tournament_done():
                 print(f"The tournament with id {tournament.get_id()} is done and removed.")
                 tournaments.remove(tournament)
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_ended"})
         print(f"[-] A user leave the tournament server.")
 
     def get_userdata_from_session_id(self, session_id):

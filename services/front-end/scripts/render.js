@@ -1,5 +1,18 @@
 import {navigateTo, app, cleanUrl} from './contentLoader.js';
-import { handleLogin, handleSignup, handleLogout, handleUserUpdate , handleConfirmRegistration, changeAvatar, changeUsername, changePassword, currentUser, getCsrfToken, csrfToken } from './auth.js';
+import {
+    handleLogin,
+    handleSignup,
+    handleLogout,
+    handleUserUpdate,
+    handleConfirmRegistration,
+    changeAvatar,
+    changeUsername,
+    changePassword,
+    currentUser,
+    getCsrfToken,
+    csrfToken,
+    getCurrentUserInfo
+} from './auth.js';
 import {
     connectFriendsWebsocket,
     disconnectFriendsWebsocket,
@@ -18,7 +31,13 @@ import {
 import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
 import launchLocalGame from "../local-game-pong/src/main.js";
-import {closeTournamentWebSocket, createTournament, refreshTournamentList} from "./tournament.js";
+import { unsetIngame } from "../local-game-pong/src/main.js";
+import {
+    closeTournamentWebSocket,
+    createTournament,
+    isTournamentWebSocketBind,
+    refreshTournamentList
+} from "./tournament.js";
 
 export function renderLogin() {
     app.innerHTML = `
@@ -567,6 +586,10 @@ export async function renderTournament() {
 }
 
 export async function renderTournamentLobby() {
+    if (!isTournamentWebSocketBind()) {
+        navigateTo('/home', true);
+        return;
+    }
     app.innerHTML = `
         <div id="tournamentmain">
             <h1 id="headerTournament">Tournament Lobby</h1>
@@ -617,8 +640,10 @@ export async function renderGameEnd() {
             </div>
         </div>
     `;
-    document.getElementById('buttonContinue').addEventListener('click', (event) => {
+
+    document.getElementById('buttonContinue').addEventListener('click', async (event) => {
         event.preventDefault();
+        await getCurrentUserInfo();
         navigateTo('/home', true);
     });
 }
@@ -720,6 +745,9 @@ export async function renderGameLocal() {
             </div>
         </div>
     `;
+    window.addEventListener('popstate', async function(event) {
+        await unsetIngame();
+    }, { once: true });
 }
 
 export async function renderGameOnline() {

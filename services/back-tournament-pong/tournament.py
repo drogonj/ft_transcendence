@@ -13,7 +13,7 @@ class Tournament:
         self.is_running = True
         print("launchTournament")
         await get_game_server().send("createGame", {"userId1": self.players[0].get_player_id(),
-                                                    "userId2": self.players[1].get_player_id()})
+                                                    "userId2": self.players[1].get_player_id(), "tournamentId": self.id})
 
         self.players[0].send_message_to_player("connectTo", {"server": "gameServer"})
         self.players[1].send_message_to_player("connectTo", {"server": "gameServer"})
@@ -75,4 +75,9 @@ class Tournament:
     def get_host_player(self):
         for player in self.players:
             if player.get_is_host():
+                return player
+
+    def get_player_with_id(self, player_id):
+        for player in self.players:
+            if player.get_player_id == player_id:
                 return player
