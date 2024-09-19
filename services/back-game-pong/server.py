@@ -69,7 +69,7 @@ class GameServerWebSocket(WebSocketHandler):
             print("Connection with tournament server lost..")
             return
 
-        print("[-] A client leave the server")
+        print(f"[-] The user ({self.user_id}) leave the server game.")
         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 0})
         disconnect_handle(self)
         clients.remove(self)

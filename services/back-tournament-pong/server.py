@@ -155,6 +155,8 @@ class TournamentWebSocket(WebSocketHandler):
         if socket['type'] == 'launchTournament':
             tournament = get_tournament_from_player_socket(self)
             await tournament.launch_tournament()
+        elif socket['type'] == 'endGame':
+            tournament = get_tournament_with_id(socket_values["tournamentId"])
 
     def on_close(self):
         tournament = get_tournament_from_player_socket(self)

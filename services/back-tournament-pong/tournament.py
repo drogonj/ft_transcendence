@@ -76,3 +76,8 @@ class Tournament:
         for player in self.players:
             if player.get_is_host():
                 return player
+
+    def get_player_with_id(self, player_id):
+        for player in self.players:
+            if player.get_player_id == player_id:
+                return player
