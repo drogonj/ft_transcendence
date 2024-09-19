@@ -1,9 +1,10 @@
 import asyncio
 from .ball import Ball
 from .utils import reverse_side
-from .redis_communication import send_game_data_to_redis, store_game_data, send_game_started_to_redis, store_game_started_data
+from .redis_communication import send_game_data_to_redis, store_game_data
 from .spell.spell_registry import SpellRegistry
 from .player import Player
+from websocket import check_tournament_server_health, get_game_server
 
 games = []
 
@@ -11,7 +12,6 @@ class Game:
 	def __init__(self, socket_values):
 		self.__players = [Player(socket_values["userId1"], "Left"), Player(socket_values["userId2"], "Right")]
 		SpellRegistry.set_spells_to_players(self.__players)
-		self.__user_ids = [socket_values["userId1"], socket_values["userId2"]]
 		self.__balls = [Ball()]
 		self.__is_game_end = False
 		self.__game_end_reason = None
@@ -20,7 +20,7 @@ class Game:
 		if socket_values.get("tournamentId"):
 			self.__tournament_id = int(socket_values["tournamentId"])
 		games.append(self)
-		print(f"A new game is created with playerIds: {self.__players[0].get_user_id()} and {self.__players[0].get_user_id()}")
+		print(f"A new game is created with playerIds: {self.__players[0].get_user_id()} and {self.__players[1].get_user_id()}")
 
 	def launch_game(self):
 		self.send_message_to_game("renderPage", {"url": "/game-online"})
@@ -62,7 +62,7 @@ class Game:
 			self.send_message_to_game("moveBall", {"targetBalls": balls_to_send})
 			balls_to_send.clear()
 			await asyncio.sleep(0.014)
-		self.game_end()
+		await self.game_end()
 
 	def send_message_to_game(self, data_type, data_values):
 		for player in self.__players:
@@ -131,24 +131,25 @@ class Game:
 		self.__game_end_reason = 'max_time_reached'
 		self.__is_game_end = True
 
-	def game_end(self):
-		if self.__tournament_id >= 1:
-			self.send_message_to_game("endGame", {"tournamentId": self.__tournament_id})
-			return
+	async def game_end(self):
 		store_game_data(self.__players, self.__game_end_reason)
 		send_game_data_to_redis()
 
 		data_values = {}
 		for player in self.__players:
 			data_values[player.get_side()] = player.statistics.get_statistics_as_list()
+
+		if self.__tournament_id >= 1 and await check_tournament_server_health():
+			self.get_winner().send_message_to_player("endGame", {"tournamentId": self.__tournament_id})
+			self.get_looser().send_message_to_player("endGame", data_values)
+			await get_game_server().send("endGame", {"tournamentId": self.__tournament_id, "looserId": self.get_looser().get_user_id()})
+			return
+
 		self.send_message_to_game("endGame", data_values)
 
 	def trigger_game_launch(self):
 		if self.__players[0].is_socket_bind() and self.__players[1].is_socket_bind():
 			self.launch_game()
-
-	def get_user_ids(self):
-		return self.__user_ids
 
 	def get_player(self, side):
 		return self.__players[0] if self.__players[0].get_side() == side else self.__players[1]
@@ -186,6 +187,12 @@ class Game:
 				return True
 		return False
 
+	def get_winner(self):
+		return self.__players[0] if self.__players[0].statistics.score > self.__players[1].statistics.score else self.__players[1]
+
+	def get_looser(self):
+		return self.__players[0] if self.__players[0].statistics.score < self.__players[1].statistics.score else self.__players[1]
+
 
 def get_game_with_client(client):
 	for game in games:
@@ -195,6 +202,9 @@ def get_game_with_client(client):
 
 def disconnect_handle(client):
 	game = get_game_with_client(client)
+
+	if not game:
+		return
 
 	game.disconnect_player_with_socket(client)
 	game.set_game_state(True, f'{client.user_id}_disconnected')
@@ -206,7 +216,7 @@ def disconnect_handle(client):
 def bind_socket_to_player(socket, user_id):
 	for game in games:
 		for player in game.get_players():
-			if player.get_user_id() == user_id:
+			if player.get_user_id() == int(user_id):
 				player.set_socket(socket)
 				game.trigger_game_launch()
 				return True

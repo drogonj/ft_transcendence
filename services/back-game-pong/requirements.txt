@@ -2,3 +2,4 @@ django==5.0.7
 tornado==6.4.1
 redis==5.0.8
 requests==2.32.3
+websockets==12.0

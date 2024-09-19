@@ -108,6 +108,11 @@ class TournamentWebSocket(WebSocketHandler):
 
     def open(self):
         cookies = self.request.cookies
+
+        if not cookies:
+            print(f'[+] Server {self.request.headers.get("server")} is bind to server Tournament')
+            return
+
         session_id = cookies.get("sessionid").value
 
         request_data = self.get_userdata_from_session_id(session_id)
@@ -152,6 +157,8 @@ class TournamentWebSocket(WebSocketHandler):
         if socket['type'] == 'launchTournament':
             tournament = get_tournament_from_player_socket(self)
             await tournament.launch_tournament()
+        elif socket['type'] == 'endGame':
+            tournament = get_tournament_with_id(socket_values["tournamentId"])
 
     def on_close(self):
         tournament = get_tournament_from_player_socket(self)
