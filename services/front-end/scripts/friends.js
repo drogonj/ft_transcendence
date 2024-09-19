@@ -41,6 +41,10 @@ export async function connectFriendsWebsocket() {
             changeFriendStatus(user_id, 'offline')
         } else if (type === 'friend_ingame_notification') {
             changeFriendStatus(user_id, 'in-game')
+        } else if (type === 'friend_matchmaking_notification') {
+            changeFriendStatus(user_id, 'matchmaking')
+        } else if (type === 'friend_tournament_notification') {
+            changeFriendStatus(user_id, 'tournament')
         }
     };
 
@@ -75,8 +79,8 @@ export function changeFriendStatus(userId, status) {
         const ul = friendElement.parentElement;
 
         if (statusIndicator) {
-            statusIndicator.classList.remove('offline', 'online', 'ingame');
-            let newClass = (status === 'offline') ? 'offline' : 'online';
+            statusIndicator.classList.remove('offline', 'online', 'other');
+            let newClass = (status === 'offline') ? 'offline' : (status === 'online') ? 'online' : 'other';
             statusIndicator.classList.add(newClass)
         }
 

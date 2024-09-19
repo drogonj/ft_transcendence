@@ -49,7 +49,7 @@ class GameServerWebSocket(WebSocketHandler):
         self.user_id = request_data["id"]
 
         # Update User Status
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 1})
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_started"})
 
         print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
@@ -68,9 +68,8 @@ class GameServerWebSocket(WebSocketHandler):
         if not hasattr(self, 'user_id'):
             print("Connection with tournament server lost..")
             return
-
         print(f"[-] The user ({self.user_id}) leave the server game.")
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "game_state": 0})
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_ended"})
         disconnect_handle(self)
         clients.remove(self)
 

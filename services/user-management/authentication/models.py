@@ -52,7 +52,7 @@ class Account(AbstractBaseUser):
     profil_image        = models.ImageField(max_length=255, upload_to=get_profil_image_filepath, default=get_default_profile_image)
 
     is_connected        = models.BooleanField(default=False)
-    status              = models.CharField(default='offline', max_length=10)
+    status              = models.CharField(default='offline', max_length=12)
     active_connections  = models.IntegerField(default=0)
 
     intra_id            = models.IntegerField(default=0)

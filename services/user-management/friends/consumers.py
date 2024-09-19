@@ -39,6 +39,14 @@ async def change_and_notify_user_status(channel_layer, user, status):
 		user.status = 'in-game'
 		user.is_connected = True
 		event_type = 'friend_ingame_notification'
+	elif status == 'matchmaking':
+		user.status = 'matchmaking'
+		user.is_connected = True
+		event_type = 'friend_matchmaking_notification'
+	elif status == 'tournament':
+		user.status = 'tournament'
+		user.is_connected = True
+		event_type = 'friend_tournament_notification'
 	else:
 		logger.error(f'Friends Notification Bad Type: {status}')
 		return
@@ -191,6 +199,26 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 
 		await self.send(text_data=json.dumps({
 			'type': 'friend_ingame_notification',
+			'id': user_id,
+			'username': username,
+		}))
+
+	async def friend_matchmaking_notification(self, event):
+		user_id = event['id']
+		username = event['username']
+
+		await self.send(text_data=json.dumps({
+			'type': 'friend_matchmaking_notification',
+			'id': user_id,
+			'username': username,
+		}))
+
+	async def friend_tournament_notification(self, event):
+		user_id = event['id']
+		username = event['username']
+
+		await self.send(text_data=json.dumps({
+			'type': 'friend_tournament_notification',
 			'id': user_id,
 			'username': username,
 		}))
