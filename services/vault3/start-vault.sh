@@ -4,7 +4,6 @@ export VAULT_ADDR=https://vault_3:8200
 export VAULT_CACERT=/vault/ssl/ca.crt
 
 wait_for_vault1() {
-  echo "Waiting for Vault 1 to be ready..."
   while true; do
     if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_1:8200/v1/sys/health; then
       echo "Vault 1 is ready. Proceeding with startup."
@@ -16,7 +15,6 @@ wait_for_vault1() {
 }
 
 wait_for_vault2() {
-  echo "Waiting for Vault 2 to be ready and configured..."
   for i in {1..60}; do 
     if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/sys/health && \
        VAULT_TOKEN=$(cat /vault/token/root_token-vault_2) vault status -ca-cert=/vault/ssl/ca.crt >/dev/null 2>&1 && \

@@ -89,9 +89,6 @@ services:
     networks:
       - network
       - db
-    # depends_on:
-    #   pgpool:
-    #     condition: service_healthy
     restart: on-failure
 
   chat:
@@ -105,9 +102,6 @@ services:
       - vault-ssl:/vault/ssl:ro
     networks:
       - network
-    # depends_on:
-    #   pgpool:
-    #     condition: service_healthy
     restart: on-failure
 
   vault_1:

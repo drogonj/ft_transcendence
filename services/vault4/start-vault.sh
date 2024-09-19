@@ -4,7 +4,6 @@ export VAULT_ADDR=https://vault_4:8200
 export VAULT_CACERT=/vault/ssl/ca.crt
 
 wait_for_vault1() {
-  echo "Waiting for Vault 1 to be ready..."
   while true; do
     if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_1:8200/v1/sys/health; then
       echo "Vault 1 is ready. Proceeding with startup."
@@ -16,7 +15,6 @@ wait_for_vault1() {
 }
 
 wait_for_vault2() {
-  echo "Waiting for Vault 2 to be ready and configured..."
   for i in {1..60}; do 
     if curl -fs -o /dev/null --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/sys/health && \
        VAULT_TOKEN=$(cat /vault/token/root_token-vault_2) vault status -ca-cert=/vault/ssl/ca.crt >/dev/null 2>&1 && \
@@ -79,7 +77,6 @@ for i in {1..10}; do
     if [ $i -eq 10 ]; then
         echo "Timeout waiting for Vault 4 to unseal. Please check logs and configuration."
     fi
-    # echo "Waiting for Vault 4 to unseal... Attempt $i/10"
     sleep 10
 done
 
@@ -97,7 +94,6 @@ for i in {1..5}; do
     if [ $i -eq 5 ]; then
         echo "Failed to join Raft cluster after 5 attempts. Please check logs and configuration."
     fi
-    # echo "Failed to join Raft cluster. Retrying in 10 seconds... Attempt $i/5"
     sleep 10
 done
 
@@ -114,7 +110,6 @@ for attempt in {1..10}; do
         echo "KV secrets engine is ready."
         break
     else
-        # echo "KV secrets engine not ready yet. Attempt $attempt/10"
         sleep 5
     fi
 done

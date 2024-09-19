@@ -44,10 +44,8 @@ check_vault_status() {
 }
 
 start_vault "vault_1"
-echo "Waiting for Vault server to start..."
 sleep 5
 
-# if vault status -format=json 2>/dev/null | jq -e '.sealed == true' >/dev/null; then
 if vault status -format=json | jq -e '.initialized == false' >/dev/null; then
   echo "Initializing Vault..."
   vault operator init -key-shares=1 -key-threshold=1 -format=json > /vault/token/init1.json
@@ -110,16 +108,6 @@ if ! vault audit list | grep -q 'file/'; then
   vault audit enable file file_path=/vault/logs/vault_audit.log
 else
   echo "Audit logging is already enabled."
-fi
-
-if [ ! -f "/vault/token/unseal_token" ]; then
-  echo "Creating token with unseal policy..."
-  vault token create -policy="unseal_key" -orphan -period=24h -format=json > /vault/token/unseal_token
-  chmod 600 /vault/token/unseal_token
-  UNSEAL_TOKEN=$(jq -r '.auth.client_token' /vault/token/unseal_token)
-  echo $UNSEAL_TOKEN > /vault/token/unseal_token
-else
-  echo "Unseal token already exists."
 fi
 
 echo "Setup complete."

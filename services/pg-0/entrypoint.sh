@@ -1,6 +1,5 @@
 #!/bin/bash
 
-echo "Waiting for Vault 2 to be ready and configured..."
 while true; do
   if [ -f "/vault/token/django-token" ]; then
     VAULT_TOKEN=$(cat /vault/token/django-token)

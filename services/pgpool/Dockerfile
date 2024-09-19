@@ -8,7 +8,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY ./transcendence_pgpool.conf /opt/bitnami/pgpool/conf/transcendence_pgpool.conf
-COPY ./pgpool.conf /opt/bitnami/pgpool/etc/pgpool.conf
 COPY ./pool_hba.conf /opt/bitnami/pgpool/etc/pool_hba.conf
 COPY ./failover_script.sh /opt/bitnami/scripts/failover_script.sh
 COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh

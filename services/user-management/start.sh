@@ -1,6 +1,5 @@
 #!/bin/sh
 
-echo "Waiting for Vault 2 to be ready and configured..."
 while true; do
   if [ -f "/vault/token/django-token" ]; then
     VAULT_TOKEN=$(cat /vault/token/django-token)
@@ -9,7 +8,6 @@ while true; do
       break
     fi
   fi
-  sleep 10
 done
 
 sleep 30

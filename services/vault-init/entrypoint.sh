@@ -4,7 +4,6 @@ VAULT_ADDR=https://vault_2:8200
 VAULT_CACERT=/vault/ssl/ca.crt
 
 wait_for_vault() {
-    echo "Waiting for Vault to be ready..."
     until curl -fs -o /dev/null --cacert $VAULT_CACERT $VAULT_ADDR/v1/sys/health; do
         sleep 5
     done
@@ -15,7 +14,7 @@ get_root_token() {
     if [ -f "/vault/token/root_token-vault_2" ]; then
         cat /vault/token/root_token-vault_2
     else
-        echo "Root token not found. Exiting."
+        echo "Root token not found. Exiting." >&2
         exit 1
     fi
 }
@@ -23,13 +22,11 @@ get_root_token() {
 setup_secrets() {
     VAULT_TOKEN=$(get_root_token)
     
-    # Enable KV secrets engine if not already enabled
-    if ! curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" $VAULT_ADDR/v1/sys/mounts | jq -e '.data."secret/"'; then
-        curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d '{"type":"kv-v2"}' $VAULT_ADDR/v1/sys/mounts/secret
+    if ! curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" $VAULT_ADDR/v1/sys/mounts | jq -e '.data."secret/"' > /dev/null 2>&1; then
+        curl -s -o /dev/null --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d '{"type":"kv-v2"}' $VAULT_ADDR/v1/sys/mounts/secret
     fi
 
-    # Insert secrets
-    curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d "{
+    curl -s -o /dev/null --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d "{
         \"data\": {
             \"DJANGO_KEY\": \"$DJANGO_KEY\",
             \"DJANGO_SUPERUSER_USERNAME\": \"$DJANGO_SUPERUSER_USERNAME\",
@@ -59,13 +56,14 @@ setup_secrets() {
             \"WEBSITE_URL\": \"$WEBSITE_URL\"
         }
     }" $VAULT_ADDR/v1/secret/data/ft_transcendence/database
+    echo "Secrets setup completed."
 }
 
 enable_kv_v2() {
     VAULT_TOKEN=$(get_root_token)
     
     if curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" $VAULT_ADDR/v1/sys/mounts | jq -e '.data."secret/" == null' > /dev/null; then
-        curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d '{"type":"kv", "options": {"version": "2"}}' $VAULT_ADDR/v1/sys/mounts/secret
+        curl -s -o /dev/null --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X POST -d '{"type":"kv", "options": {"version": "2"}}' $VAULT_ADDR/v1/sys/mounts/secret
         echo "KV v2 secrets engine enabled at path 'secret'"
     else
         echo "KV secrets engine already exists at path 'secret'"
@@ -75,7 +73,7 @@ enable_kv_v2() {
 setup_django_policy() {
     VAULT_TOKEN=$(get_root_token)
 
-    curl -s --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X PUT -d '{
+    curl -s -o /dev/null --cacert $VAULT_CACERT -H "X-Vault-Token: $VAULT_TOKEN" -X PUT -d '{
         "policy": "path \"secret/data/ft_transcendence/*\" { capabilities = [\"read\"] }"
     }' $VAULT_ADDR/v1/sys/policies/acl/django-policy
 
@@ -86,6 +84,7 @@ setup_django_policy() {
     echo "$DJANGO_TOKEN" > /vault/token/django-token
     chmod 600 /vault/token/django-token
     chmod +r /vault/token/django-token
+    echo "Django policy setup completed."
 }
 
 wait_for_vault
