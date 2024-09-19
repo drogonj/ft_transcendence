@@ -69,7 +69,6 @@ services:
       - db
       - network
     volumes:
-      - pg_certs:/opt/bitnami/pgpool/certs
       - vault-token:/vault/token/:ro
       - vault-ssl:/vault/ssl:ro
     restart: on-failure
