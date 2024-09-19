@@ -144,28 +144,32 @@ class user_statement_front(View):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
         user = request.user
-        game_state = data.get('game_state') # '1' for in-game, '0' for end-game
+        state = data.get('state')
 
-        if not user or game_state is None:
+        if not user or state is None:
             return JsonResponse({'error': 'Missing data'}, status=400)
+
+        if state not in ['local_game_started', 'local_game_ended']:
+            return JsonResponse({'error': 'Invalid state'}, status=400)
 
         logger.info(f'Received: {data}')
         logger.info(f'Connected users: {connected_users}')
 
-        async_to_sync(self.safe_operate)(user, game_state)
+        async_to_sync(self.safe_operate)(user, state)
 
         return HttpResponse('OK')
 
-    async def safe_operate(self, user, game_state):
+    async def safe_operate(self, user, state):
         async with user_lock:
             await asyncio.sleep(0.1)
             # Check if user is connected, if not, tell the modification is not applied
             if user.id not in connected_users:
                 return JsonResponse({'error': 'User not connected'}, status=400)
             try:
-                await change_and_notify_user_status(channel_layer, user, 'in-game' if int(game_state) == 1 else 'online')
+                await change_and_notify_user_status(channel_layer, user, 'in-game' if state == 'local_game_started' else 'online')
             except:
                 return JsonResponse({'error': 'Failed to update user status'}, status=500)
+
 @method_decorator(csrf_exempt, name='dispatch')
 class user_statement_back(View):
     async def get(self, request):
@@ -188,7 +192,7 @@ class user_statement_back(View):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         user_id = data.get('user_id')
-        state = data.get('state') # '1' for in-game, '0' for end-game
+        state = data.get('state')
 
         if not user_id or state is None:
             return JsonResponse({'error': 'Missing data'}, status=400)
@@ -213,7 +217,9 @@ class user_statement_back(View):
                     await change_and_notify_user_status(channel_layer, user, 'in-game')
                 elif state == "tournament_started":
                     await change_and_notify_user_status(channel_layer, user, 'tournament')
-                elif state in ["remote_game_ended", "tournament_ended", "matchmaking_ended"]:
+                elif state == "matchmaking_started":
+                    await change_and_notify_user_status(channel_layer, user, 'matchmaking')
+                else: # ["remote_game_ended", "tournament_ended", "matchmaking_ended"]
                     await change_and_notify_user_status(channel_layer, user, 'online')
 
                 await user.asave()

@@ -114,7 +114,7 @@ class TournamentWebSocket(WebSocketHandler):
         if request_data is None:
             return
 
-        selfuser_id = request_data["id"]
+        self.user_id = request_data["id"]
         if is_user_already_in_tournament(self.user_id):
             print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
             self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
