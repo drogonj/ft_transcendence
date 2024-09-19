@@ -22,8 +22,6 @@ services:
       - pg_0_data:/bitnami/postgresql
       - vault-token:/vault/token/:ro
       - vault-ssl:/vault/ssl:ro
-    env_file:
-      - .env
     environment:
       - REPMGR_PRIMARY_HOST=pg-0
       - REPMGR_PARTNER_NODES=pg-0,pg-1
@@ -43,8 +41,6 @@ services:
       - pg_1_data:/bitnami/postgresql
       - vault-token:/vault/token/:ro
       - vault-ssl:/vault/ssl:ro
-    env_file:
-      - .env
     environment:
       - REPMGR_PRIMARY_HOST=pg-0
       - REPMGR_PARTNER_NODES=pg-0,pg-1
@@ -114,6 +110,7 @@ services:
       - network
     ports:
       - "8201:8200"
+    restart: always
 
   vault_2:
     build: ./services/vault2/
@@ -125,10 +122,9 @@ services:
       - IPC_LOCK
     networks:
       - network
-    env_file:
-      - .env
     ports:
       - "8202:8200"
+    restart: always
 
   vault_3:
     build: ./services/vault3/
@@ -142,6 +138,7 @@ services:
       - network
     ports:
       - "8203:8200"
+    restart: always
 
   vault_4:
     build: ./services/vault4/
@@ -155,6 +152,7 @@ services:
       - network
     ports:
       - "8204:8200"
+    restart: always
 
   vault-init:
     build: ./services/vault-init
@@ -162,7 +160,7 @@ services:
       - vault-token:/vault/token
       - vault-ssl:/vault/ssl
     env_file:
-      - .env
+      - services/vault-init/.env
     networks:
       - network
       

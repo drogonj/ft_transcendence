@@ -124,6 +124,5 @@ else
     echo "Failed to list KV secrets. This might be normal if no secrets have been added yet."
 fi
 
-vault operator raft list-peers
 echo "Vault 4 setup complete."
 tail -f /dev/null
