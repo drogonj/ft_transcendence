@@ -5,61 +5,57 @@ services:
     ports:
       - "8080:443"
     volumes:
-      #- nginx:/singlepageapp
       - django:/tmp_static/
+      - vault-token:/vault/token/:ro
+      - vault-ssl:/vault/ssl:ro
     networks:
       - network
-    env_file:
-      - .env
     entrypoint: sh -c "sh /entrypoint.sh"
     restart: on-failure
 
   pg-0:
-    image: bitnami/postgresql-repmgr:14
+    build: services/pg-0
+    container_name: pg-0
     expose:
       - 5432
     volumes:
       - pg_0_data:/bitnami/postgresql
-    env_file:
-      - .env
+      - vault-token:/vault/token/:ro
+      - vault-ssl:/vault/ssl:ro
     environment:
       - REPMGR_PRIMARY_HOST=pg-0
-      - REPMGR_PARTNER_NODES=pg-0,pg-1,pg-2
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-0
       - REPMGR_NODE_NETWORK_NAME=pg-0
     networks:
       - db
+      - network
     restart: on-failure
 
   pg-1:
-    image: bitnami/postgresql-repmgr:14
+    build: services/pg-1
+    container_name: pg-1
     expose:
       - 5432
     volumes:
       - pg_1_data:/bitnami/postgresql
-    env_file:
-      - .env
+      - vault-token:/vault/token/:ro
+      - vault-ssl:/vault/ssl:ro
     environment:
       - REPMGR_PRIMARY_HOST=pg-0
-      - REPMGR_PARTNER_NODES=pg-0,pg-1,pg-2
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-1
       - REPMGR_NODE_NETWORK_NAME=pg-1
     networks:
       - db
+      - network
     restart: on-failure
 
   pgpool:
     build: ./services/pgpool/
+    container_name: pgpool
     expose:
       - 5432
-    env_file:
-      - .env
-    environment:
-      - PGPOOL_POSTGRES_USERNAME=${POSTGRESQL_USERNAME}
-      - PGPOOL_POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
-      - PGPOOL_SR_CHECK_USER=${POSTGRESQL_USERNAME}
-      - PGPOOL_SR_CHECK_PASSWORD=${POSTGRESQL_PASSWORD}
-      - PGPOOL_SR_CHECK_DATABASE=${POSTGRESQL_DATABASE}
     healthcheck:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
@@ -69,8 +65,11 @@ services:
       - db
       - network
     volumes:
-      - pg_certs:/opt/bitnami/pgpool/certs
+      - vault-token:/vault/token/:ro
+      - vault-ssl:/vault/ssl:ro
     restart: on-failure
+    logging:
+      driver: "none"
 
   user-management:
     container_name: user-management
@@ -81,15 +80,9 @@ services:
       - django:/singlepageapp
       - vault-token:/vault/token:ro
       - vault-ssl:/vault/ssl:ro
-      - pg_certs:/opt/bitnami/pgpool/certs
     networks:
       - network
       - db
-    depends_on:
-      pgpool:
-        condition: service_healthy
-    env_file:
-      - .env
     restart: on-failure
 
   chat:
@@ -99,44 +92,83 @@ services:
       - "8001"
     volumes:
       - django:/singlepageapp/chat
+      - vault-token:/vault/token:ro
+      - vault-ssl:/vault/ssl:ro
     networks:
       - network
-    env_file:
-      - .env
     restart: on-failure
 
-  vault:
-    build: ./services/vault/
-    container_name: vault
-    ports:
-      - "8200:8200"
+  vault_1:
+    build: ./services/vault1/
+    container_name: vault_1
+    volumes:
+      - vault-token:/vault/token/
+      - vault-ssl:/vault/ssl
     cap_add:
       - IPC_LOCK
-    env_file:
-      - .env
     networks:
       - network
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-     - vault-data:/vault/data
-     - vault-token:/vault/token
-     - vault-ssl:/vault/ssl
-    hostname: 'vault'
-    environment:
-      TZ: 'Europe/Paris'
-      VAULT_SKIP_IP_AUTO_CONFIG: 'true'
-    restart: on-failure
+    ports:
+      - "8201:8200"
+    restart: always
 
+  vault_2:
+    build: ./services/vault2/
+    container_name: vault_2
+    volumes:
+      - vault-token:/vault/token/
+      - vault-ssl:/vault/ssl
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - network
+    ports:
+      - "8202:8200"
+    restart: always
+
+  vault_3:
+    build: ./services/vault3/
+    container_name: vault_3
+    volumes:
+      - vault-token:/vault/token/
+      - vault-ssl:/vault/ssl/
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - network
+    ports:
+      - "8203:8200"
+    restart: always
+
+  vault_4:
+    build: ./services/vault4/
+    container_name: vault_4
+    volumes:
+      - vault-token:/vault/token/
+      - vault-ssl:/vault/ssl
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - network
+    ports:
+      - "8204:8200"
+    restart: always
+
+  vault-init:
+    build: ./services/vault-init
+    volumes:
+      - vault-token:/vault/token
+      - vault-ssl:/vault/ssl
+    env_file:
+      - services/vault-init/.env
+    networks:
+      - network
+      
   back-game:
     container_name: back-game-pong
     build: services/back-game-pong/
     expose:
       - "2605"
-    env_file: .env
     networks:
      - network
     restart: on-failure
@@ -146,7 +178,6 @@ services:
     build: services/back-matchmaking-pong/
     expose:
       - "2607"
-    env_file: .env
     networks:
       - network
     restart: on-failure
@@ -156,14 +187,12 @@ services:
     build: services/back-tournament-pong/
     expose:
       - "2610"
-    env_file: .env
     networks:
       - network
 
   redis:
     container_name: redis
     build: ./services/redis/
-    env_file: .env
     expose:
       - "6379"
     volumes:
@@ -181,12 +210,9 @@ networks:
 volumes:
   nginx:
   django:
-  vault-data:
   vault-token:
   vault-ssl:
   redis:
-  pg_certs:
-    driver: local
   pg_0_data:
     driver: local
   pg_1_data:

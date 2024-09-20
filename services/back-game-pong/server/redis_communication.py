@@ -18,9 +18,8 @@ def send_game_data_to_redis():
             print(f"Can't reach Redis: {e}")
             return
 
-
-def store_game_data(players):
-    data = {"type": "game_data", "player0": {}, "player1": {}}
+def store_game_data(players, reason):
+    data = {"type": "game_data", "reason": reason, "player0": {}, "player1": {}}
     for index, player in enumerate(players):
         data["player" + str(index)]["playerId"] = player.get_user_id()
         data["player" + str(index)]["playerScore"] = player.statistics.score

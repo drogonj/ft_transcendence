@@ -2,15 +2,19 @@ import os
 import django
 from django.core.management.base import CommandError
 from django.contrib.auth import get_user_model
+from authentication.vault_client import get_vault_client
+
+vault_client = get_vault_client()
+db_secrets = vault_client.read_secret('ft_transcendence/database')
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'user-management.settings')
 django.setup()
 
 User = get_user_model()
 
-email = os.getenv('DJANGO_SUPERUSER_EMAIL')
-username = os.getenv('DJANGO_SUPERUSER_USERNAME')
-password = os.getenv('DJANGO_SUPERUSER_PASSWORD')
+email = db_secrets.get("DJANGO_SUPERUSER_EMAIL")
+username = db_secrets.get('DJANGO_SUPERUSER_USERNAME')
+password = db_secrets.get('DJANGO_SUPERUSER_PASSWORD')
 
 if not email:
     raise CommandError('DJANGO_SUPERUSER_EMAIL must be set')

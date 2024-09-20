@@ -9,7 +9,7 @@ from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from server.game import Game, get_game_with_client, disconnect_handle, bind_socket_to_player
-
+from websocket import WebSocketClient, main_check_loop
 
 # Server will send websocket as json with the followed possible keys
 # type : Type of data: such as moveBall, movePlayer, createPlayer ...
@@ -45,6 +45,11 @@ class GameServerWebSocket(WebSocketHandler):
             self.close()
             return
 
+        self.user_id = request_data["id"]
+
+        # Update User Status
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_started"})
+
         print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
     def on_message(self, message):
@@ -59,10 +64,13 @@ class GameServerWebSocket(WebSocketHandler):
             Game(socket_values)
     
     def on_close(self):
-        print("[-] A client leave the server")
+        if not hasattr(self, 'user_id'):
+            print("Connection with tournament server lost..")
+            return
+        print(f"[-] The user ({self.user_id}) leave the server game.")
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_ended"})
         disconnect_handle(self)
         clients.remove(self)
-
 
 # WSGI container for Django
 django_app = WSGIContainer(get_wsgi_application())
@@ -77,4 +85,6 @@ if __name__ == "__main__":
     server = HTTPServer(tornado_app)
     server.listen(2605)
     print("Starting Tornado server on port 2605")
+    WebSocketClient("ws://back-tournament:2610/ws/tournament")
+    IOLoop.current().spawn_callback(main_check_loop)
     IOLoop.current().start()

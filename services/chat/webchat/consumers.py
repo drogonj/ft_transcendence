@@ -213,15 +213,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				user = []
 
 			if user['status'] == 'offline':
+				status = user['status']
 				await self.send(text_data=json.dumps({
 					'type': 'system',
-					'content': f'Invitation not delivered (Reason: Offline).',
-				}))
-
-			elif user['status'] == 'in-game':
-				await self.send(text_data=json.dumps({
-					'type': 'system',
-					'content': f'Invitation not delivered (Reason: In Game).',
+					'content': f'Invitation not delivered (Reason: {status}).',
 				}))
 
 			else:

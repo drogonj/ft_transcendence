@@ -12,7 +12,7 @@ import {
     renderSelfProfile, renderTournament, renderTournamentLobby
 } from './render.js';
 import {currentUser, getCsrfToken, getCurrentUserInfo, handleLogin} from "./auth.js";
-import {connectFriendsWebsocket} from "./friends.js";
+import {connectFriendsWebsocket, friendSocket} from "./friends.js";
 import {closeWebSocket, isWebSocketBind} from "../online-game-pong/websocket.js";
 
 export const app = document.getElementById('app');
@@ -37,6 +37,15 @@ export function navigateTo(route, pushState, data) {
         history.replaceState({route: route}, 'SPA Application', route);
 
     let url = window.location.href;
+
+    // Get previous route
+    const previousRoute = url.split('/').pop();
+    if (previousRoute === 'local-game') {
+        const message = {
+            "in-game": false,
+        }
+        friendSocket.send(JSON.stringify(message));
+    }
 
     if (route === '/login' || route === '/login/') {
         renderLogin();

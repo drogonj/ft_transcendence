@@ -1,0 +1,44 @@
+storage "raft" {
+  path    = "/vault/data/vault_2"
+  node_id = "vault_2"
+  retry_join {
+    leader_api_addr = "https://vault_3:8200"
+    leader_ca_cert_file = "/vault/ssl/ca.crt"
+    leader_client_cert_file = "/vault/ssl/vault_2-combined.crt"
+    leader_client_key_file = "/vault/ssl/vault_2.key"
+  }
+  retry_join {
+    leader_api_addr = "https://vault_4:8200"
+    leader_ca_cert_file = "/vault/ssl/ca.crt"
+    leader_client_cert_file = "/vault/ssl/vault_2-combined.crt"
+    leader_client_key_file = "/vault/ssl/vault_2.key"
+  }
+}
+
+
+listener "tcp" {
+  address = "0.0.0.0:8200"
+  cluster_address = "0.0.0.0:8201"
+  tls_cert_file   = "/vault/ssl/vault_2-combined.crt"
+  tls_key_file    = "/vault/ssl/vault_2.key"
+  tls_client_ca_file = "/vault/ssl/ca.crt"
+  tls_disable_client_certs = false
+  tls_min_version = "tls12"
+  tls_disable = 0
+}
+
+seal "transit" {
+   address            = "https://vault_1:8200"
+   # token is read from VAULT_TOKEN env
+   # token              = "YOUR_AUTO_UNSEAL_TOKEN"
+   disable_renewal    = "false"
+
+   // Key configuration
+   key_name           = "unseal_key"
+   mount_path         = "transit/"
+}
+
+ui = true
+disable_mlock = true
+cluster_addr = "https://vault_2:8201"
+api_addr = "https://vault_2:8200"

@@ -117,12 +117,15 @@ class MatchMakingWebSocket(WebSocketHandler):
         user = User(self, user_id)
         users_in_queue.append(user)
 
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": user_id, "state": "matchmaking_started"})
+
         print(f'[+] The user ({user.get_user_id()}) {request_data["username"]} is connected to the matchmaking server.')
 
     def on_close(self):
         print(f"[-] A user leave the matchmaking server.")
         user = self.get_user_from_socket()
         if user:
+            response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": user.get_user_id(), "state": "matchmaking_ended"})
             users_in_queue.remove(user)
 
     def get_user_from_socket(self):

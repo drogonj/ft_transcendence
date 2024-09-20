@@ -138,3 +138,7 @@ function sendMessageToTournamentServer(type, values) {
     }
     tournamentWebSocket.send(JSON.stringify(message));
 }
+
+export function isTournamentWebSocketBind() {
+    return tournamentWebSocket && tournamentWebSocket.readyState === WebSocket.OPEN;
+}

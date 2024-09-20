@@ -1,5 +1,23 @@
 #!/bin/sh
 
+while true; do
+  if [ -f "/vault/token/django-token" ]; then
+    VAULT_TOKEN=$(cat /vault/token/django-token)
+      if curl -fs -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | grep -q '"data"'; then
+      echo "Vault 2 is ready and secrets are configured. Proceeding with startup."
+      break
+    fi
+  fi
+done
+
+sleep 30
+VAULT_ADDR=$(curl -s -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | jq -r '.data.data.VAULT_ADDR')
+VAULT_TOKEN_FILE=$(curl -s -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | jq -r '.data.data.VAULT_TOKEN_FILE')
+VAULT_CA_CERT_PATH=$(curl -s -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ssl/ca.crt https://vault_2:8200/v1/secret/data/ft_transcendence/database | jq -r '.data.data.VAULT_CA_CERT_PATH')
+export VAULT_ADDR="$VAULT_ADDR"
+export VAULT_TOKEN_FILE="$VAULT_TOKEN_FILE"
+export VAULT_CA_CERT_PATH="$VAULT_CA_CERT_PATH"
+
 echo "----- Collect static files ------ " 
 python manage.py collectstatic --noinput
 

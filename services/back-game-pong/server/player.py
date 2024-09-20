@@ -7,7 +7,7 @@ from .statistics import Statistics
 class Player:
 	def __init__(self, user_id, side):
 		self.__socket = None
-		self.__user_id = user_id
+		self.__user_id = int(user_id)
 		self.__paddle_side = side
 		self.__top_position = 50
 		self.__paddle_size = 20
