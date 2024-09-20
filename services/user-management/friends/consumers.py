@@ -52,6 +52,7 @@ async def change_and_notify_user_status(channel_layer, user, status):
 		return
 
 	await sync_to_async(user.save)()
+	await notify_chat_user_new_status(channel_layer, user)
 
 	for friend in connected_friends:
 		group_name = f'user_{friend.id}'
@@ -63,6 +64,17 @@ async def change_and_notify_user_status(channel_layer, user, status):
 				'username': user.username
 			}
 		)
+
+async def notify_chat_user_new_status(channel_layer, user):
+	await channel_layer.group_send(
+		'general',
+		{
+			'type': 'user_status_update',
+			'user_id': user.id,
+			'username': user.username,
+			'status': user.status
+		}
+	)
 
 class FriendRequestConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
@@ -96,11 +108,9 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 			self.user.active_connections += value
 			if self.user.active_connections > 0 and not self.user.is_connected:
 				connected_users.add(self.user.id)
-				await self.notify_chat_user_connected(self.user)
 				await change_and_notify_user_status(self.channel_layer, self.user, 'online')
 			elif self.user.active_connections <= 0:
 				connected_users.discard(self.user.id)
-				await self.notify_chat_user_disconnected(self.user)
 				await change_and_notify_user_status(self.channel_layer, self.user, 'offline')
 			await sync_to_async(self.user.save)()
 			await sync_to_async(self.user.refresh_from_db)()
@@ -110,30 +120,6 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 
 	async def receive(self, text_data):
 		logger.info(f'Websocket received: {text_data}')
-
-	async def notify_chat_user_connected(self, user):
-		await self.channel_layer.group_send(
-			'general',
-			{
-				'type': 'user_status_update',
-				'content': f'{user.username} has joined the chat',
-				'user_id': user.id,
-				'username': user.username,
-				'is_connected': True
-			}
-		)
-
-	async def notify_chat_user_disconnected(self, user):
-		await self.channel_layer.group_send(
-			'general',
-			{
-				'type': 'user_status_update',
-				'content': f'{user.username} has left the chat',
-				'user_id': user.id,
-				'username': user.username,
-				'is_connected': False
-			}
-		)
 
 	async def friend_request_notification(self, event):
 		from_user = event['from_user']

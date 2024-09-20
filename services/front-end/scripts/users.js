@@ -11,14 +11,14 @@ export async function loadUsers() {
 
 		for (const user of usersData.users) {
 			if (user.user_id !== 1 && user.user_id !== currentUser.user_id)
-				addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected, muteList);
+				addUserToMenu(user.user_id, user.username, user.avatar, user.status, muteList);
 		}
 	} catch (error) {
 		console.error('Error loading users:', error);
 	}
 }
 
-async function addUserToMenu(user_id, username, avatar, is_connected, muteList) {
+async function addUserToMenu(user_id, username, avatar, status, muteList) {
 	const usersContainer = document.getElementById('users-content');
 	let is_muted = false;
 
@@ -29,7 +29,7 @@ async function addUserToMenu(user_id, username, avatar, is_connected, muteList) 
 		is_muted = true;
 
 	newUser.innerHTML = `
-		<div class="status-indicator ${is_connected ? 'online' : 'offline'}"></div>
+		<div class="status-indicator ${status === 'offline' ? 'offline' : status === 'online' ? 'online' : 'other'}"></div>
 		<div class="avatar-container">
 			<img class="avatar" src="${avatar}" alt="${username}'s Avatar">
 		</div>
@@ -46,12 +46,12 @@ async function addUserToMenu(user_id, username, avatar, is_connected, muteList) 
 	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
 		const userId = event.currentTarget.getAttribute('data-user-id');
 		const userElement = document.getElementById(`user-${userId}`);
-	
+
 		if (!userElement) {
 			console.error(`User element with ID user-${userId} not found.`);
 			return;
 		}
-	
+
 		const muteButton = userElement.querySelector('.mute-user-button');
 		const muteIcon = muteButton.querySelector('img');
 
@@ -79,7 +79,7 @@ async function addUserToMenu(user_id, username, avatar, is_connected, muteList) 
 			console.error('Error updating mute state:', error);
 		}
 	});
-	
+
 	newUser.querySelector('.profile-link').addEventListener('click', async function (event) {
 		const userId = this.getAttribute('data-user-id');
 		const uri = '/profile/' + userId + '/';
@@ -107,7 +107,7 @@ export async function updateUserStatus(other_id, isConnected, content) {
 					await sendUpdateStatusToChat(content);
 				}
 			}
-		} 
+		}
 	} catch (error) {
 		console.error('Error loading users:', error.message);
 	}
@@ -121,7 +121,7 @@ export async function sendUpdateStatusToChat(content) {
 	newMessage.textContent = `${content}`;
 
 	messageList.insertBefore(newMessage, messageList.firstChild);
-	
+
 	const chatMessages = document.getElementById('chat-messages');
 	chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -165,7 +165,7 @@ export async function getMuteListOf(user_id) {
 			throw new Error(`Network response was not ok. Status: ${response.status}`);
 		}
 		const data = await response.json();
-		
+
 		return data.muted_users;
 	} catch (error) {
 		console.error('Error loading muted users:', error.message);

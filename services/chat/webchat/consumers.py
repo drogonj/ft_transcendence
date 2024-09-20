@@ -90,7 +90,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'content': data['content'],
 					'user_id': data['user_id'],
 					'username': data['username'],
-					'is_connected': data['is_connected'],
+					'status': data['status'],
 					'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 				}
 			)
@@ -369,20 +369,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 	async def user_status_update(self, event):
 		await self.send(text_data=json.dumps({
 			'type': event['type'],
-			'content': event['content'],
 			'user_id': event['user_id'],
 			'username': event['username'],
-			'is_connected': event['is_connected'],
+			'status': event['status'],
 			'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		}))
-		#log-status_update
-		user_id = event['user_id']
-		username = event['username']
-		is_connected = event['is_connected']
-		if is_connected:
-			logger.info(f'Received user status update from {user_id}-{username} : connected')
-		else:
-			logger.info(f'Received user status update from {user_id}-{username} : disconnected')
+
+		logger.info(f'{event["username"]} is {event["status"]}')
 
 	async def chat_message(self, event):
 		await self.send(text_data=json.dumps({
