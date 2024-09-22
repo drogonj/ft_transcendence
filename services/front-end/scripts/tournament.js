@@ -1,6 +1,6 @@
 import {getHostNameFromURL, navigateTo} from "./contentLoader.js";
 import {currentUser, getUserFromId} from "./auth.js";
-import launchClientGame from "../online-game-pong/websocket.js";
+import {launchClientGame} from "../online-game-pong/websocket.js";
 
 let tournamentWebSocket;
 

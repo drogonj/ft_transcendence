@@ -1,6 +1,6 @@
 import { currentUser } from './auth.js';
+import { launchClientGame } from '../online-game-pong/websocket.js';
 import { loadUsers, updateUserStatus, getMuteListOf } from './users.js';
-import { bindGameSocket, launchFriendGame } from '../online-game-pong/websocket.js';
 
 export var chatCsrfToken = '';
 export var chatSocket = null;
@@ -33,7 +33,7 @@ export async function connectChatWebsocket(roomName) {
 				console.log(data);
 
 				if (data.type === 'user_status_update')
-					updateUserStatus(data.user_id, data.is_connected, data.content);
+					updateUserStatus(data.user_id, data.status, data.content);
 
 				else if (data.type === 'private_message')
 					privateMessage(data);
@@ -87,8 +87,7 @@ export async function disconnectChatWebsocket() {
 async function 	connectToGame(data) {
 	if (data.receiver_id === currentUser.user_id)
 		removePendingInvitationMessage(data.invitationId);
-	bindGameSocket(new WebSocket(`wss://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/back`));
-	launchFriendGame(data);
+	launchClientGame(data);
 }
 
 async function declinedInvitation(data) {

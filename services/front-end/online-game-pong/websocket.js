@@ -7,26 +7,9 @@ import {launchSpell} from "./spell.js";
 
 let ws;
 
-export default function launchClientGame() {
+export function launchClientGame() {
     ws = new WebSocket(`wss://${getHostNameFromURL()}/ws/back`);
     ws.onmessage = onReceive;
-    ws.onerror = onError;
-    ws.onclose = function () {
-        clearGame();
-    }
-}
-
-export function launchFriendGame(data) {
-	ws.onopen = async function() {
-		if (currentUser.user_id === data.receiver_id) {
-			sendMessageToServer("createGame", {"userId1": data.receiver_id, "userId2": data.user_id})
-			sendMessageToServer("createPlayer", {"id": data.user_id, "side": "Left"})
-		} else {
-			await new Promise(r => setTimeout(r, 20));
-			sendMessageToServer("createPlayer", {"id": data.receiver_id, "side": "Right"})
-		}
-	};
-	ws.onmessage = onReceive;
     ws.onerror = onError;
     ws.onclose = function () {
         clearGame();
