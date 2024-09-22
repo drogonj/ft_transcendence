@@ -22,6 +22,7 @@ export PGPOOL_SR_CHECK_DATABASE=$(echo $SECRETS | jq -r '.POSTGRESQL_DATABASE')
 export PGPOOL_ADMIN_USERNAME=$(echo $SECRETS | jq -r '.PGPOOL_ADMIN_USERNAME')
 export PGPOOL_ADMIN_PASSWORD=$(echo $SECRETS | jq -r '.PGPOOL_ADMIN_PASSWORD')
 export PGPOOL_BACKEND_NODES="0:pg-0:5432,1:pg-1:5432"
+export PGPOOL_USER_CONF_FILE="/opt/bitnami/pgpool/conf/transcendence_pgpool.conf"
 
 echo "${PGPOOL_POSTGRES_USERNAME}:$(pg_md5 ${PGPOOL_POSTGRES_PASSWORD})" > /opt/bitnami/pgpool/etc/pool_passwd
 
