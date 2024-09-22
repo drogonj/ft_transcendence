@@ -1,4 +1,4 @@
-import json, requests, logging, asyncio, websockets
+import json, requests, logging
 from asgiref.sync import sync_to_async
 from datetime import datetime
 from .models import Message, PrivateMessage, InvitationToPlay, MuteList
@@ -88,7 +88,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				self.room_name,
 				{
 					'type': data['type'],
-					'content': data['content'],
 					'user_id': data['user_id'],
 					'username': data['username'],
 					'status': data['status'],
@@ -212,7 +211,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				logger.error(f"Error fetching user data: {e}")
 				user = []
 
-			if user['status'] == 'offline':
+			if user['status'] != 'online':
 				status = user['status']
 				await self.send(text_data=json.dumps({
 					'type': 'system',
@@ -331,13 +330,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'receiver_id': data['receiver_id'],
 					'receiver_username': data['receiver_username']
 				}
+
 				game_ws_client = get_game_server()
+
 				if not game_ws_client and not game_ws_client.is_connected():
 					print("The connection with game server is not established..")
 					return
-				#envoyer les id en tant que int et non pas str
+				
 				await game_ws_client.send("createGame", {"userId1": int(id), "userId2": int(receiver)})
-
 				await self.channel_layer.group_send(room_name, message_data)
 				await self.send(text_data=json.dumps(message_data))
 

@@ -87,7 +87,7 @@ async function addUserToMenu(user_id, username, avatar, status, muteList) {
 	});
 }
 
-export async function updateUserStatus(other_id, isConnected, content) {
+export async function updateUserStatus(other_id, status) {
 	try {
 		const response = await fetch('/api/user/get_users/');
 		const usersData = await response.json();
@@ -96,47 +96,14 @@ export async function updateUserStatus(other_id, isConnected, content) {
 			const statusElement = document.getElementById(`user-${other_id}`);
 			if (user.user_id !== other_id) {
 				continue ;
-			} else if (statusElement) {
-				statusElement.querySelector('.status-indicator').className = `status-indicator ${isConnected ? 'online' : 'offline'}`;
-				console.log(`Updated status for user ${other_id} to ${isConnected ? "Online" : "Offline"}`);
-				await sendUpdateStatusToChat(content);
-			} else if (currentUser.user_id !== other_id) {
+			} else if (statusElement)
+				statusElement.querySelector('.status-indicator').className = `status-indicator ${status === 'offline' ? 'offline' : status === 'online' ? 'online' : 'other'}`;
+			else if (currentUser.user_id !== other_id) {
 				const usersContainer = document.getElementById('users-content');
-				if (usersContainer) {
-					addUserToMenu(user.user_id, user.username, user.avatar, user.is_connected);
-					await sendUpdateStatusToChat(content);
-				}
+				if (usersContainer)
+					addUserToMenu(user.user_id, user.username, user.avatar, user.status);
 			}
 		}
-	} catch (error) {
-		console.error('Error loading users:', error.message);
-	}
-}
-
-export async function sendUpdateStatusToChat(content) {
-	const messageList = document.getElementById('message-content');
-	const newMessage = document.createElement('li');
-
-	newMessage.classList.add('chat-message');
-	newMessage.textContent = `${content}`;
-
-	messageList.insertBefore(newMessage, messageList.firstChild);
-
-	const chatMessages = document.getElementById('chat-messages');
-	chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-export async function getUserStatus(user_id) {
-	try {
-		const response = await fetch('/api/user/get_users/');
-		const usersData = await response.json();
-
-		for (const user of usersData.users) {
-			if (user.user_id === user_id) {
-				return user.is_connected;
-			}
-		}
-		return false;
 	} catch (error) {
 		console.error('Error loading users:', error.message);
 	}

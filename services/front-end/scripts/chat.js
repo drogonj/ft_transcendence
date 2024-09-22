@@ -33,7 +33,7 @@ export async function connectChatWebsocket(roomName) {
 				console.log(data);
 
 				if (data.type === 'user_status_update')
-					updateUserStatus(data.user_id, data.is_connected, data.content);
+					updateUserStatus(data.user_id, data.status, data.content);
 
 				else if (data.type === 'private_message')
 					privateMessage(data);
