@@ -605,7 +605,6 @@ export async function renderTournamentLobby() {
     document.getElementById('leaveTournament').addEventListener('click', (event) => {
         event.preventDefault();
         closeTournamentWebSocket();
-        navigateTo('/home', true);
     });
 }
 
