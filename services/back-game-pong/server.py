@@ -21,7 +21,6 @@ django.setup()
 
 clients = []
 
-
 class GameServerWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True  # Allow all origins
@@ -78,6 +77,7 @@ django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
     (r"/ws/back", GameServerWebSocket),  # API handler path
+    # (r"/ws/back/chat", ChatGameServerWebSocket),
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 

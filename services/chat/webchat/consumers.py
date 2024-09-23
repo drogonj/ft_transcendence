@@ -1,8 +1,9 @@
-import json, requests, logging, asyncio
+import json, requests, logging
 from asgiref.sync import sync_to_async
 from datetime import datetime
 from .models import Message, PrivateMessage, InvitationToPlay, MuteList
 from channels.generic.websocket import AsyncWebsocketConsumer
+from chat_game import get_game_server
 
 logger = logging.getLogger(__name__)
 user_to_consumer = {}
@@ -87,10 +88,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				self.room_name,
 				{
 					'type': data['type'],
-					'content': data['content'],
 					'user_id': data['user_id'],
 					'username': data['username'],
-					'is_connected': data['is_connected'],
+					'status': data['status'],
 					'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 				}
 			)
@@ -211,16 +211,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				logger.error(f"Error fetching user data: {e}")
 				user = []
 
-			if user['status'] == 'offline':
+			if user['status'] != 'online':
+				status = user['status']
 				await self.send(text_data=json.dumps({
 					'type': 'system',
-					'content': f'Invitation not delivered (Reason: Offline).',
-				}))
-
-			elif user['status'] == 'in-game':
-				await self.send(text_data=json.dumps({
-					'type': 'system',
-					'content': f'Invitation not delivered (Reason: In Game).',
+					'content': f'Invitation not delivered (Reason: {status}).',
 				}))
 
 			else:
@@ -336,6 +331,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'receiver_username': data['receiver_username']
 				}
 
+				game_ws_client = get_game_server()
+
+				if not game_ws_client and not game_ws_client.is_connected():
+					print("The connection with game server is not established..")
+					return
+				
+				await game_ws_client.send("createGame", {"userId1": int(id), "userId2": int(receiver)})
 				await self.channel_layer.group_send(room_name, message_data)
 				await self.send(text_data=json.dumps(message_data))
 
@@ -369,20 +371,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 	async def user_status_update(self, event):
 		await self.send(text_data=json.dumps({
 			'type': event['type'],
-			'content': event['content'],
 			'user_id': event['user_id'],
 			'username': event['username'],
-			'is_connected': event['is_connected'],
+			'status': event['status'],
 			'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		}))
-		#log-status_update
-		user_id = event['user_id']
-		username = event['username']
-		is_connected = event['is_connected']
-		if is_connected:
-			logger.info(f'Received user status update from {user_id}-{username} : connected')
-		else:
-			logger.info(f'Received user status update from {user_id}-{username} : disconnected')
+
+		logger.info(f'{event["username"]} is {event["status"]}')
 
 	async def chat_message(self, event):
 		await self.send(text_data=json.dumps({
