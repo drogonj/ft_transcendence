@@ -202,7 +202,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			room_name = f'ID_{receiver}'
 			connected_users = user_to_consumer.keys()
 			uri = f'http://user-management:8000/api/user/get_user/{receiver}/'
-			
+			uri2 = f'http://user-management:8000/api/user/get_user/{id}/'
+
 			try:
 				response = requests.get(uri)
 				response.raise_for_status()
@@ -211,7 +212,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				logger.error(f"Error fetching user data: {e}")
 				user = []
 
-			if user['status'] != 'online':
+			try:
+				response2 = requests.get(uri2)
+				response2.raise_for_status()
+				user2 = response2.json()
+			except requests.exceptions.RequestException as e:
+				logger.error(f"Error fetching user data: {e}")
+				user2 = []
+
+			if user2['status'] != 'online':
+				status2 = user2['status']
+				await self.send(text_data=json.dumps({
+					'type': 'system',
+					'content': f'Invitation not delivered (Reason: You are {status2}).',
+				}))
+
+			elif user['status'] != 'online':
 				status = user['status']
 				await self.send(text_data=json.dumps({
 					'type': 'system',

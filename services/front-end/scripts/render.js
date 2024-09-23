@@ -568,8 +568,11 @@ export async function renderTournament() {
                 <button id="homeTournament" class="tournamentButton">Home</button>
             </div>
         </div>
+        <div class="chat-menu-container"></div>
     `;
     refreshTournamentList();
+
+	await addChatMenu();
 
     document.getElementById("createTournament").addEventListener('click', (event) => {
         createTournament();
@@ -600,7 +603,10 @@ export async function renderTournamentLobby() {
                 <button id="leaveTournament" class="tournamentButton">Leave the lobby</button>
             </div>
         </div>
+        <div class="chat-menu-container"></div>
     `;
+
+	await addChatMenu();
 
     document.getElementById('leaveTournament').addEventListener('click', (event) => {
         event.preventDefault();
