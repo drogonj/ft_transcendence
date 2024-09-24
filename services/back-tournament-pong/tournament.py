@@ -1,4 +1,6 @@
 import json
+import random
+
 from websocket import get_game_server
 
 
@@ -7,33 +9,55 @@ class Tournament:
         self.id = tournament_id
         self.players = []
         self.add_player(host_player)
+        host_player.set_is_host(True)
         self.is_running = False
 
     async def launch_tournament(self):
         self.is_running = True
-        print("launchTournament")
-        await get_game_server().send("createGame", {"userId1": self.players[0].get_player_id(),
-                                                    "userId2": self.players[1].get_player_id(), "tournamentId": self.id})
+        # Once the tournament is launch, we no longer need a host.
+        for player in self.players:
+            if player.get_is_host:
+                player.set_is_host(False)
+        print(f"The tournament {self.get_id()} is launch..")
+        await self.launch_stage()
 
-        self.players[0].send_message_to_player("connectTo", {"server": "gameServer"})
-        self.players[1].send_message_to_player("connectTo", {"server": "gameServer"})
+    async def launch_stage(self):
+        players = self.players.copy()
+        random.shuffle(players)
+        if len(players) % 2:
+            players.remove(len(players)-1)
+        for i in range(0, len(players), 2):
+            await get_game_server().send("createGame", {"userId1": players[i].get_player_id(),
+                                                        "userId2": players[i+1].get_player_id(),
+                                                        "tournamentId": self.get_id()})
+            players[i].send_message_to_player("connectTo", {"server": "gameServer"})
+            players[i+1].send_message_to_player("connectTo", {"server": "gameServer"})
+            print(f"For the tournament {self.get_id()} new stage launch for {players[i].get_player_id()} vs {players[i+1].get_player_id()}")
 
     def add_player(self, player):
         self.players.append(player)
+        print(f'The player ({player.get_player_id()}) {player.get_username()} join the tournament {self.get_id()}')
         self.send_message_to_tournament("refreshLobby", self.dump_players_in_tournament())
+
+    def bind_player_socket(self, socket):
+        for player in self.players:
+            if player.get_player_id == socket.user_id:
+                player.set_socket(socket)
+                print(f'The player ({player.get_player_id()}) {player.get_username()} is bind to the tournament {self.get_id()}')
+                break
 
     def remove_player(self, player):
         self.players.remove(player)
-        if player.get_is_host():
+        if not self.is_running and player.get_is_host():
             if len(self.players):
                 self.players[0].set_is_host(True)
                 print(f'The new host for the tournament {self.get_id()} is ({self.players[0].get_player_id()}) {self.players[0].get_username()}')
         self.send_message_to_tournament("refreshLobby", self.dump_players_in_tournament())
 
-    def remove_player_with_socket(self, socket):
+    def remove_player_with_id(self, user_id):
         for player in self.players:
-            if player.get_socket() == socket:
-                print(f"The player {player.get_username()} leave the tournament with id {self.get_id()}")
+            if player.get_player_id() == int(user_id):
+                print(f"The player ({player.get_player_id()}) {player.get_username()} leave the tournament with id {self.get_id()}")
                 self.remove_player(player)
                 break
 

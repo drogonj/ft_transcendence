@@ -101,8 +101,13 @@ def is_user_already_in_tournament(user_id):
             return True
     return False
 
-
 class TournamentWebSocket(WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        # General class initialization, no connection-specific data here
+        super(TournamentWebSocket, self).__init__(*args, **kwargs)
+        self.player = None
+        self.tournament = None
+
     def check_origin(self, origin):
         return True  # Allow all origins
 
@@ -119,9 +124,10 @@ class TournamentWebSocket(WebSocketHandler):
         if request_data is None:
             return
 
-        self.user_id = request_data["id"]
+        self.user_id = int(request_data["id"])
+        #todo remove check
         if is_user_already_in_tournament(self.user_id):
-            print(f"An error occured with the session_id: {session_id}. The user is already in a tournament")
+            print(f"The user {self.user_id} is already in a tournament.")
             self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
             return
         player = Player(self, self.user_id, request_data["username"])
@@ -135,40 +141,57 @@ class TournamentWebSocket(WebSocketHandler):
 
         if action_type == "createTournament":
             global tournaments_id
-            player.set_is_host(True)
-            tournaments.append(Tournament(player, tournaments_id))
+            self.tournament = Tournament(player, tournaments_id)
+            tournaments.append(self.tournament)
             tournaments_id += 1
         elif action_type == "joinTournament":
-            #todo if tournament is not available
-            tournament = get_tournament_with_id(cookies.get("tournamentId").value)
-            if tournament.is_tournament_full():
-                print(f'The user ({player.get_player_id()}) {request_data["username"]} try to join the tournament {tournament.get_id()} but its full')
+            self.tournament = get_tournament_with_id(cookies.get("tournamentId").value)
+            if not self.tournament:
+                print(f'The user {self.user_id} try to join the tournament {self.tournament.get_id()} bit its no longer available')
                 self.close()
                 return
-            tournament.add_player(player)
-            print(f'The user ({player.get_player_id()}) {request_data["username"]} join the tournament {tournament.get_id()}')
 
+            self.tournament = self.tournament
+
+            if self.tournament.is_tournament_full():
+                print(f'The user ({self.user_id}) {request_data["username"]} try to join the tournament {self.tournament.get_id()} but its full')
+                self.close()
+                return
+
+            if self.tournament.is_running:
+                self.tournament.bind_player_socket(self)
+            else:
+                self.tournament.add_player(player)
         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_started"})
-        print(f'[+] The user ({player.get_player_id()}) {request_data["username"]} is connected to the tournament server.')
 
     async def on_message(self, message):
         socket = json.loads(message)
         socket_values = socket['values']
         if socket['type'] == 'launchTournament':
             tournament = get_tournament_from_player_socket(self)
+            if tournament.is_running:
+                print(f"The tournament {tournament.get_id()}, is already running.")
+                return
             await tournament.launch_tournament()
         elif socket['type'] == 'endGame':
             tournament = get_tournament_with_id(socket_values["tournamentId"])
+            tournament.remove_player_with_id(socket_values["looserId"])
+            #tournament = get_tournament_with_id(socket_values["tournamentId"])
 
     def on_close(self):
-        tournament = get_tournament_from_player_socket(self)
-        if tournament:
-            tournament.remove_player_with_socket(self)
-            if not tournament.is_running and tournament.is_tournament_done():
-                print(f"The tournament with id {tournament.get_id()} is done and removed.")
-                tournaments.remove(tournament)
+        if not hasattr(self, 'user_id'):
+            print("Connection with game server lost..")
+            return
+
+        if self.tournament.is_running:
+            print(f"The user {self.user_id} leave a running tournament.")
+            return
+
+        self.tournament.remove_player_with_id(self.user_id)
+        if self.tournament.is_tournament_done():
+            print(f"The tournament with id {self.tournament.get_id()} is done and removed.")
+            tournaments.remove(self.tournament)
         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_ended"})
-        print(f"[-] A user leave the tournament server.")
 
     def get_userdata_from_session_id(self, session_id):
         request_response = requests.post("http://user-management:8000/api/user/get_session_user/",

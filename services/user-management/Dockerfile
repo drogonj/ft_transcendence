@@ -11,6 +11,7 @@ RUN apt-get update && apt-get upgrade -y && \
         build-essential \
 		libpq-dev \
 		jq \
+		netcat \
 		curl && \
 		apt-get clean && \
 		rm -rf /var/lib/apt/lists/* && \

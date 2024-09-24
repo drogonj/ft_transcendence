@@ -1,5 +1,4 @@
 #!/bin/bash
-
 export VAULT_ADDR=https://vault_2:8200
 export VAULT_CACERT=/vault/ssl/ca.crt
 
@@ -27,6 +26,10 @@ vault_to_network_address() {
 check_raft_status() {
   vault operator raft list-peers >/dev/null 2>&1
   return $?
+}
+
+check_vault_initialized() {
+    vault status -format=json | jq -r '.initialized' 2>/dev/null
 }
 
 start_vault() {
@@ -58,7 +61,7 @@ wait_for_vault1
 start_vault "vault_2"
 sleep 5
 
-if [ ! -f "/vault/token/init2.json" ]; then
+if [ "$(check_vault_initialized)" = "false" ]; then
     echo "Initializing Vault..."
     vault operator init -recovery-shares=1 -recovery-threshold=1 -format=json > /vault/token/init2.json
     chmod 600 /vault/token/init2.json
@@ -84,11 +87,13 @@ else
             break
         fi
         if [ $i -eq 10 ]; then
-            echo "Timeout waiting for Raft cluster to stabilize. Proceeding anyway."
+            echo "Timeout waiting for Raft cluster to stabilize."
+            exit 1
         fi
-        sleep 10
+        sleep 5
     done
 fi
+
 
 echo "Vault status:"
 vault status

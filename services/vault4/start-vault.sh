@@ -75,7 +75,7 @@ for i in {1..10}; do
         break
     fi
     if [ $i -eq 10 ]; then
-        echo "Timeout waiting for Vault 4 to unseal. Please check logs and configuration."
+      exit 1
     fi
     sleep 10
 done
