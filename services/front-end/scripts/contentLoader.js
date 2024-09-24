@@ -14,6 +14,7 @@ import {
 import {currentUser, getCsrfToken, getCurrentUserInfo, handleLogin} from "./auth.js";
 import {connectFriendsWebsocket, friendSocket} from "./friends.js";
 import {closeWebSocket, isWebSocketBind} from "../online-game-pong/websocket.js";
+import {closeTournamentWebSocket, isTournamentWebSocketBind} from "./tournament.js";
 
 export const app = document.getElementById('app');
 
@@ -96,6 +97,8 @@ window.addEventListener('popstate', function (event) {
     if (event.state) {
         if (isWebSocketBind())
             closeWebSocket();
+        if (isTournamentWebSocketBind())
+            closeTournamentWebSocket();
         var route = event.state.route;
         navigateTo(route, false);
     }

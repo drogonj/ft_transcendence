@@ -56,7 +56,7 @@ class Tournament:
 
     def remove_player_with_id(self, user_id):
         for player in self.players:
-            if player.get_player_id == int(user_id):
+            if player.get_player_id() == int(user_id):
                 print(f"The player ({player.get_player_id()}) {player.get_username()} leave the tournament with id {self.get_id()}")
                 self.remove_player(player)
                 break

@@ -178,12 +178,19 @@ class TournamentWebSocket(WebSocketHandler):
             tournament.remove_player_with_id(socket_values["looserId"])
             #tournament = get_tournament_with_id(socket_values["tournamentId"])
 
-
     def on_close(self):
-        #self.tournament.remove_player_with_socket(self)
-        #if not self.tournament.is_running and self.tournament.is_tournament_done():
-        #    print(f"The tournament with id {self.tournament.get_id()} is done and removed.")
-        #    tournaments.remove(self.tournament)
+        if not hasattr(self, 'user_id'):
+            print("Connection with game server lost..")
+            return
+
+        if self.tournament.is_running:
+            print(f"The user {self.user_id} leave a running tournament.")
+            return
+
+        self.tournament.remove_player_with_id(self.user_id)
+        if self.tournament.is_tournament_done():
+            print(f"The tournament with id {self.tournament.get_id()} is done and removed.")
+            tournaments.remove(self.tournament)
         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_ended"})
 
     def get_userdata_from_session_id(self, session_id):
