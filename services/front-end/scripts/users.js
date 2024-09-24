@@ -10,12 +10,10 @@ export async function loadUsers() {
 		const muteList = await getMuteListOf(currentUser.user_id);
 
 		const sortedUsers = usersData.users.sort((a, b) => {
-			if (a.status === 'online' && b.status !== 'online')
-				return -1;
-			if (a.status === 'online' && (b.status !== 'offline' && b.status !== 'online'))
-				return 0;
-			if (a.status !== 'online' && b.status === 'online')
-				return 1;
+		if (a.status === 'online' && b.status !== 'online') return -1;
+		if (a.status !== 'online' && b.status === 'online') return 1;
+		if (a.status === 'offline' && b.status !== 'offline') return 1;
+		if (a.status !== 'offline' && b.status === 'offline') return -1;
 			
 			return a.username.localeCompare(b.username);
 		});
@@ -108,9 +106,10 @@ export async function updateUserStatus(other_id, status) {
 			const statusElement = document.getElementById(`user-${other_id}`);
 			if (user.user_id !== other_id) {
 				continue ;
-			} else if (statusElement)
+			} else if (statusElement) {
 				statusElement.querySelector('.status-indicator').className = `status-indicator ${status === 'offline' ? 'offline' : status === 'online' ? 'online' : 'other'}`;
-			else if (currentUser.user_id !== other_id) {
+				sortUpdatedUser(user, statusElement);
+			} else if (currentUser.user_id !== other_id) {
 				const usersContainer = document.getElementById('users-content');
 				if (usersContainer)
 					addUserToMenu(user.user_id, user.username, user.avatar, user.status);
@@ -118,6 +117,47 @@ export async function updateUserStatus(other_id, status) {
 		}
 	} catch (error) {
 		console.error('Error loading users:', error.message);
+	}
+}
+
+async function sortUpdatedUser(updatedUser, statusElement) {
+	const usersContainer = document.getElementById('users-content');
+
+	if (statusElement)
+		usersContainer.removeChild(statusElement);
+
+	const currentUsers = Array.from(usersContainer.children).map(child => {
+		const userId = Number(child.id.replace('user-', ''));
+		const username = child.querySelector('.profile-link p').textContent;
+		const statusIndicator = child.querySelector('.status-indicator').classList.contains('online') ? 'online' : child.querySelector('.status-indicator').classList.contains('offline') ? 'offline' : 'other';
+		
+		return {
+			user_id: userId,
+			username: username,
+			status: statusIndicator,
+			element: child
+		};
+	});
+
+	currentUsers.push({
+		user_id: updatedUser.user_id,
+		username: updatedUser.username,
+		status: updatedUser.status,
+		element: statusElement
+	});
+
+	const sortedUsers = currentUsers.sort((a, b) => {
+		if (a.status === 'online' && b.status !== 'online') return -1;
+		if (a.status !== 'online' && b.status === 'online') return 1;
+		if (a.status === 'offline' && b.status !== 'offline') return 1;
+		if (a.status !== 'offline' && b.status === 'offline') return -1;
+		return a.username.localeCompare(b.username);
+	});
+
+	usersContainer.innerHTML = '';
+
+	for (const user of sortedUsers) {
+		usersContainer.appendChild(user.element);
 	}
 }
 
