@@ -176,6 +176,20 @@ async function addFriendshipMenu() {
     document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
 }
 
+export async function neil() {
+    const friendRequestContent = document.getElementById('requests-content');
+    const friendRequestCount = friendRequestContent.childElementCount;
+
+    const neil = document.querySelector('.neil-container');
+    if (friendRequestCount > 0) {
+        neil.style.left = '1%';
+        const notif = document.getElementById('notif');
+        notif.innerHTML = 'You have ' + friendRequestCount + ' friend request(s) !';
+    } else {
+        neil.style.left = '-100%';
+    }
+}
+
 export async function renderHome() {
     app.innerHTML = `
                     <h3 id="transcendence-title">
@@ -233,11 +247,17 @@ export async function renderHome() {
                     </div>
                     
                     <div class="friend-menu-container"></div>
+                    <div class="neil-container">
+                        <img src="/assets/images/friends/neil.gif">
+                        <p id="notif"></p>
+                        <span class="close-btn" id="closePopup">×</span>
+                    </div>
 					<div class="chat-menu-container"></div>
                 `;
 
     await addFriendshipMenu();
 	await addChatMenu();
+    await neil();
 
     document.getElementById('profile-button').addEventListener('click', (event) => {
         event.preventDefault();
@@ -258,6 +278,11 @@ export async function renderHome() {
 
     document.getElementById('tournament').addEventListener('click', (event) => {
         navigateTo('/tournament', true);
+    });
+
+    document.getElementById('closePopup').addEventListener('click', (event) => {
+        const neil = document.querySelector('.neil-container');
+        neil.style.left = '-100%';
     });
 }
 

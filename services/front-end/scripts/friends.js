@@ -1,5 +1,6 @@
 import { getCsrfToken, csrfToken } from "./auth.js";
 import { navigateTo } from "./contentLoader.js";
+import { neil } from "./render.js";
 
 export let friendSocket = null;
 
@@ -27,6 +28,7 @@ export async function connectFriendsWebsocket() {
         const route =  window.location.pathname + window.location.search;
         ifif: if (type === 'friend_request_notification') {
             addFriendshipRequestToMenu(user_id, from_user, data.avatar)
+            neil();
         } else if (type === 'accepted_friendship_request_notification') {
             addFriendToMenu(user_id, from_user, data.avatar, data.status)
         } else if (type === 'canceled_friendship_notification') {
@@ -290,9 +292,11 @@ export function addFriendshipRequestToMenu(user, username, avatar) {
     // Add event listeners for the new buttons
     newFriendshipRequest.querySelector('.accept-friendship-request-button').addEventListener('click', async (event) => {
         await acceptFriendshipRequest(event);
+        await neil();
     });
     newFriendshipRequest.querySelector('.decline-friendship-request-button').addEventListener('click', async (event) => {
         await declineFriendshipRequest(event);
+        await neil();
     });
     // Profile link
     newFriendshipRequest.querySelector('.profile-link').addEventListener('click', async function (event) {
