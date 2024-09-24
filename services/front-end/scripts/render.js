@@ -571,6 +571,7 @@ export async function renderTournament() {
         <div class="chat-menu-container"></div>
     `;
     refreshTournamentList();
+    await addChatMenu();
 
 	await addChatMenu();
 
@@ -605,13 +606,14 @@ export async function renderTournamentLobby() {
         </div>
         <div class="chat-menu-container"></div>
     `;
+    await addChatMenu();
 
 	await addChatMenu();
 
     document.getElementById('leaveTournament').addEventListener('click', (event) => {
         event.preventDefault();
         closeTournamentWebSocket();
-        navigateTo('/home', true);
+        navigateTo('/tournament', true);
     });
 }
 
