@@ -9,10 +9,22 @@ export async function loadUsers() {
 
 		const muteList = await getMuteListOf(currentUser.user_id);
 
-		for (const user of usersData.users) {
+		const sortedUsers = usersData.users.sort((a, b) => {
+			if (a.status === 'online' && b.status !== 'online')
+				return -1;
+			if (a.status === 'online' && (b.status !== 'offline' && b.status !== 'online'))
+				return 0;
+			if (a.status !== 'online' && b.status === 'online')
+				return 1;
+			
+			return a.username.localeCompare(b.username);
+		});
+
+		for (const user of sortedUsers) {
 			if (user.user_id !== 1 && user.user_id !== currentUser.user_id)
 				addUserToMenu(user.user_id, user.username, user.avatar, user.status, muteList);
 		}
+
 	} catch (error) {
 		console.error('Error loading users:', error);
 	}
