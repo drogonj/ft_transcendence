@@ -309,7 +309,6 @@ export async function renderConfirmRegistration() {
 
 async function fetchMatchesHistory(userId) {
     try {
-        console.log('oui')
         const response = await fetch(`/api/user/get_matches/${userId}/`);
         const data = await response.json();
 
@@ -317,11 +316,17 @@ async function fetchMatchesHistory(userId) {
 
         for (const match of data.matches) {
             const element = document.createElement('span');
+            const utcDate = new Date(match.date + ' UTC');
+            // Convert to user's local time
+            const localDate = new Date(utcDate);
+            // Format the date and time in a more readable way if needed
+            const formattedLocalDate = localDate.toLocaleString();
+
             element.className = 'match';
             element.innerHTML = `
                 <p class="usernames">${match.self_username} vs ${match.opponent_username}</p>
                 <p class="scores">${match.self_score} : ${match.opponent_score}</p>
-                <p class="datetime">${match.date}</p>
+                <p class="datetime">${formattedLocalDate}</p>
             `;
             container.insertAdjacentElement('afterbegin', element);
         }
