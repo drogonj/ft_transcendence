@@ -86,7 +86,18 @@ class MatchMakingWebSocket(WebSocketHandler):
 
     def open(self):
         cookies = self.request.cookies
-        session_id = cookies.get("sessionid").value
+        if not cookies:
+            print(f'[+] Server {self.request.headers.get("server")} is bind to server Game')
+            self.close()
+            return
+
+        session_id_cookie = cookies.get("sessionid")
+
+        if not session_id_cookie:
+            print("No session_id found in the cookie")
+            self.close()
+            return
+        session_id = session_id_cookie.value
 
         request_response = requests.post("http://user-management:8000/api/user/get_session_user/", json={"sessionId": session_id})
         if request_response.status_code != 200:

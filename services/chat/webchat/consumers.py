@@ -11,11 +11,16 @@ user_to_consumer = {}
 class ChatConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		cookies = self.scope['cookies']
-		session_id = cookies.get('sessionid')
-
-		if not session_id:
+		if not cookies:
+			logger.info('No cookies found')
 			await self.close()
 			return
+		session_id = cookies.get('sessionid')
+		if not session_id:
+			logger.info('No session_id found in the cookie')
+			await self.close()
+			return
+
 		session_response = requests.post('http://user-management:8000/api/user/get_session_user/', json={'sessionId': session_id})
 		status = session_response.status_code
 

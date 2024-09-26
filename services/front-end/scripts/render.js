@@ -241,14 +241,14 @@ export async function renderHome() {
                         <span class="bottom"></span>
                     </div>
                     <div id="gameButtons">
-                        <button id="launch-game" class="friend-menu-button">Start local game</button>
-                        <button id="launch-game-online" class="friend-menu-button">Start online game</button>
-                        <button id="tournament" class="friend-menu-button">Tournament</button>
+                        <button id="launch-game" class="game-menu-button">Start local game</button>
+                        <button id="launch-game-online" class="game-menu-button">Start online game</button>
+                        <button id="tournament" class="game-menu-button">Tournament</button>
                     </div>
                     
                     <div class="friend-menu-container"></div>
                     <div class="neil-container">
-                        <img src="/assets/images/friends/neil.gif">
+                        <img alt="neil" src="/assets/images/friends/neil.gif">
                         <p id="notif"></p>
                         <span class="close-btn" id="closePopup">×</span>
                     </div>

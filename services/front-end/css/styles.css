@@ -43,9 +43,31 @@ a {
 
 #gameButtons {
     position: absolute;
+    display: flex;
+    flex-direction: column;
     top: 50%;
     left: 50%;
     transform: translate(-50%,-50%);
+}
+
+.game-menu-button {
+    margin: 0.25em;
+    padding: max(2.5vh, 2vw) max(6.5vh, 5vw);
+    font-size: max(0.75vh, 0.75vw);
+    font-family: OCR A Std, monospace;
+    border-radius: 0.5em;
+    border: solid 1px #ffffff12;
+    border-left: solid 3px #ffffff12;
+    color: white;
+    background: linear-gradient(270deg, #2d007182, #8335328c);
+    background-size: 400% 400%;
+    transition: 0.25s;
+}
+
+.game-menu-button:hover {
+    cursor: pointer;
+    transform: scale(1.05);
+    animation: slide 4s linear infinite;
 }
 
 #main, #mapAndHeader {
