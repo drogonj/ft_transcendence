@@ -112,11 +112,65 @@ export async function updateUserStatus(other_id, status) {
 			} else if (currentUser.user_id !== other_id) {
 				const usersContainer = document.getElementById('users-content');
 				if (usersContainer)
-					addUserToMenu(user.user_id, user.username, user.avatar, user.status);
+					addNewUserToMenu(user, usersContainer);
 			}
 		}
 	} catch (error) {
 		console.error('Error loading users:', error.message);
+	}
+}
+
+async function addNewUserToMenu(new_user, usersContainer) {
+	let is_muted = false;
+
+	const newUser = document.createElement('li');
+	newUser.id = `user-${new_user.user_id}`;
+
+	newUser.innerHTML = `
+		<div class="status-indicator ${new_user.status === 'offline' ? 'offline' : new_user.status === 'online' ? 'online' : 'other'}"></div>
+		<div class="avatar-container">
+			<img class="avatar" src="${new_user.avatar}" alt="${new_user.username}'s Avatar">
+		</div>
+		<span class="profile-link" data-user-id="${new_user.user_id}">
+			<p>${new_user.username}</p>
+		</span>
+		<button class="mute-user-button ${is_muted ? 'muted' : ''}" data-user-id="${new_user.user_id}">
+			<img src="/assets/images/chat/${is_muted ? 'mute_icon.png' : 'chat_icon.png'}" alt="mute">
+		</button>
+	`;
+
+	const currentUsers = Array.from(usersContainer.children).map(child => {
+		const userId = Number(child.id.replace('user-', ''));
+		const username = child.querySelector('.profile-link p').textContent;
+		const statusIndicator = child.querySelector('.status-indicator').classList.contains('online') ? 'online' : child.querySelector('.status-indicator').classList.contains('offline') ? 'offline' : 'other';
+		
+		return {
+			user_id: userId,
+			username: username,
+			status: statusIndicator,
+			element: child
+		};
+	});
+
+	currentUsers.push({
+		user_id: new_user.user_id,
+		username: new_user.username,
+		status: new_user.status,
+		element: newUser
+	});
+
+	const sortedUsers = currentUsers.sort((a, b) => {
+		if (a.status === 'online' && b.status !== 'online') return -1;
+		if (a.status !== 'online' && b.status === 'online') return 1;
+		if (a.status === 'offline' && b.status !== 'offline') return 1;
+		if (a.status !== 'offline' && b.status === 'offline') return -1;
+		return a.username.localeCompare(b.username);
+	});
+
+	usersContainer.innerHTML = '';
+
+	for (const user of sortedUsers) {
+		usersContainer.appendChild(user.element);
 	}
 }
 
