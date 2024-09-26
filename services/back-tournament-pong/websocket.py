@@ -3,7 +3,9 @@ import json
 
 import websockets
 from websockets.exceptions import (
-    ConnectionClosed,
+    ConnectionClosedError,
+    InvalidURI,
+    InvalidHandshake,
     WebSocketException
 )
 
@@ -40,3 +42,18 @@ class WebSocketClient:
 
 def get_game_server():
     return WebSocketClient.game_server
+
+
+async def bind_to_game_server():
+    print("Try connecting to the game server..")
+    try:
+        await get_game_server().connect()
+    except (OSError, InvalidURI, InvalidHandshake, ConnectionClosedError, WebSocketException) as e:
+        print(f"Failed to connect: {e}")
+
+
+async def check_game_server_health():
+    if not get_game_server().is_connected():
+        await bind_to_game_server()
+        return False
+    return True

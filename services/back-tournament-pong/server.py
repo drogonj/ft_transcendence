@@ -12,21 +12,14 @@ from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from player import Player
 from tournament import Tournament
-from websocket import WebSocketClient, get_game_server
-from websockets.exceptions import (
-    ConnectionClosedError,
-    InvalidURI,
-    InvalidHandshake,
-    WebSocketException
-)
-import random
+from websocket import WebSocketClient
 import requests
+from websocket import check_game_server_health
 
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backtournamentpong.settings')
 django.setup()
 
-users_in_queue = []
 tournaments = []
 tournaments_id = 1
 
@@ -37,46 +30,9 @@ def get_tournament_with_id(tournament_id):
             return tournament
 
 
-def get_tournament_from_player_socket(socket):
-    for tournament in tournaments:
-        tournament = tournament.contain_player_with_socket(socket)
-        if tournament is not None:
-            return tournament
-
-
 async def ping_all_tournaments():
     for tournament in tournaments:
         tournament.send_message_to_tournament("ping", {})
-
-
-async def bind_to_game_server():
-    print("Try connecting to the game server..")
-    try:
-        await get_game_server().connect()
-    except (OSError, InvalidURI, InvalidHandshake, ConnectionClosedError, WebSocketException) as e:
-        print(f"Failed to connect: {e}")
-
-
-async def check_game_server_health():
-    if not get_game_server().is_connected():
-        await bind_to_game_server()
-        return False
-    return True
-
-
-async def send_users_to_server():
-    selected_users = get_two_users()
-    await get_game_server().send("createGame", {"userId1": selected_users[0].get_user_id(),
-                                                "userId2": selected_users[1].get_user_id()})
-
-    side = "Left"
-    for user in selected_users:
-        await get_game_server().send("createPlayer", {"userId": user.get_user_id(), "side": side})
-        side = "Right"
-
-    for user in selected_users:
-        users_in_queue.remove(user)
-        user.send_message_to_user("connectTo", {"server": "gameServer"})
 
 
 async def main_check_loop():
@@ -85,14 +41,7 @@ async def main_check_loop():
         if not await check_game_server_health():
             await gen.sleep(3)
             continue
-        #if len(users_in_queue) > 1:
-         #   print("2 players founds, sending to game server..")
-         #   await send_users_to_server()
         await gen.sleep(1)
-
-
-def get_two_users():
-    return random.sample(users_in_queue, 2)
 
 
 def is_user_already_in_tournament(user_id):
@@ -100,6 +49,7 @@ def is_user_already_in_tournament(user_id):
         if tournament.is_user_in_tournament(user_id):
             return True
     return False
+
 
 class TournamentWebSocket(WebSocketHandler):
     def __init__(self, *args, **kwargs):
@@ -126,10 +76,10 @@ class TournamentWebSocket(WebSocketHandler):
 
         self.user_id = int(request_data["id"])
         #todo remove check
-        if is_user_already_in_tournament(self.user_id):
-            print(f"The user {self.user_id} is already in a tournament.")
-            self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
-            return
+        #if is_user_already_in_tournament(self.user_id):
+        #    print(f"The user {self.user_id} is already in a tournament.")
+        #    self.write_message({"type": "error", "values": {"message": "You are already in a Tournament"}})
+        #    return
         player = Player(self, self.user_id, request_data["username"])
 
         try:
@@ -147,15 +97,15 @@ class TournamentWebSocket(WebSocketHandler):
         elif action_type == "joinTournament":
             self.tournament = get_tournament_with_id(cookies.get("tournamentId").value)
             if not self.tournament:
-                print(f'The user {self.user_id} try to join the tournament {self.tournament.get_id()} bit its no longer available')
-                self.close()
+                print(f'The user {self.user_id} try to join the tournament {cookies.get("tournamentId").value} but he is no longer available')
+                self.write_message({"type": "error", "values": {"message": "This tournament is no longer available."}})
                 return
 
             self.tournament = self.tournament
 
             if self.tournament.is_tournament_full():
-                print(f'The user ({self.user_id}) {request_data["username"]} try to join the tournament {self.tournament.get_id()} but its full')
-                self.close()
+                print(f'The user ({self.user_id}) {request_data["username"]} try to join the tournament {self.tournament.get_id()} but he is full')
+                self.write_message({"type": "error", "values": {"message": "This tournament is full."}})
                 return
 
             if self.tournament.is_running:
@@ -168,19 +118,20 @@ class TournamentWebSocket(WebSocketHandler):
         socket = json.loads(message)
         socket_values = socket['values']
         if socket['type'] == 'launchTournament':
-            tournament = get_tournament_from_player_socket(self)
-            if tournament.is_running:
-                print(f"The tournament {tournament.get_id()}, is already running.")
+            if self.tournament.is_running:
+                print(f"The tournament {self.tournament.get_id()}, is already running.")
                 return
-            await tournament.launch_tournament()
+            await self.tournament.launch_tournament()
         elif socket['type'] == 'endGame':
             tournament = get_tournament_with_id(socket_values["tournamentId"])
             tournament.remove_player_with_id(socket_values["looserId"])
-            #tournament = get_tournament_with_id(socket_values["tournamentId"])
 
     def on_close(self):
         if not hasattr(self, 'user_id'):
             print("Connection with game server lost..")
+            return
+
+        if not self.tournament:
             return
 
         if self.tournament.is_running:

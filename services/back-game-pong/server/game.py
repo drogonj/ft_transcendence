@@ -90,6 +90,7 @@ class Game:
 	def disconnect_player_with_socket(self, client):
 		for player in self.__players:
 			if player.get_socket() == client:
+				player.statistics.score = -42
 				player.set_socket(None)
 
 	def mark_point(self, ball):

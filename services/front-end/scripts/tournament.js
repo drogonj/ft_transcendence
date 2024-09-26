@@ -73,6 +73,10 @@ function initWebSocketFunc() {
         else if (data.type === "connectTo") {
             tournamentWebSocket.close();
             launchClientGame()
+        } else if (data.type === "error") {
+            tournamentWebSocket.close();
+            navigateTo('/tournament', true);
+            window.alert(data.values["message"]);
         }
     }
 }
@@ -106,7 +110,7 @@ export function refreshTournamentLobby(playersList) {
     });
 
 
-    if (currentUser.user_id === parseInt(hostPlayer["playerId"])) {
+    if (hostPlayer && currentUser.user_id === parseInt(hostPlayer["playerId"])) {
         const newDivButton = document.createElement('button');
 
         newDivButton.classList.add("tournamentButton");

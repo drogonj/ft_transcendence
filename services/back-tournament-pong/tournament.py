@@ -41,10 +41,12 @@ class Tournament:
 
     def bind_player_socket(self, socket):
         for player in self.players:
-            if player.get_player_id == socket.user_id:
+            if player.get_player_id() == int(socket.user_id):
                 player.set_socket(socket)
                 print(f'The player ({player.get_player_id()}) {player.get_username()} is bind to the tournament {self.get_id()}')
-                break
+                self.send_message_to_tournament("refreshLobby", self.dump_players_in_tournament())
+                return
+        print(f"Error, impossible to rebind the player {socket.user_id}")
 
     def remove_player(self, player):
         self.players.remove(player)
@@ -88,10 +90,11 @@ class Tournament:
                 return True
         return False
 
-    def contain_player_with_socket(self, socket):
+    def contain_player_with_id(self, player_id):
         for player in self.players:
-            if player.get_socket() == socket:
-                return self
+            if player.get_player_id == player_id:
+                return True
+        return False
 
     def get_id(self):
         return self.id
