@@ -266,3 +266,49 @@
 .profile-link {
     cursor: pointer;
 }
+
+.neil-container {
+    position: fixed;
+    top: 10%;
+    left: -100%;
+    background-color: #00000059;
+    border-radius: 1rem 5rem 5rem 1rem;
+    padding: max(2vh, 1vw);
+    width: max(25vh, 15vw);
+    box-shadow: 0 0.1rem 0.2rem rgb(176 64 2 / 10%);
+    font-size: max(0.75vh, 0.5vw);
+    z-index: 1000;
+    transition: left 0.5s ease;
+}
+
+.neil-container img {
+    position: absolute;
+    height: 70%;
+    top: 20%;
+}
+
+.neil-container p {
+    max-width: max(15vh, 10vw);
+    transform: translateX(max(5vh, 3vw));
+    overflow: hidden;
+}
+
+.close-btn {
+    position: absolute;
+    top: max(1.75vh, 1.2vw);
+    right: max(3vh, 1vw);
+    cursor: pointer;
+    font-size: max(2.5vh, 1vw);
+    color: #ffffffb8;
+    padding: 0;
+    margin: 0;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.close-btn:hover {
+    transform: scale(1.25);
+}
+
+.neil-container.active {
+    left: 1%;
+}

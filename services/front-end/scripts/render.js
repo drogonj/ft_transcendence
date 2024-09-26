@@ -176,6 +176,20 @@ async function addFriendshipMenu() {
     document.getElementById('search-user-form').addEventListener('submit', handleUserSearch);
 }
 
+export async function neil() {
+    const friendRequestContent = document.getElementById('requests-content');
+    const friendRequestCount = friendRequestContent.childElementCount;
+
+    const neil = document.querySelector('.neil-container');
+    if (friendRequestCount > 0) {
+        neil.style.left = '1%';
+        const notif = document.getElementById('notif');
+        notif.innerHTML = 'You have ' + friendRequestCount + ' friend request(s) !';
+    } else {
+        neil.style.left = '-100%';
+    }
+}
+
 export async function renderHome() {
     app.innerHTML = `
                     <h3 id="transcendence-title">
@@ -233,11 +247,17 @@ export async function renderHome() {
                     </div>
                     
                     <div class="friend-menu-container"></div>
+                    <div class="neil-container">
+                        <img src="/assets/images/friends/neil.gif">
+                        <p id="notif"></p>
+                        <span class="close-btn" id="closePopup">×</span>
+                    </div>
 					<div class="chat-menu-container"></div>
                 `;
 
     await addFriendshipMenu();
 	await addChatMenu();
+    await neil();
 
     document.getElementById('profile-button').addEventListener('click', (event) => {
         event.preventDefault();
@@ -258,6 +278,11 @@ export async function renderHome() {
 
     document.getElementById('tournament').addEventListener('click', (event) => {
         navigateTo('/tournament', true);
+    });
+
+    document.getElementById('closePopup').addEventListener('click', (event) => {
+        const neil = document.querySelector('.neil-container');
+        neil.style.left = '-100%';
     });
 }
 
@@ -309,7 +334,6 @@ export async function renderConfirmRegistration() {
 
 async function fetchMatchesHistory(userId) {
     try {
-        console.log('oui')
         const response = await fetch(`/api/user/get_matches/${userId}/`);
         const data = await response.json();
 
@@ -317,11 +341,17 @@ async function fetchMatchesHistory(userId) {
 
         for (const match of data.matches) {
             const element = document.createElement('span');
+            const utcDate = new Date(match.date + ' UTC');
+            // Convert to user's local time
+            const localDate = new Date(utcDate);
+            // Format the date and time in a more readable way if needed
+            const formattedLocalDate = localDate.toLocaleString();
+
             element.className = 'match';
             element.innerHTML = `
                 <p class="usernames">${match.self_username} vs ${match.opponent_username}</p>
                 <p class="scores">${match.self_score} : ${match.opponent_score}</p>
-                <p class="datetime">${match.date}</p>
+                <p class="datetime">${formattedLocalDate}</p>
             `;
             container.insertAdjacentElement('afterbegin', element);
         }
