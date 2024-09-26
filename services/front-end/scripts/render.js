@@ -603,6 +603,8 @@ export async function renderTournament() {
     refreshTournamentList();
     await addChatMenu();
 
+	await addChatMenu();
+
     document.getElementById("createTournament").addEventListener('click', (event) => {
         createTournament();
     })
@@ -635,6 +637,8 @@ export async function renderTournamentLobby() {
         <div class="chat-menu-container"></div>
     `;
     await addChatMenu();
+
+	await addChatMenu();
 
     document.getElementById('leaveTournament').addEventListener('click', (event) => {
         event.preventDefault();

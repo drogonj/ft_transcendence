@@ -64,8 +64,6 @@
 
 .users-list li span {
     margin: 0;
-    /* flex-grow: 1; */ /* Allow text to grow */
-    /* padding-left: max(0.5vh, 0.6vw); */ /* Space between avatar and text */
 }
 
 .users-list li span p {
@@ -132,6 +130,15 @@
     background-color: #ffffff99;
     word-wrap: break-word;
     color: black;
+}
+
+.game-chat-message {
+    margin: max(0.25vh, 0.15vw) 0;
+    padding: max(0.25vh, 0.3vw) max(0.5vh, 0.5vw);
+    border-radius: 5px;
+    background-color: #ffffff99;
+    word-wrap: break-word;
+    color: linear-gradient(270deg, #2d007182, #8335328c);
 }
 
 .message-content {
