@@ -54,6 +54,9 @@ export async function connectChatWebsocket(roomName) {
 				else if (data.type === 'system')
 					systemMessage(data);
 
+				else if (data.type === 'game_message')
+					gameMessage(data);
+
 				else if (data.type === 'chat_message')
 					chatMessage(data);
 
@@ -221,6 +224,22 @@ async function systemMessage(data) {
 	const newMessage = document.createElement('li');
 
 	newMessage.classList.add('chat-message');
+	newMessage.innerHTML = `${data.content}`;
+
+	messageList.insertBefore(newMessage, messageList.firstChild);
+	
+	const chatMessages = document.getElementById('chat-messages');
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function gameMessage(data) {
+	if (!chatWindowOn())
+		return ;
+
+	const messageList = document.getElementById('message-content');
+	const newMessage = document.createElement('li');
+
+	newMessage.classList.add('game-chat-message');
 	newMessage.innerHTML = `${data.content}`;
 
 	messageList.insertBefore(newMessage, messageList.firstChild);
@@ -405,6 +424,15 @@ async function parseMessage(message) {
 			const cmd = parts[0].slice(1);
 			const username = parts[1];
 
+			if (cmd === 'game'){
+				chatSocket.send(JSON.stringify({
+					'type': 'game_message',
+					'content': convertURL(parts.slice(1).join(' ')),
+				}));
+
+				return ;
+			}
+
 			try {
 				const response = await fetch('/api/user/get_users/');
 				const usersData = await response.json();
@@ -460,6 +488,24 @@ function convertURL(text) {
 async function sendChatMessage(message) {
 	chatSocket.send(JSON.stringify({
 		'type': 'chat_message',
+		'content': convertURL(message),
+		'user_id': currentUser.user_id,
+		'username': currentUser.username
+	}));
+}
+
+export async function sendSystemMessage(message) {
+	chatSocket.send(JSON.stringify({
+		'type': 'system',
+		'content': convertURL(message),
+		'user_id': currentUser.user_id,
+		'username': currentUser.username
+	}));
+}
+
+export async function sendGameMessage(message) {
+	chatSocket.send(JSON.stringify({
+		'type': 'tournament_call',
 		'content': convertURL(message),
 		'user_id': currentUser.user_id,
 		'username': currentUser.username

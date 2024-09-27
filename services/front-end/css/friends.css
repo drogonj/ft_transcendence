@@ -275,6 +275,7 @@
     border-radius: 1rem 5rem 5rem 1rem;
     padding: max(2vh, 1vw);
     width: max(25vh, 15vw);
+    aspect-ratio: 1 / 0.1;
     box-shadow: 0 0.1rem 0.2rem rgb(176 64 2 / 10%);
     font-size: max(0.75vh, 0.5vw);
     z-index: 1000;
@@ -295,13 +296,14 @@
 
 .close-btn {
     position: absolute;
-    top: max(1.75vh, 1.2vw);
-    right: max(3vh, 1vw);
+    top: max(0.8vw, 1vh);
+    right: max(2vh, 1vw);
     cursor: pointer;
     font-size: max(2.5vh, 1vw);
     color: #ffffffb8;
-    padding: 0;
+    padding: max(0.75vh, 0.25vw);
     margin: 0;
+    padding-left: 5%;
     transition: transform 0.2s ease, color 0.2s ease;
 }
 

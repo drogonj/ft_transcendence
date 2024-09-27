@@ -11,11 +11,16 @@ user_to_consumer = {}
 class ChatConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		cookies = self.scope['cookies']
-		session_id = cookies.get('sessionid')
-
-		if not session_id:
+		if not cookies:
+			logger.info('No cookies found')
 			await self.close()
 			return
+		session_id = cookies.get('sessionid')
+		if not session_id:
+			logger.info('No session_id found in the cookie')
+			await self.close()
+			return
+
 		session_response = requests.post('http://user-management:8000/api/user/get_session_user/', json={'sessionId': session_id})
 		status = session_response.status_code
 
@@ -82,6 +87,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'type': 'error',
 					'content': f'Nice try buddy! (Reason: Reached max length)'
 				})
+
+		if data['type'] == 'system':
+			content = data.get('content')
+			await self.send(text_data=json.dumps({
+				'type': 'system',
+				'content': f'{content}.',
+			}))
+
+		if data['type'] == 'game_message':
+			content = data.get('content')
+			await self.send(text_data=json.dumps({
+				'type': 'game_message',
+				'content': f'{content}.',
+			}))
 
 		if data['type'] == 'user_status_update':
 			await self.channel_layer.group_send(
@@ -202,7 +221,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			room_name = f'ID_{receiver}'
 			connected_users = user_to_consumer.keys()
 			uri = f'http://user-management:8000/api/user/get_user/{receiver}/'
-			
+			uri2 = f'http://user-management:8000/api/user/get_user/{id}/'
+
 			try:
 				response = requests.get(uri)
 				response.raise_for_status()
@@ -211,7 +231,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				logger.error(f"Error fetching user data: {e}")
 				user = []
 
-			if user['status'] != 'online':
+			try:
+				response2 = requests.get(uri2)
+				response2.raise_for_status()
+				user2 = response2.json()
+			except requests.exceptions.RequestException as e:
+				logger.error(f"Error fetching user data: {e}")
+				user2 = []
+
+			if user2['status'] != 'online':
+				status2 = user2['status']
+				await self.send(text_data=json.dumps({
+					'type': 'system',
+					'content': f'Invitation not delivered (Reason: You are {status2}).',
+				}))
+
+			elif user['status'] != 'online':
 				status = user['status']
 				await self.send(text_data=json.dumps({
 					'type': 'system',

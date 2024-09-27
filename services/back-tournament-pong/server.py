@@ -69,13 +69,17 @@ class TournamentWebSocket(WebSocketHandler):
         if not cookies:
             print(f'[+] Server {self.request.headers.get("server")} is bind to server Tournament')
             return
+        session_id_cookie = cookies.get("sessionid")
+        if not session_id_cookie:
+            print("No session_id found in the cookie")
+            self.close()
+            return
 
-        session_id = cookies.get("sessionid").value
+        session_id = session_id_cookie.value
 
         request_data = self.get_userdata_from_session_id(session_id)
         if request_data is None:
             return
-
         self.user_id = int(request_data["id"])
         #todo remove check
         #if is_user_already_in_tournament(self.user_id):
