@@ -41,6 +41,8 @@ async def main_check_loop():
         if not await check_game_server_health():
             await gen.sleep(3)
             continue
+        for tournament in tournaments:
+            await tournament.trigger_tournament_stage_launch()
         await gen.sleep(1)
 
 
@@ -135,7 +137,14 @@ class TournamentWebSocket(WebSocketHandler):
             return
 
         if self.tournament.is_running:
-            print(f"The user {self.user_id} leave a running tournament.")
+            player = self.tournament.get_player_with_id(self.user_id)
+            if player is None:
+                print(f"None for {self.user_id}")
+            if player and player.get_socket() is None:
+                self.tournament.remove_player_with_id(self.user_id)
+                return
+            print(f"The user {self.user_id} leave a running tournament but player object is still connected.")
+            player.set_socket(None)
             return
 
         self.tournament.remove_player_with_id(self.user_id)

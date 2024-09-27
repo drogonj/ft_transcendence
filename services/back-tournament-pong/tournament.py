@@ -19,13 +19,12 @@ class Tournament:
             if player.get_is_host:
                 player.set_is_host(False)
         print(f"The tournament {self.get_id()} is launch..")
-        await self.launch_stage()
 
     async def launch_stage(self):
         players = self.players.copy()
         random.shuffle(players)
         if len(players) % 2:
-            players.remove(len(players)-1)
+            players.pop()
         for i in range(0, len(players), 2):
             await get_game_server().send("createGame", {"userId1": players[i].get_player_id(),
                                                         "userId2": players[i+1].get_player_id(),
@@ -63,6 +62,19 @@ class Tournament:
                 self.remove_player(player)
                 break
 
+    async def trigger_tournament_stage_launch(self):
+        if not self.is_running:
+            return
+        for player in self.players:
+            if player.get_socket() is None:
+                return
+        if len(self.players) == 1:
+            self.is_running = False
+            self.send_message_to_tournament("endTournament", {})
+            return
+        print("All player are connected")
+        await self.launch_stage()
+
     def send_message_to_tournament(self, data_type, data_values):
         for player in self.players:
             player.send_message_to_player(data_type, data_values)
@@ -92,7 +104,7 @@ class Tournament:
 
     def contain_player_with_id(self, player_id):
         for player in self.players:
-            if player.get_player_id == player_id:
+            if player.get_player_id() == player_id:
                 return True
         return False
 
@@ -106,5 +118,5 @@ class Tournament:
 
     def get_player_with_id(self, player_id):
         for player in self.players:
-            if player.get_player_id == player_id:
+            if player.get_player_id() == player_id:
                 return player

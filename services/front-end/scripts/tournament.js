@@ -65,7 +65,6 @@ function initWebSocketFunc() {
     tournamentWebSocket.onopen = function () {
         navigateTo('/tournament-lobby', true);
     }
-
     tournamentWebSocket.onmessage = function (event) {
         const data = JSON.parse(event.data);
         if (data.type === "refreshLobby")
@@ -77,6 +76,10 @@ function initWebSocketFunc() {
             tournamentWebSocket.close();
             navigateTo('/tournament', true);
             window.alert(data.values["message"]);
+        } else if (data.type === "endTournament") {
+            tournamentWebSocket.close()
+            navigateTo('/tournament', true);
+            window.alert("You win the tournament ^^");
         }
     }
 }
