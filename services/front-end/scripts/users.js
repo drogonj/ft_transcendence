@@ -172,6 +172,49 @@ async function addNewUserToMenu(new_user, usersContainer) {
 	for (const user of sortedUsers) {
 		usersContainer.appendChild(user.element);
 	}
+
+	newUser.querySelector('.mute-user-button').addEventListener('click', async (event) => {
+		const userId = event.currentTarget.getAttribute('data-user-id');
+		const userElement = document.getElementById(`user-${userId}`);
+
+		if (!userElement) {
+			console.error(`User element with ID user-${userId} not found.`);
+			return;
+		}
+
+		const muteButton = userElement.querySelector('.mute-user-button');
+		const muteIcon = muteButton.querySelector('img');
+
+		try {
+			const response = await fetch(`/api/chat/mute_toggle/${currentUser.user_id}/`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': chatCsrfToken
+				},
+				body: JSON.stringify({target_id: Number(userId)})
+			});
+
+			if (!response.ok) {
+				throw new Error(`Network response was not ok. Status: ${response.status}`);
+			}
+
+			const result = await response.json();
+
+			if (result.muted)
+				muteIcon.src = '/assets/images/chat/mute_icon.png';
+			else
+				muteIcon.src = '/assets/images/chat/chat_icon.png';
+		} catch (error) {
+			console.error('Error updating mute state:', error);
+		}
+	});
+
+	newUser.querySelector('.profile-link').addEventListener('click', async function (event) {
+		const userId = this.getAttribute('data-user-id');
+		const uri = '/profile/' + userId + '/';
+		navigateTo(uri, true);
+	});
 }
 
 async function sortUpdatedUser(updatedUser, statusElement) {
