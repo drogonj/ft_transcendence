@@ -126,6 +126,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				timestamp = datetime.now(),
 			)
 
+			message_count = await sync_to_async(Message.objects.count)()
+			if message_count > 50:
+				oldest_messages = await sync_to_async(lambda: list(Message.objects.order_by('timestamp')[:message_count - 50]))()
+				for message in oldest_messages:
+					await sync_to_async(message.delete)()
+
 			for user_id in connected_users:
 				if user_id != id:
 					mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(user_id)
@@ -171,7 +177,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 			mute_list = await sync_to_async(MuteList.objects.get_or_create_mute_list)(receiver)
 			muted_users = await sync_to_async(list)(mute_list.muted_users.values_list('user_id', flat=True))
-		
+						
+
+
 			if not id in muted_users:
 				new_message = await sync_to_async(PrivateMessage.objects.create)(
 					type = data['type'],
@@ -182,7 +190,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					receiver_id = data['receiver_id'],
 					receiver_username = data['receiver_username']
 				)
-				
+
+				private_message_count = await sync_to_async(PrivateMessage.objects.filter(user_id=data['user_id'], receiver_id=data['receiver_id']).count)()
+				if private_message_count > 20:
+					oldest_private_messages = await sync_to_async(lambda: list(PrivateMessage.objects.filter(user_id=data['user_id'], receiver_id=data['receiver_id']).order_by('timestamp')[:private_message_count - 20]))()
+					for message in oldest_private_messages:
+						await sync_to_async(message.delete)()
+
 				await self.channel_layer.group_send(
 					room_name,
 					{
