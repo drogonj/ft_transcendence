@@ -40,13 +40,6 @@ async def bind_to_game_server():
         print(f"Failed to connect: {e}")
 
 
-def is_user_already_in_queue(user_id):
-    for user in users_in_queue:
-        if user.get_user_id() == user_id:
-            return True
-    return False
-
-
 async def check_game_server_health():
     if not get_game_server().is_connected():
         await bind_to_game_server()
@@ -106,15 +99,14 @@ class MatchMakingWebSocket(WebSocketHandler):
             return
 
         request_data = request_response.json()
-        user_id = request_data["id"]
-        if is_user_already_in_queue(user_id):
-            print(f"An error occured with the session_id: {session_id}. The user is already in queue")
-            self.write_message({"type": "error", "values": {"message": "You are already in the Matchmaking"}})
+        self.user_id = int(request_data["id"])
+        if not self.check_status():
+            self.write_message({"type": "error", "values": {"message": "You are already playing or in a tournament"}})
             return
 
-        request_response = requests.get(f'http://user-management:8000/api/user/get_user/{user_id}/')
+        request_response = requests.get(f'http://user-management:8000/api/user/get_user/{self.user_id}/')
         if request_response.status_code != 200:
-            print(f"An error occured with the id: {user_id}. Error code: {request_response.status_code}")
+            print(f"An error occured with the id: {self.user_id}. Error code: {request_response.status_code}")
             self.close()
             return
 
@@ -125,10 +117,10 @@ class MatchMakingWebSocket(WebSocketHandler):
             self.write_message({"type": "error", "values": {"message": "You are already in a game"}})
             return
 
-        user = User(self, user_id)
+        user = User(self)
         users_in_queue.append(user)
 
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": user_id, "state": "matchmaking_started"})
+        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "matchmaking_started"})
 
         print(f'[+] The user ({user.get_user_id()}) {request_data["username"]} is connected to the matchmaking server.')
 
@@ -144,6 +136,18 @@ class MatchMakingWebSocket(WebSocketHandler):
             if user.get_socket() == self:
                 return user
         return False
+
+    def check_status(self):
+        request_response = requests.get('http://user-management:8000/backend/user_statement/',
+                      params={"user_id": self.user_id})
+        if request_response.status_code != 200:
+            print(f"Error when try to get status for user: {self.user_id}. Error: {request_response.status_code} {request_response.text}")
+            self.write_message({"type": "error", "values": {"message": "Error when try to check your status"}})
+            return False
+        request_json = request_response.json()
+        if request_json["status"] != "online":
+            return False
+        return True
 
 
 # WSGI container for Django

@@ -1,7 +1,7 @@
 class User:
-    def __init__(self, socket, user_id):
+    def __init__(self, socket):
         self.__socket = socket
-        self.__user_id = user_id
+        self.__user_id = socket.user_id
 
     def get_socket(self):
         return self.__socket

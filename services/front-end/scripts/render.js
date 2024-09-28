@@ -741,6 +741,8 @@ export async function renderGameSettings() {
     `;
     document.getElementById('buttonPlay').addEventListener('click', (event) => {
         event.preventDefault();
+        //todo check if user status is online here
+        // if (user_status != "online") then write message to alert box and return
         launchLocalGame();
     });
 }
