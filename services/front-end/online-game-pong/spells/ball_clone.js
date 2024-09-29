@@ -5,7 +5,7 @@ import {coolDownRun} from "../header.js";
 
 
 export default function BallClone() {
-	Spell.call(this, 5, "Ball Clone", "DESCRIPTION", "ballClone", newImage("../../assets/images/ball_clone.png"));
+	Spell.call(this, 5, "Ball Clone", "The next balls you hit will 'split,' and a new ball will appear.", "ballClone", newImage("../../assets/images/ball_clone.png"));
 }
 
 BallClone.prototype.executor = function (socketValues) {

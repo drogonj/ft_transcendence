@@ -5,7 +5,7 @@ import {getBallsWithIds, getBallWithId} from "../ball.js";
 
 
 export default function BallInvisible() {
-	Spell.call(this, 5, "Ball Invisible", "DESCRIPTION", "ballInvisible", newImage("../../assets/images/ball_invisible.png"));
+	Spell.call(this, 5, "Ball Invisible", "All the ball going to your opponent will be invisible until the next hit.", "ballInvisible", newImage("../../assets/images/ball_invisible.png"));
 }
 
 BallInvisible.prototype.executor = function(socketValues) {

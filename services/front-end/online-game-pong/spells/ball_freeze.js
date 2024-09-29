@@ -4,7 +4,7 @@ import {coolDownRun} from "../header.js";
 import {getBallsWithIds, getBallWithId} from "../ball.js";
 
 export default function BallFreeze() {
-	Spell.call(this, 5, "Ball Freeze", "DESCRIPTION", "ballFreeze", newImage("../../assets/images/ball_freeze.png"));
+	Spell.call(this, 5, "Ball Freeze", "All the incoming balls will be slowed by 50%.", "ballFreeze", newImage("../../assets/images/ball_freeze.png"));
 }
 
 BallFreeze.prototype.executor = function(socketValues) {

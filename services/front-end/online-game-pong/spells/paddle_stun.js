@@ -4,7 +4,7 @@ import {coolDownRun} from "../header.js";
 import {getPlayerWithSide} from "../player.js";
 
 export default function PaddleStun() {
-	Spell.call(this, 15, "Paddle Stun", "DESCRIPTION", "paddleStun", newImage("../../assets/images/paddle_stun.png"));
+	Spell.call(this, 15, "Paddle Stun", "Your opponent's paddle will be stun for 2 seconds.", "paddleStun", newImage("../../assets/images/paddle_stun.png"));
 }
 
 PaddleStun.prototype.executor = function (socketValues) {

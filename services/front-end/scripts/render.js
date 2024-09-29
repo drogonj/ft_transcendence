@@ -764,7 +764,7 @@ export async function renderGameLocal() {
                     </div>
         
                     <div id="headerMiddle">
-                        <div id="headerTimer">10</div>
+                        <div id="headerTimer">11</div>
                     </div>
         
                     <div id="headerRight">
@@ -797,11 +797,6 @@ export async function renderGameOnline() {
     }
     app.innerHTML = `
         <div id="main">
-            <div id="announcement">
-            
-            
-            </div>
-        
             <div id="mapAndHeader">
                 <div id="header">
                     <div id="headerLeft">
@@ -836,5 +831,28 @@ export async function renderGameOnline() {
                 </div>
             </div>
         </div>
+        
+        <div id="announcement">
+            <h1>The game will start in</h1>
+            <div id="timeBeforeStart">10</div>
+            <div id="players">
+                <div id="infoLeft" class="playerInfos">
+                    <div class="playerData">
+                        <img class="warmupImage" src="https://www.kasandbox.org/programming-images/avatars/leaf-blue.png">
+                        <div class="infoUserName">PlayerName</div>
+                    </div>
+                    <div class="spells">
+                    </div>
+                </div>
+                 <div id="infoRight" class="playerInfos">
+                     <div class="playerData">
+                        <img class="warmupImage" src="https://www.kasandbox.org/programming-images/avatars/leaf-blue.png">
+                        <div class="infoUserName">PlayerName</div>
+                    </div>
+                    <div class="spells">
+                    </div>
+                </div>
+            </div>
+        </div>   
     `;
 }

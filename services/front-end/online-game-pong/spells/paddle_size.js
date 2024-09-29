@@ -4,7 +4,7 @@ import {coolDownRun} from "../header.js";
 import {getPlayerWithSide} from "../player.js";
 
 export default function PaddleSize() {
-	Spell.call(this, 17, "Paddle Size", "DESCRIPTION", "paddleSize", newImage("../../assets/images/paddle_size.png"));
+	Spell.call(this, 17, "Paddle Size", "Your opponent's paddle size will be reduced for 5 seconds.", "paddleSize", newImage("../../assets/images/paddle_size.png"));
 }
 
 PaddleSize.prototype.executor = function (socketValues) {

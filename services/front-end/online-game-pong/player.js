@@ -96,6 +96,20 @@ Player.prototype.setHeaderValues = async function (userId) {
 	this.paddleHeader.getElementsByClassName("avatar")[0].src = userValues.avatar;
 }
 
+Player.prototype.getPlayerUserNameFromHeader = function () {
+	console.log(this.paddleHeader);
+	console.log(this.paddleHeader.getElementsByClassName("playerName")[0])
+	console.log(this.paddleHeader.getElementsByClassName("spellName")[0]);
+	console.log(this.paddleHeader.getElementsByClassName("spellName")[0].getElementsByClassName("playerName")[0]);
+	console.log(this.paddleHeader.getElementsByClassName("spellName")[0]);
+
+	return this.paddleHeader.getElementsByClassName("playerName")[0].textContent;
+}
+
+Player.prototype.getPlayerAvatarFromHeader = function () {
+	return this.paddleHeader.getElementsByClassName("avatar")[0].src;
+}
+
 function startPlayerLoop() {
 	for (const [key, value] of Object.entries(playerKeys)) {
 		if (keyDown.has(value)) {
