@@ -797,6 +797,11 @@ export async function renderGameOnline() {
     }
     app.innerHTML = `
         <div id="main">
+            <div id="announcement">
+            
+            
+            </div>
+        
             <div id="mapAndHeader">
                 <div id="header">
                     <div id="headerLeft">

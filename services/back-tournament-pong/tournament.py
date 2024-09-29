@@ -29,9 +29,10 @@ class Tournament:
             await get_game_server().send("createGame", {"userId1": players[i].get_player_id(),
                                                         "userId2": players[i+1].get_player_id(),
                                                         "tournamentId": self.get_id()})
-            players[i].send_message_to_player("connectTo", {"server": "gameServer"})
-            players[i+1].send_message_to_player("connectTo", {"server": "gameServer"})
             print(f"For the tournament {self.get_id()} new stage launch for {players[i].get_player_id()} vs {players[i+1].get_player_id()}")
+        for player in players:
+            player.send_message_to_player("connectTo", {"server": "gameServer"})
+            player.set_statement(1)
 
     def add_player(self, player):
         self.players.append(player)

@@ -56,6 +56,13 @@ export function joinTournament(tournamentId) {
     initWebSocketFunc();
 }
 
+export function rejoinTournament(tournamentId) {
+    document.cookie = "type=joinTournament;max-age=3";
+    document.cookie = `tournamentId=${tournamentId};max-age=3`;
+    document.cookie = `reconnection=true;max-age=3`
+    initWebSocketFunc();
+}
+
 function startTournament() {
     sendMessageToTournamentServer("launchTournament", {});
 }

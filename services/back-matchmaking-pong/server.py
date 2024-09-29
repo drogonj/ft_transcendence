@@ -104,19 +104,6 @@ class MatchMakingWebSocket(WebSocketHandler):
             self.write_message({"type": "error", "values": {"message": "You are already playing or in a tournament"}})
             return
 
-        request_response = requests.get(f'http://user-management:8000/api/user/get_user/{self.user_id}/')
-        if request_response.status_code != 200:
-            print(f"An error occured with the id: {self.user_id}. Error code: {request_response.status_code}")
-            self.close()
-            return
-
-        user_status = request_response.json()["status"]
-        print(user_status)
-        if user_status == "inGame":
-            print(f"An error occured with the session_id: {session_id}. The user is already in game")
-            self.write_message({"type": "error", "values": {"message": "You are already in a game"}})
-            return
-
         user = User(self)
         users_in_queue.append(user)
 
@@ -138,8 +125,7 @@ class MatchMakingWebSocket(WebSocketHandler):
         return False
 
     def check_status(self):
-        request_response = requests.get('http://user-management:8000/backend/user_statement/',
-                      params={"user_id": self.user_id})
+        request_response = requests.get(f'http://user-management:8000/api/user/get_user/{self.user_id}/')
         if request_response.status_code != 200:
             print(f"Error when try to get status for user: {self.user_id}. Error: {request_response.status_code} {request_response.text}")
             self.write_message({"type": "error", "values": {"message": "Error when try to check your status"}})
