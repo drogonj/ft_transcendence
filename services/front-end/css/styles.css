@@ -15,8 +15,9 @@ body {
     -ms-user-select: none; /* Disable text selection in Internet Explorer/Edge */
     -webkit-touch-callout: none; /* Disable the callout that appears when long-pressing a link */
     color: rgba(255, 255, 255, 0.82);
-    background-image: url(https://cdn.dribbble.com/userupload/6898071/file/original-d6eee2f84315fca58967df52e2fed047.gif);
+    background-image: url(/assets/images/background.gif);
     background-size: cover;
+    overflow: hidden;
 }
 
 a {
