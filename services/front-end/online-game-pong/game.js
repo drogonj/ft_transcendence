@@ -102,9 +102,9 @@ function buildWarmupSide(warmupHtml, playerTarget) {
 
 		const spellImage = document.createElement('img');
 		const spellName = document.createElement('div');
-		spellImage.classList.add('spellImage');
+		spellImage.classList.add('warmupSpellImage');
 		spellImage.src = spell.icon.src;
-		spellName.classList.add('spellName');
+		spellName.classList.add('warmupSpellName');
 		spellName.textContent = spell.spellName;
 
 		const description = document.createElement('div');
