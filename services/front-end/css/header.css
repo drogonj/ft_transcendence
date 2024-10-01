@@ -7,7 +7,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 7vmin;
+    /* font-size: 7vmin; */
     color: #DAE1E7FF;
     box-sizing: border-box;
 }
@@ -26,11 +26,11 @@
 .playerName {
     text-align: center;
     margin: 2px;
-    font-size: 40%;
+    font-size: max(0.5vh, 1.25vw);
 }
 
 .scorePlayer {
-    font-size: 50%;
+    font-size: 250%;
 }
 
 .spellContainer {
@@ -65,6 +65,7 @@
 #headerMiddle {
     width: 26%;
     text-align: center;
+    font-size: 250%;
 }
 
 #headerLeft, #headerRight {

@@ -27,9 +27,9 @@ a {
 
 #avatar-container {
     width: 100%; /* ou une autre taille fixe ou relative */
-    height: 100%; /* assure que le conteneur est carrÃ© */
+    height: 100%; /* assure que le conteneur est carrÃƒÂ© */
     border-radius: 50%; /* rend le conteneur circulaire */
-    overflow: hidden; /* cache les parties dÃ©bordantes de l'image */
+    overflow: hidden; /* cache les parties dÃƒÂ©bordantes de l'image */
     display: flex;
     justify-content: center;
     align-items: center;

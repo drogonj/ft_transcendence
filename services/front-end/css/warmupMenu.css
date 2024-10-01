@@ -20,13 +20,13 @@
 }
 
 .warmupImage {
-    height: 64px;
-    width: 64px;
+    height: 4rem;
+    aspect-ratio: 1 / 1;
 }
 
 .spellImage {
-    height: 32px;
-    width: 32px;
+    height: 2rem;
+    aspect-ratio: 1 / 1;
 }
 
 .spellName {
