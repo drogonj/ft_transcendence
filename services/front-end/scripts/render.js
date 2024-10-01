@@ -638,8 +638,6 @@ export async function renderTournamentLobby() {
     `;
     await addChatMenu();
 
-	await addChatMenu();
-
     document.getElementById('leaveTournament').addEventListener('click', (event) => {
         event.preventDefault();
         closeTournamentWebSocket();
@@ -677,7 +675,10 @@ export async function renderGameEnd() {
                 <button id="buttonContinue" class="friend-menu-button">Continue</button>
             </div>
         </div>
+        <div class="chat-menu-container"></div>	
     `;
+	
+    await addChatMenu();
 
     document.getElementById('buttonContinue').addEventListener('click', async (event) => {
         event.preventDefault();

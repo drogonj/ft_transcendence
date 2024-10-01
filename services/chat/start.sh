@@ -17,6 +17,7 @@ VAULT_CA_CERT_PATH=$(curl -s -H "X-Vault-Token: $VAULT_TOKEN" --cacert /vault/ss
 export VAULT_ADDR="$VAULT_ADDR"
 export VAULT_TOKEN_FILE="$VAULT_TOKEN_FILE"
 export VAULT_CA_CERT_PATH="$VAULT_CA_CERT_PATH"
+
 echo "----------- wait user-management ----------- "
 while ! nc -z user-management 8000; do sleep 5; done
 echo ""
