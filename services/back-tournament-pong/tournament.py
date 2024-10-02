@@ -23,8 +23,9 @@ class Tournament:
     async def launch_stage(self):
         players = self.players.copy()
         random.shuffle(players)
+        removed_player = None
         if len(players) % 2:
-            players.pop()
+            removed_player = players.pop()
         for i in range(0, len(players), 2):
             await get_game_server().send("createGame", {"userId1": players[i].get_player_id(),
                                                         "userId2": players[i+1].get_player_id(),
@@ -33,6 +34,8 @@ class Tournament:
         for player in players:
             player.send_message_to_player("connectTo", {"server": "gameServer"})
             player.set_statement(1)
+        if removed_player:
+            removed_player.send_message_to_player("refreshLobby", self.dump_players_in_tournament())
 
     def add_player(self, player):
         self.players.append(player)
@@ -73,7 +76,6 @@ class Tournament:
             self.is_running = False
             self.send_message_to_tournament("endTournament", {})
             return
-        print("All player are connected")
         await self.launch_stage()
 
     def send_message_to_tournament(self, data_type, data_values):

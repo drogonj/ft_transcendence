@@ -99,6 +99,7 @@ export function refreshTournamentLobby(playersList) {
         const newDiv = document.createElement('div');
         const newDivUsername = document.createElement('div');
         const newImg = document.createElement('img');
+        const newImgStatement = document.createElement('img');
 
         newDiv.classList.add("playerCard");
 
@@ -113,8 +114,14 @@ export function refreshTournamentLobby(playersList) {
             newImg.src = promiseValues.avatar;
         });
 
+        newImgStatement.classList.add("statementImg");
+        newImgStatement.src = "../../assets/images/sablier.gif"
+        if (values["statement"] === 1)
+            newImgStatement.src = "../../assets/images/clavier.gif"
+
         newDiv.append(newImg);
         newDiv.append(newDivUsername);
+        newDiv.append(newImgStatement);
 
         document.getElementById("playerList").appendChild(newDiv);
     });

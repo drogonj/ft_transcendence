@@ -8,6 +8,7 @@ from websockets.exceptions import (
     InvalidHandshake,
     WebSocketException
 )
+from asyncio import TimeoutError
 
 
 class WebSocketClient:
@@ -47,9 +48,11 @@ def get_game_server():
 async def bind_to_game_server():
     print("Try connecting to the game server..")
     try:
-        await get_game_server().connect()
+        await asyncio.wait_for(get_game_server().connect(), timeout=3)
     except (OSError, InvalidURI, InvalidHandshake, ConnectionClosedError, WebSocketException) as e:
         print(f"Failed to connect: {e}")
+    except TimeoutError:
+        print("Connection attempt timed out after 3 seconds.")
 
 
 async def check_game_server_health():

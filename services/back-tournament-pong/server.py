@@ -87,9 +87,6 @@ class TournamentWebSocket(WebSocketHandler):
         if request_data is None:
             return
         self.user_id = int(request_data["id"])
-        if not cookies.get("reconnection") and not self.check_status():
-            self.write_message({"type": "error", "values": {"message": "You are already playing or in a tournament"}})
-            return
         player = Player(self, self.user_id, request_data["username"])
 
         try:
@@ -122,7 +119,6 @@ class TournamentWebSocket(WebSocketHandler):
                 self.tournament.bind_player_socket(self)
             else:
                 self.tournament.add_player(player)
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_started"})
 
     async def on_message(self, message):
         socket = json.loads(message)
@@ -159,7 +155,6 @@ class TournamentWebSocket(WebSocketHandler):
         if self.tournament.is_tournament_done():
             print(f"The tournament with id {self.tournament.get_id()} is done and removed.")
             tournaments.remove(self.tournament)
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_ended"})
 
     def get_userdata_from_session_id(self, session_id):
         request_response = requests.post("http://user-management:8000/api/user/get_session_user/",

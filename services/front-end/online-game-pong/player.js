@@ -97,12 +97,6 @@ Player.prototype.setHeaderValues = async function (userId) {
 }
 
 Player.prototype.getPlayerUserNameFromHeader = function () {
-	console.log(this.paddleHeader);
-	console.log(this.paddleHeader.getElementsByClassName("playerName")[0])
-	console.log(this.paddleHeader.getElementsByClassName("spellName")[0]);
-	console.log(this.paddleHeader.getElementsByClassName("spellName")[0].getElementsByClassName("playerName")[0]);
-	console.log(this.paddleHeader.getElementsByClassName("spellName")[0]);
-
 	return this.paddleHeader.getElementsByClassName("playerName")[0].textContent;
 }
 

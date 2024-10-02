@@ -43,10 +43,10 @@ class Player:
         try:
             self.__socket.write_message(json.dumps(message))
         except (WebSocketClosedError, AttributeError):
-            print("Message can't be send: Client is disconnected.")
+            pass
 
     def kill_connection(self):
         self.__socket.close()
 
     def dumps_player(self):
-        return {"playerId": self.__player_id, "username": self.__username, "host": self.__is_host}
+        return {"playerId": self.__player_id, "username": self.__username, "host": self.__is_host, "statement": self.__statement}

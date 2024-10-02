@@ -157,9 +157,9 @@ class Game:
 			data_values[player.get_side()] = player.statistics.get_statistics_as_list()
 
 		if self.__tournament_id >= 1 and await check_tournament_server_health():
-			self.get_winner().send_message_to_player("endGame", {"tournamentId": self.__tournament_id})
-			self.get_looser().send_message_to_player("endGame", data_values)
 			await get_game_server().send("endGame", {"tournamentId": self.__tournament_id, "winnerId": self.get_winner().get_user_id(), "looserId": self.get_looser().get_user_id()})
+			self.get_looser().send_message_to_player("endGame", data_values)
+			self.get_winner().send_message_to_player("endGame", {"tournamentId": self.__tournament_id})
 			return
 
 		self.send_message_to_game("endGame", data_values)
@@ -227,6 +227,7 @@ def disconnect_handle(client):
 	game.set_game_state(True, f'{client.user_id}_disconnected')
 
 	if not game.is_game_containing_players():
+		print("A game is delete because no player left.")
 		games.remove(game)
 
 
