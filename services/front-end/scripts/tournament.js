@@ -21,14 +21,10 @@ export function refreshTournamentList() {
 
                     newDivButton.classList.add("joinTournament");
                     newDivButton.classList.add("tournamentButton");
-                    newDivButton.textContent = `Join the actual ${value['playersNumber']}/10 players`;
-                    if (parseInt(value['playersNumber']) >= 10)
-                        newDivButton.disabled = true;
-                    else {
-                        newDivButton.addEventListener("click", event => {
-                            joinTournament(value["tournamentId"]);
-                        })
-                    }
+                    newDivButton.textContent = `Join the actual ${value['playersNumber']}/20 players`;
+                    newDivButton.addEventListener("click", event => {
+                        joinTournament(value["tournamentId"]);
+                    })
 
                     newDiv.classList.add("tournamentCard");
                     newDiv.textContent = `Tournament of ${value['hostUsername']}`;
@@ -87,6 +83,8 @@ function initWebSocketFunc() {
             tournamentWebSocket.close()
             navigateTo('/tournament', true);
             window.alert("You win the tournament ^^");
+        } else if (data.type === "info") {
+            window.alert(data.values["message"]);
         }
     }
 }
@@ -136,10 +134,6 @@ export function refreshTournamentLobby(playersList) {
         newDivButton.addEventListener("click", event => {
             startTournament();
         })
-        //todo the value is 4 but for testing I set 2. (same in back)
-        if (playersList.length < 2)
-            newDivButton.disabled = true
-
         const startDivButton = document.getElementById("startTournament");
         if (startDivButton)
             startDivButton.replaceWith(newDivButton);

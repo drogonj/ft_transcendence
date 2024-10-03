@@ -112,7 +112,7 @@ class TournamentWebSocket(WebSocketHandler):
 
             if self.tournament.is_tournament_full():
                 print(f'The user ({self.user_id}) {request_data["username"]} try to join the tournament {self.tournament.get_id()} but he is full')
-                self.write_message({"type": "error", "values": {"message": "This tournament is full."}})
+                self.write_message({"type": "error", "values": {"message": "The target tournament is full."}})
                 return
 
             if self.tournament.is_running:
@@ -126,6 +126,10 @@ class TournamentWebSocket(WebSocketHandler):
         if socket['type'] == 'launchTournament':
             if self.tournament.is_running:
                 print(f"The tournament {self.tournament.get_id()}, is already running.")
+                return
+            if not self.tournament.have_min_players():
+                print(f"The tournament {self.tournament.get_id()}, don't have the minimum required players number.")
+                await self.write_message({"type": "info", "values": {"message": "The tournament must have 4 players at least."}})
                 return
             await self.tournament.launch_tournament()
         elif socket['type'] == 'endGame':

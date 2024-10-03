@@ -75,6 +75,8 @@ class Tournament:
         if len(self.players) == 1:
             self.is_running = False
             self.send_message_to_tournament("endTournament", {})
+            #todo tell to profile to increase the tournament win number by the player.
+            #get the winner id with self.players[0].get_player_id() (last remind player)
             return
         await self.launch_stage()
 
@@ -88,7 +90,10 @@ class Tournament:
         return False
 
     def is_tournament_full(self):
-        return len(self.players) >= 10
+        return len(self.players) >= 20
+
+    def have_min_players(self):
+        return len(self.players) >= 4
 
     def dump_tournament(self):
         return {"tournamentId": self.id, "hostUsername": self.get_host_player().get_username(), "playersNumber": len(self.players)}
