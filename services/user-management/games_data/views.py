@@ -230,5 +230,27 @@ class user_statement_back(View):
                 logger.info(f'--- ERROR: {e}')
                 return JsonResponse({'error': 'Failed to update user status'}, status=500)
 
-        return HttpResponse('OK')
+        return JsonResponse({'status': 'OK'})
 
+@method_decorator(csrf_exempt, name='dispatch')
+class add_won_tournament(View):
+    async def post(self, request):
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        user_id = data.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Missing data'}, status=400)
+
+        async with user_lock:
+            try:
+                user = await User.objects.aget(id=user_id)
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
+            except:
+                return JsonResponse({'error': 'Failed to get user status'}, status=500)
+            user.tournaments_won += 1
+            await user.asave()
+
+        return HttpResponse('OK')
