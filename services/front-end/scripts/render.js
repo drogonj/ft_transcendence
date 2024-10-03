@@ -693,7 +693,7 @@ export async function renderGameSettings() {
             <h1>Game settings</h1>
         
             <output class="menuItem">Paddle Move Speed</output>
-            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="15">
+            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="20">
         
             <output class="menuItem">Paddle Size</output>
             <input id="inputPaddleSize" class="menuItem slider" type="range" min="5" max="40" value="20">
