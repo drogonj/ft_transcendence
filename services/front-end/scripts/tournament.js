@@ -1,6 +1,7 @@
 import {getHostNameFromURL, navigateTo} from "./contentLoader.js";
 import {currentUser, getUserFromId} from "./auth.js";
 import {launchClientGame} from "../online-game-pong/websocket.js";
+import {sendGameMessage} from "./chat.js";
 
 let tournamentWebSocket;
 
@@ -84,7 +85,7 @@ function initWebSocketFunc() {
             navigateTo('/tournament', true);
             window.alert("You win the tournament ^^");
         } else if (data.type === "info") {
-            window.alert(data.values["message"]);
+            sendGameMessage(data.values["message"]);
         }
     }
 }

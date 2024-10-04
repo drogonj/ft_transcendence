@@ -1,3 +1,4 @@
+import asyncio
 import json
 import random
 
@@ -26,7 +27,14 @@ class Tournament:
         removed_player = None
         if len(players) % 2:
             removed_player = players.pop()
+        await self.launch_tournament_warmup(players)
         for i in range(0, len(players), 2):
+            if players[i].get_socket() is None or players[i+1].get_socket() is None:
+                print(f"For the stage of tournament {self.get_id()} a player left on warmup.")
+                players.remove(i)
+                players.remove(i+1)
+                continue
+
             await get_game_server().send("createGame", {"userId1": players[i].get_player_id(),
                                                         "userId2": players[i+1].get_player_id(),
                                                         "tournamentId": self.get_id()})
@@ -36,6 +44,13 @@ class Tournament:
             player.set_statement(1)
         if removed_player:
             removed_player.send_message_to_player("refreshLobby", self.dump_players_in_tournament())
+
+    async def launch_tournament_warmup(self, players):
+        print(f"New warmup start for the tournement {self.get_id()}")
+        for i in range(0, len(players), 2):
+            players[i].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+            players[i+1].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+        await asyncio.sleep(5)
 
     def add_player(self, player):
         self.players.append(player)
@@ -63,6 +78,7 @@ class Tournament:
         for player in self.players:
             if player.get_player_id() == int(user_id):
                 print(f"The player ({player.get_player_id()}) {player.get_username()} leave the tournament with id {self.get_id()}")
+                player.set_socket(None)
                 self.remove_player(player)
                 break
 
