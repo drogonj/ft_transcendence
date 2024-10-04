@@ -4,7 +4,7 @@ import {coolDownRun} from "../header.js";
 import {getBallsWithIds} from "../ball.js";
 
 export default function BallSlayer() {
-	Spell.call(this, 10, "Ball Slayer", "DESCRIPTION", "ballSlayer", newImage("../../assets/images/ball_slayer.png"));
+	Spell.call(this, 10, "Ball Slayer", "All the incoming balls will be removed.", "ballSlayer", newImage("../../assets/images/ball_slayer.png"));
 }
 
 BallSlayer.prototype.executor = function (socketValues) {

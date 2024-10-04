@@ -8,8 +8,10 @@ from websockets.exceptions import (
     ConnectionClosedError,
     InvalidURI,
     InvalidHandshake,
-    WebSocketException
+    WebSocketException,
 )
+
+from asyncio import TimeoutError
 
 class WebSocketClient:
     game_server = None
@@ -35,7 +37,7 @@ class WebSocketClient:
     async def close_handle(self):
         await self.websocket.wait_closed()
         self.websocket = None
-        print("Connection with game server lost..")
+        print("Connection with tournament server lost..")
 
     def is_connected(self):
         return self.websocket is not None
@@ -55,9 +57,11 @@ async def check_tournament_server_health():
 async def bind_to_tournament_server():
     print("Try connecting to the tournament server..")
     try:
-        await get_game_server().connect()
+        await asyncio.wait_for(get_game_server().connect(), timeout=3)
     except (OSError, InvalidURI, InvalidHandshake, ConnectionClosedError, WebSocketException) as e:
         print(f"Failed to connect: {e}")
+    except TimeoutError:
+        print("Connection attempt timed out after 3 seconds.")
 
 
 async def main_check_loop():

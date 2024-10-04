@@ -4,7 +4,7 @@ import {coolDownRun} from "../header.js";
 import {getBallsWithIds, getBallWithId} from "../ball.js";
 
 export default function BallPush() {
-	Spell.call(this, 5, "Ball Push", "DESCRIPTION", "ballPush", newImage("../../assets/images/ball_push.png"));
+	Spell.call(this, 5, "Ball Push", "The speed of the next ball you hit increase by 2.", "ballPush", newImage("../../assets/images/ball_push.png"));
 }
 
 BallPush.prototype.executor = function(socketValues) {

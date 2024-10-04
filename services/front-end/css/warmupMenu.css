@@ -1,0 +1,66 @@
+#announcement {
+    background-color: rgb(76, 58, 81, 50%);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    text-align: center;
+    color: white;
+    max-width: 50%;
+    border-radius: 30px;
+}
+
+#players {
+    display: flex;
+    justify-content: space-between;
+}
+
+.playerInfos {
+    width: 50%;
+}
+
+.warmupImage {
+    height: 4rem;
+    aspect-ratio: 1 / 1;
+}
+
+.warmupSpellImage {
+    height: 2rem;
+    aspect-ratio: 1 / 1;
+}
+
+.warmupSpellName {
+    width: auto;
+    font-weight: bold;
+    margin-left: 2%;
+}
+
+.playerData {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4%;
+}
+
+.infoUserName {
+    text-align: center;
+}
+
+#timeBeforeStart {
+    font-size: 8vmin;
+    margin: 0;
+}
+
+.imageAndName {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.description {
+    text-align: left;
+    color: #ced4da;
+    margin: 3%;
+}

@@ -39,8 +39,7 @@ class Game:
 		socket_values["clientSide"] = "Right"
 		player_right.send_message_to_player("launchGame", socket_values)
 
-		asyncio.create_task(self.main_loop())
-		asyncio.create_task(self.launch_max_time())
+		asyncio.create_task(self.launch_loop())
 
 	async def main_loop(self):
 		balls_to_send = []
@@ -67,6 +66,17 @@ class Game:
 	def send_message_to_game(self, data_type, data_values):
 		for player in self.__players:
 			player.send_message_to_player(data_type, data_values)
+
+	async def launch_loop(self):
+		warmup = 10.0
+		while warmup > 0:
+			await asyncio.sleep(0.1)
+			warmup -= 0.1
+			if self.__is_game_end:
+				await self.game_end()
+				return
+		asyncio.create_task(self.main_loop())
+		asyncio.create_task(self.launch_max_time())
 
 	def move_player(self, socket_values):
 		player_side = socket_values["clientSide"]
@@ -128,7 +138,11 @@ class Game:
 		self.send_message_to_game("createBall", new_ball.dumps_ball_for_socket())
 
 	async def launch_max_time(self):
-		await asyncio.sleep(120)
+		max_time = 120
+		while max_time >= 0:
+			await asyncio.sleep(1)
+			for player in self.__players:
+				player.statistics.increase_time_without_taking_goals()
 		self.__game_end_reason = 'max_time_reached'
 		self.__is_game_end = True
 
@@ -138,12 +152,14 @@ class Game:
 
 		data_values = {}
 		for player in self.__players:
+			player.statistics.reset_goals_in_row()
+			player.statistics.reset_time_without_taking_goals()
 			data_values[player.get_side()] = player.statistics.get_statistics_as_list()
 
 		if self.__tournament_id >= 1 and await check_tournament_server_health():
-			self.get_winner().send_message_to_player("endGame", {"tournamentId": self.__tournament_id})
+			await get_game_server().send("endGame", {"tournamentId": self.__tournament_id, "winnerId": self.get_winner().get_user_id(), "looserId": self.get_looser().get_user_id()})
 			self.get_looser().send_message_to_player("endGame", data_values)
-			await get_game_server().send("endGame", {"tournamentId": self.__tournament_id, "looserId": self.get_looser().get_user_id()})
+			self.get_winner().send_message_to_player("endGame", {"tournamentId": self.__tournament_id})
 			return
 
 		self.send_message_to_game("endGame", data_values)
@@ -211,6 +227,7 @@ def disconnect_handle(client):
 	game.set_game_state(True, f'{client.user_id}_disconnected')
 
 	if not game.is_game_containing_players():
+		print("A game is delete because no player left.")
 		games.remove(game)
 
 

@@ -173,11 +173,11 @@ class user_statement_front(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class user_statement_back(View):
     async def get(self, request):
-        user_id = int(request.GET.get('user_id'))
+        user_id = request.GET.get('user_id')
         if not user_id:
             return JsonResponse({'error': 'No user provided'}, status=400)
         try:
-            user = await User.objects.aget(id=user_id)
+            user = await async_to_sync(User.objects.get)(id=user_id)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
         except:

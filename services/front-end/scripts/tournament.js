@@ -21,14 +21,10 @@ export function refreshTournamentList() {
 
                     newDivButton.classList.add("joinTournament");
                     newDivButton.classList.add("tournamentButton");
-                    newDivButton.textContent = `Join the actual ${value['playersNumber']}/10 players`;
-                    if (parseInt(value['playersNumber']) >= 10)
-                        newDivButton.disabled = true;
-                    else {
-                        newDivButton.addEventListener("click", event => {
-                            joinTournament(value["tournamentId"]);
-                        })
-                    }
+                    newDivButton.textContent = `Join the actual ${value['playersNumber']}/20 players`;
+                    newDivButton.addEventListener("click", event => {
+                        joinTournament(value["tournamentId"]);
+                    })
 
                     newDiv.classList.add("tournamentCard");
                     newDiv.textContent = `Tournament of ${value['hostUsername']}`;
@@ -56,6 +52,13 @@ export function joinTournament(tournamentId) {
     initWebSocketFunc();
 }
 
+export function rejoinTournament(tournamentId) {
+    document.cookie = "type=joinTournament;max-age=3";
+    document.cookie = `tournamentId=${tournamentId};max-age=3`;
+    document.cookie = `reconnection=true;max-age=3`
+    initWebSocketFunc();
+}
+
 function startTournament() {
     sendMessageToTournamentServer("launchTournament", {});
 }
@@ -80,6 +83,8 @@ function initWebSocketFunc() {
             tournamentWebSocket.close()
             navigateTo('/tournament', true);
             window.alert("You win the tournament ^^");
+        } else if (data.type === "info") {
+            window.alert(data.values["message"]);
         }
     }
 }
@@ -92,6 +97,7 @@ export function refreshTournamentLobby(playersList) {
         const newDiv = document.createElement('div');
         const newDivUsername = document.createElement('div');
         const newImg = document.createElement('img');
+        const newImgStatement = document.createElement('img');
 
         newDiv.classList.add("playerCard");
 
@@ -106,8 +112,14 @@ export function refreshTournamentLobby(playersList) {
             newImg.src = promiseValues.avatar;
         });
 
+        newImgStatement.classList.add("statementImg");
+        newImgStatement.src = "../../assets/images/sablier.gif"
+        if (values["statement"] === 1)
+            newImgStatement.src = "../../assets/images/clavier.gif"
+
         newDiv.append(newImg);
         newDiv.append(newDivUsername);
+        newDiv.append(newImgStatement);
 
         document.getElementById("playerList").appendChild(newDiv);
     });
@@ -122,10 +134,6 @@ export function refreshTournamentLobby(playersList) {
         newDivButton.addEventListener("click", event => {
             startTournament();
         })
-        //todo the value is 4 but for testing I set 2. (same in back)
-        if (playersList.length < 2)
-            newDivButton.disabled = true
-
         const startDivButton = document.getElementById("startTournament");
         if (startDivButton)
             startDivButton.replaceWith(newDivButton);

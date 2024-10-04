@@ -51,3 +51,8 @@ button[disabled]{
 #footerTournament {
     margin-top: 2%;
 }
+
+.statementImg {
+    display: block;
+    margin-left: auto;
+}

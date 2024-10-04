@@ -31,8 +31,15 @@ python manage.py migrate
 echo ""
 python manage.py showmigrations
 echo "----------- Migration applied ----------- "
-python create_superuser.py
-python create_testusers.py
+
+if [ -f /user-management/configured ]; then
+  echo "-----------Reset users status--------- "
+  python reset_users_status.py
+else
+  python create_superuser.py
+  python create_testusers.py
+  touch /user-management/configured
+fi
 
 echo "----- Starting Game Events Listener ----- "
 python manage.py game_events_listener &

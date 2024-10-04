@@ -16,7 +16,7 @@
     box-sizing: border-box;
     overflow: hidden;
     height: max(35vh, 20vw);
-    width: max(12.5vh, 10vw);
+    width: max(12vh, 10vw);
     aspect-ratio: 200 / 400;
     position: absolute;
     bottom: 0;
@@ -96,7 +96,7 @@
     border-radius: 5px;
     box-sizing: border-box;
     overflow: hidden;
-    width: max(22.5vh, 20vw);
+    width: max(22vh, 20vw);
     height: max(35vh, 20vw);
     position: absolute;
     bottom: 0px;

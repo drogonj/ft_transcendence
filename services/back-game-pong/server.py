@@ -52,9 +52,6 @@ class GameServerWebSocket(WebSocketHandler):
 
         self.user_id = request_data["id"]
 
-        # Update User Status
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_started"})
-
         print(f'[+] The user ({request_data["id"]}) {request_data["username"]} is connected to the game server.')
 
     def on_message(self, message):
@@ -73,7 +70,6 @@ class GameServerWebSocket(WebSocketHandler):
             print("Connection with tournament server lost..")
             return
         print(f"[-] The user ({self.user_id}) leave the server game.")
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "remote_game_ended"})
         disconnect_handle(self)
         clients.remove(self)
 
@@ -82,7 +78,6 @@ django_app = WSGIContainer(get_wsgi_application())
 
 tornado_app = Application([
     (r"/ws/back", GameServerWebSocket),  # API handler path
-    # (r"/ws/back/chat", ChatGameServerWebSocket),
     (r".*", FallbackHandler, dict(fallback=django_app)),  # Fallback to Django
 ])
 

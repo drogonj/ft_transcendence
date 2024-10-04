@@ -638,8 +638,6 @@ export async function renderTournamentLobby() {
     `;
     await addChatMenu();
 
-	await addChatMenu();
-
     document.getElementById('leaveTournament').addEventListener('click', (event) => {
         event.preventDefault();
         closeTournamentWebSocket();
@@ -677,7 +675,10 @@ export async function renderGameEnd() {
                 <button id="buttonContinue" class="friend-menu-button">Continue</button>
             </div>
         </div>
+        <div class="chat-menu-container"></div>	
     `;
+	
+    await addChatMenu();
 
     document.getElementById('buttonContinue').addEventListener('click', async (event) => {
         event.preventDefault();
@@ -692,7 +693,7 @@ export async function renderGameSettings() {
             <h1>Game settings</h1>
         
             <output class="menuItem">Paddle Move Speed</output>
-            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="15">
+            <input id="inputPaddleMoveSpeed" class="menuItem slider" type="range" min="3" max="25" value="20">
         
             <output class="menuItem">Paddle Size</output>
             <input id="inputPaddleSize" class="menuItem slider" type="range" min="5" max="40" value="20">
@@ -764,7 +765,7 @@ export async function renderGameLocal() {
                     </div>
         
                     <div id="headerMiddle">
-                        <div id="headerTimer">10</div>
+                        <div id="headerTimer">11</div>
                     </div>
         
                     <div id="headerRight">
@@ -831,5 +832,28 @@ export async function renderGameOnline() {
                 </div>
             </div>
         </div>
+        
+        <div id="announcement">
+            <h1>The game will start in</h1>
+            <div id="timeBeforeStart">10</div>
+            <div id="players">
+                <div id="infoLeft" class="playerInfos">
+                    <div class="playerData">
+                        <img class="warmupImage" src="https://www.kasandbox.org/programming-images/avatars/leaf-blue.png">
+                        <div class="infoUserName">PlayerName</div>
+                    </div>
+                    <div class="spells">
+                    </div>
+                </div>
+                 <div id="infoRight" class="playerInfos">
+                     <div class="playerData">
+                        <img class="warmupImage" src="https://www.kasandbox.org/programming-images/avatars/leaf-blue.png">
+                        <div class="infoUserName">PlayerName</div>
+                    </div>
+                    <div class="spells">
+                    </div>
+                </div>
+            </div>
+        </div>   
     `;
 }

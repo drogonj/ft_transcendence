@@ -53,6 +53,12 @@ def is_user_already_in_tournament(user_id):
     return False
 
 
+def get_tournament_with_user_id(user_id):
+    for tournament in tournaments:
+        if tournament.is_user_in_tournament(user_id):
+            return tournament
+
+
 class TournamentWebSocket(WebSocketHandler):
     def __init__(self, *args, **kwargs):
         # General class initialization, no connection-specific data here
@@ -81,9 +87,6 @@ class TournamentWebSocket(WebSocketHandler):
         if request_data is None:
             return
         self.user_id = int(request_data["id"])
-        if not self.check_status():
-            self.write_message({"type": "error", "values": {"message": "You are already playing or in a tournament"}})
-            return
         player = Player(self, self.user_id, request_data["username"])
 
         try:
@@ -109,16 +112,13 @@ class TournamentWebSocket(WebSocketHandler):
 
             if self.tournament.is_tournament_full():
                 print(f'The user ({self.user_id}) {request_data["username"]} try to join the tournament {self.tournament.get_id()} but he is full')
-                self.write_message({"type": "error", "values": {"message": "This tournament is full."}})
+                self.write_message({"type": "error", "values": {"message": "The target tournament is full."}})
                 return
 
             if self.tournament.is_running:
                 self.tournament.bind_player_socket(self)
             else:
                 self.tournament.add_player(player)
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_started"})
-        print("1")
-        print(response.status_code)
 
     async def on_message(self, message):
         socket = json.loads(message)
@@ -127,10 +127,15 @@ class TournamentWebSocket(WebSocketHandler):
             if self.tournament.is_running:
                 print(f"The tournament {self.tournament.get_id()}, is already running.")
                 return
+            if not self.tournament.have_min_players():
+                print(f"The tournament {self.tournament.get_id()}, don't have the minimum required players number.")
+                await self.write_message({"type": "info", "values": {"message": "The tournament must have 4 players at least."}})
+                return
             await self.tournament.launch_tournament()
         elif socket['type'] == 'endGame':
             tournament = get_tournament_with_id(socket_values["tournamentId"])
             tournament.remove_player_with_id(socket_values["looserId"])
+            tournament.get_player_with_id(socket_values["winnerId"]).set_statement(0)
 
     def on_close(self):
         if not hasattr(self, 'user_id'):
@@ -144,18 +149,16 @@ class TournamentWebSocket(WebSocketHandler):
             player = self.tournament.get_player_with_id(self.user_id)
             if player is None:
                 print(f"None for {self.user_id}")
-            if player and player.get_socket() is None:
-                self.tournament.remove_player_with_id(self.user_id)
                 return
-            print(f"The user {self.user_id} leave a running tournament but player object is still connected.")
-            player.set_socket(None)
-            return
+            if player.get_statement() == 1:
+                print(f"The user {self.user_id} leave a running tournament but player object is still connected.")
+                player.set_socket(None)
+                return
 
         self.tournament.remove_player_with_id(self.user_id)
         if self.tournament.is_tournament_done():
             print(f"The tournament with id {self.tournament.get_id()} is done and removed.")
             tournaments.remove(self.tournament)
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "tournament_ended"})
 
     def get_userdata_from_session_id(self, session_id):
         request_response = requests.post("http://user-management:8000/api/user/get_session_user/",
@@ -168,8 +171,7 @@ class TournamentWebSocket(WebSocketHandler):
         return request_response.json()
 
     def check_status(self):
-        request_response = requests.get('http://user-management:8000/backend/user_statement/',
-                      params={"user_id": self.user_id})
+        request_response = requests.get(f'http://user-management:8000/api/user/get_user/{self.user_id}/')
         if request_response.status_code != 200:
             print(f"Error when try to get status for user: {self.user_id}. Error: {request_response.status_code} {request_response.text}")
             self.write_message({"type": "error", "values": {"message": "Error when try to check your status"}})

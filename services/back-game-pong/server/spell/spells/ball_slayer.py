@@ -19,6 +19,8 @@ class BallSlayer(Spell):
                       "spellAction": "executor",
                       "ballIds": ball_ids}
         self.send_spell_message_to_players(game, data_values)
+        if len(target_balls) == 0:
+            return
         asyncio.create_task(self.delayed_spell_task(game))
 
     async def delayed_spell_task(self, game):
