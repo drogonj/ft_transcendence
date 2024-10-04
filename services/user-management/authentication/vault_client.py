@@ -1,17 +1,36 @@
 import os
 import hvac
+import time
 
 class VaultClient:
-    def __init__(self, vault_addr, token_file, ca_cert_path):
+    def __init__(self, vault_addresses, token_file, ca_cert_path):
+        self.vault_addresses = vault_addresses
+        self.token_file = token_file
+        self.ca_cert_path = ca_cert_path
+        self.client = None
+
+    def connect(self):
         token = ''
-        if os.path.exists(token_file):
-            with open(token_file, 'r') as file:
+        if os.path.exists(self.token_file):
+            with open(self.token_file, 'r') as file:
                 token = file.read().strip()
         if token == '':
             raise ValueError('Django token not found')
-        self.client = hvac.Client(url=vault_addr, token=token, verify=ca_cert_path)
+
+        for addr in self.vault_addresses:
+            try:
+                self.client = hvac.Client(url=addr, token=token, verify=self.ca_cert_path)
+                if self.client.is_authenticated():
+                    return
+            except Exception as e:
+                print(f"Failed to connect to Vault at {addr}: {str(e)}")
+        
+        raise ConnectionError("Failed to connect to any Vault instance")
 
     def read_secret(self, path):
+        if not self.client or not self.client.is_authenticated():
+            self.connect()
+
         try:
             response = self.client.secrets.kv.v2.read_secret_version(path=path)
             return response['data']['data']
@@ -22,34 +41,17 @@ class VaultClient:
             print(f"Unexpected error reading secret from path {path}: {e}")
             return None
 
-    def create_secret(self, path, data):
-        try:
-            self.client.secrets.kv.v2.create_or_update_secret(
-                path=path,
-                secret=data
-            )
-            return True
-        except hvac.exceptions.VaultError as e:
-            print(f"Error creating secret: {e}")
-            return False
-
-    def delete_secret(self, path):
-        try:
-            self.client.secrets.kv.v2.delete_metadata_and_all_versions(path=path)
-            return True
-        except hvac.exceptions.VaultError as e:
-            print(f"Error deleting secret: {e}")
-            return False
-
-# Singleton pattern to ensure only one instance of VaultClient
 _vault_client_instance = None
 
 def get_vault_client():
     global _vault_client_instance
     if _vault_client_instance is None:
-        vault_addr = os.environ.get('VAULT_ADDR')
-        token_file = os.environ.get('VAULT_TOKEN_FILE')
+        vault_addresses = [
+            "https://vault_2:8200",
+            "https://vault_3:8200",
+            "https://vault_4:8200"
+        ]
+        token_file = os.environ.get('VAULT_TOKEN_FILE', '').strip('"').strip("'")
         ca_cert_path = os.environ.get('VAULT_CA_CERT_PATH')
-        token_file = token_file.strip('"').strip("'")
-        _vault_client_instance = VaultClient(vault_addr, token_file, ca_cert_path)
+        _vault_client_instance = VaultClient(vault_addresses, token_file, ca_cert_path)
     return _vault_client_instance
