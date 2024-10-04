@@ -1,18 +1,17 @@
 import json
 import random
 import asyncio
-from asyncio import Semaphore
 import aiohttp
 
 from websocket import get_game_server
 
-semaphore = Semaphore(1)
+lock = asyncio.Lock()
 
 async def send_player_status(id, state):
     url = 'http://user-management:8000/backend/user_statement/'
-    data = {"user_id": id, "state": "tournament_started" if state == 'connect' else "tournament_ended"}
+    data = {"user_id": id, "state": state}
 
-    async with semaphore:
+    async with lock:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=data) as response:
@@ -20,36 +19,10 @@ async def send_player_status(id, state):
                         return await response.json()
                     else:
                         response.raise_for_status()
-        except (aiohttp.ClientError, aiohttp.ClientResponseError) as e:
+        except Exception as e:
             print(f"Failed to send player status: {e}")
             return
-
-# async def send_player_status(id, state):
-#     url = 'http://user-management:8000/backend/user_statement/'
-#     data = {"user_id": id, "state": "tournament_started" if state == 'connect' else "tournament_ended"}
-#     max_retries = 10
-#
-#     async with semaphore:
-#         for attempt in range(max_retries):
-#             try:
-#                 async with aiohttp.ClientSession() as session:
-#                     async with session.post(url, json=data) as response:
-#                         if response.status == 200:
-#                             return await response.json()
-#                         else:
-#                             response.raise_for_status()
-#             except (aiohttp.ClientError, aiohttp.ClientResponseError) as e:
-#                 if attempt < max_retries - 1:
-#                     await asyncio.sleep(0.5)
-#                 else:
-#                     print(f"Failed to send player status after {max_retries} attempts: {e}")
-#                     return None
-
-# async def send_player_status(id, state):
-#     if state == 'connect':
-#         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": id, "state": "tournament_started"})
-#     elif state == 'disconnect':
-#         response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": id, "state": "tournament_ended"})
+        await asyncio.sleep(0.1)
 
 class Tournament:
     def __init__(self, host_player, tournament_id):
@@ -109,7 +82,7 @@ class Tournament:
     def remove_player_with_id(self, user_id):
         for player in self.players:
             if player.get_player_id() == int(user_id):
-                asyncio.create_task(send_player_status(user_id, 'disconnect'))
+                asyncio.create_task(send_player_status(user_id, 'tournament_ended'))
                 print(f"The player ({player.get_player_id()}) {player.get_username()} leave the tournament with id {self.get_id()}")
                 self.remove_player(player)
                 break

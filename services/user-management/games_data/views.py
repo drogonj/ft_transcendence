@@ -130,7 +130,7 @@ class HandleGameEventsView(View):
         player_score = match.score0 if player == match.player0 else match.score1
         if player_score > 0:
             player.goals += player_score
-        await sync_to_async(player.save)()
+        await sync_to_async(player.save)(update_fields=["victories", "defeats", "trophies", "tournaments_won", "goals", "winrate"])
         #Display new stats
         #logger.info(f'{player.username} stats updated: {player.victories} victories, {player.defeats} defeats, {player.trophies} trophies, {player.tournaments_won} tournaments won, {player.goals} goals, {player.winrate}% winrate')
 
@@ -161,8 +161,6 @@ class user_statement_front(View):
 
     async def safe_operate(self, user, state):
         async with user_lock:
-            await asyncio.sleep(0.1)
-            # Check if user is connected, if not, tell the modification is not applied
             if user.id not in connected_users:
                 return JsonResponse({'error': 'User not connected'}, status=400)
             try:
@@ -207,8 +205,6 @@ class user_statement_back(View):
             return JsonResponse({'error': 'Invalid state'}, status=400)
 
         async with user_lock:
-            await asyncio.sleep(0.1)
-            # Check if user is connected, if not, tell the modification is not applied
             if user_id not in connected_users:
                 return JsonResponse({'error': 'User not connected'}, status=400)
             try:
@@ -221,8 +217,6 @@ class user_statement_back(View):
                     await change_and_notify_user_status(channel_layer, user, 'matchmaking')
                 else: # ["remote_game_ended", "tournament_ended", "matchmaking_ended"]
                     await change_and_notify_user_status(channel_layer, user, 'online')
-
-                await user.asave()
 
             except User.DoesNotExist:
                 return JsonResponse({'error': 'User not found'}, status=404)
@@ -251,6 +245,6 @@ class add_won_tournament(View):
             except:
                 return JsonResponse({'error': 'Failed to get user status'}, status=500)
             user.tournaments_won += 1
-            await user.asave()
+            await user.asave(update_fields=["tournaments_won"])
 
         return HttpResponse('OK')

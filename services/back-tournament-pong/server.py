@@ -96,7 +96,7 @@ class TournamentWebSocket(WebSocketHandler):
             self.close()
             return
 
-        asyncio.create_task(send_player_status(self.user_id, 'connect'))
+        asyncio.create_task(send_player_status(self.user_id, 'tournament_started'))
 
         if action_type == "createTournament":
             global tournaments_id
