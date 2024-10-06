@@ -46,11 +46,27 @@ class Tournament:
             removed_player.send_message_to_player("refreshLobby", self.dump_players_in_tournament())
 
     async def launch_tournament_warmup(self, players):
-        print(f"New warmup start for the tournement {self.get_id()}")
-        for i in range(0, len(players), 2):
-            players[i].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
-            players[i+1].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
-        await asyncio.sleep(5)
+        # print(f"New warmup start for the tournement {self.get_id()}")
+        # for i in range(0, len(players), 2):
+        #     players[i].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+        #     players[i+1].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+        # for i in range(0, len(players), 2):
+        #     for j in range(4, 0, -1):
+        #         message = str(j)
+        #         await asyncio.sleep(1)
+        #         players[i].send_message_to_player("info", {"message": message})
+        #         players[i+1].send_message_to_player("info", {"message": message})
+        print(f"New warmup start for the tournament {self.get_id()}")
+        # Inform all players at once about the game start
+        for player in players:
+            player.send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+        # Countdown from 4 to 1, sending the message to all players simultaneously
+        for j in range(4, 0, -1):
+            await asyncio.sleep(1)  # Wait 1 second between countdown numbers
+            message = str(j)
+        # Send the countdown message to all players at the same time
+            for player in players:
+                player.send_message_to_player("info", {"message": message})
 
     def add_player(self, player):
         self.players.append(player)

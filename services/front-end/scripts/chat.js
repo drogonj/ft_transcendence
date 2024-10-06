@@ -494,18 +494,9 @@ async function sendChatMessage(message) {
 	}));
 }
 
-export async function sendSystemMessage(message) {
-	chatSocket.send(JSON.stringify({
-		'type': 'system',
-		'content': convertURL(message),
-		'user_id': currentUser.user_id,
-		'username': currentUser.username
-	}));
-}
-
 export function sendGameMessage(message) {
 	chatSocket.send(JSON.stringify({
-		'type': 'tournament_call',
+		'type': 'game_message',
 		'content': convertURL(message),
 		'user_id': currentUser.user_id,
 		'username': currentUser.username
