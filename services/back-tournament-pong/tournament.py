@@ -1,3 +1,4 @@
+import asyncio
 import json
 import random
 import asyncio
@@ -43,9 +44,10 @@ class Tournament:
     async def launch_stage(self):
         players = self.players.copy()
         random.shuffle(players)
-        removed_player = None
+        removed_players = []
         if len(players) % 2:
-            removed_player = players.pop()
+            removed_players.append(players.pop())
+        await self.launch_tournament_warmup(players, removed_players)
         for i in range(0, len(players), 2):
             await get_game_server().send("createGame", {"userId1": players[i].get_player_id(),
                                                         "userId2": players[i+1].get_player_id(),
@@ -54,8 +56,28 @@ class Tournament:
         for player in players:
             player.send_message_to_player("connectTo", {"server": "gameServer"})
             player.set_statement(1)
-        if removed_player:
+        for removed_player in removed_players:
             removed_player.send_message_to_player("refreshLobby", self.dump_players_in_tournament())
+
+    async def launch_tournament_warmup(self, players, removed_players):
+        print(f"New warmup start for the tournement {self.get_id()}")
+        for i in range(0, len(players), 2):
+            players[i].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+            players[i+1].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+        await asyncio.sleep(5)
+
+        players_without_leaver = []
+        for i in range(0, len(players), 2):
+            if players[i].get_socket() is None or players[i+1].get_socket() is None:
+                remind_player = players[i] if players[i].get_socket() is not None else players[i+1]
+                remind_player.send_message_to_player("info", {"message": "Your opponent has left the tournament. Please wait for the next stage."})
+                removed_players.append(remind_player)
+                print(f"For the stage of tournament {self.get_id()} a player left on warmup.")
+                continue
+
+            players_without_leaver.append(players[i])
+            players_without_leaver.append(players[i+1])
+        players[:] = players_without_leaver
 
     def add_player(self, player):
         self.players.append(player)
@@ -84,6 +106,7 @@ class Tournament:
             if player.get_player_id() == int(user_id):
                 asyncio.create_task(send_player_status(user_id, 'tournament_ended'))
                 print(f"The player ({player.get_player_id()}) {player.get_username()} leave the tournament with id {self.get_id()}")
+                player.set_socket(None)
                 self.remove_player(player)
                 break
 
@@ -96,6 +119,8 @@ class Tournament:
         if len(self.players) == 1:
             self.is_running = False
             self.send_message_to_tournament("endTournament", {})
+            #todo tell to profile to increase the tournament win number by the player.
+            #get the winner id with self.players[0].get_player_id() (last remind player)
             return
         await self.launch_stage()
 
@@ -109,7 +134,10 @@ class Tournament:
         return False
 
     def is_tournament_full(self):
-        return len(self.players) >= 10
+        return len(self.players) >= 20
+
+    def have_min_players(self):
+        return len(self.players) >= 4
 
     def dump_tournament(self):
         return {"tournamentId": self.id, "hostUsername": self.get_host_player().get_username(), "playersNumber": len(self.players)}

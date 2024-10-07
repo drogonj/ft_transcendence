@@ -503,7 +503,7 @@ export async function sendSystemMessage(message) {
 	}));
 }
 
-export async function sendGameMessage(message) {
+export function sendGameMessage(message) {
 	chatSocket.send(JSON.stringify({
 		'type': 'tournament_call',
 		'content': convertURL(message),

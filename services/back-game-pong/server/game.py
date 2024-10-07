@@ -167,6 +167,7 @@ class Game:
 			await asyncio.sleep(1)
 			for player in self.__players:
 				player.statistics.increase_time_without_taking_goals()
+			max_time -= 1
 		self.__game_end_reason = 'max_time_reached'
 		self.__is_game_end = True
 

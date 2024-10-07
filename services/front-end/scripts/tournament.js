@@ -1,6 +1,7 @@
 import {getHostNameFromURL, navigateTo} from "./contentLoader.js";
 import {currentUser, getUserFromId} from "./auth.js";
 import {launchClientGame} from "../online-game-pong/websocket.js";
+import {sendGameMessage} from "./chat.js";
 
 let tournamentWebSocket;
 
@@ -21,14 +22,10 @@ export function refreshTournamentList() {
 
                     newDivButton.classList.add("joinTournament");
                     newDivButton.classList.add("tournamentButton");
-                    newDivButton.textContent = `Join the actual ${value['playersNumber']}/10 players`;
-                    if (parseInt(value['playersNumber']) >= 10)
-                        newDivButton.disabled = true;
-                    else {
-                        newDivButton.addEventListener("click", event => {
-                            joinTournament(value["tournamentId"]);
-                        })
-                    }
+                    newDivButton.textContent = `Join the actual ${value['playersNumber']}/20 players`;
+                    newDivButton.addEventListener("click", event => {
+                        joinTournament(value["tournamentId"]);
+                    })
 
                     newDiv.classList.add("tournamentCard");
                     newDiv.textContent = `Tournament of ${value['hostUsername']}`;
@@ -46,32 +43,23 @@ export function refreshTournamentList() {
 }
 
 export function createTournament() {
-    document.cookie = "type=createTournament;max-age=3";
-    initWebSocketFunc();
+    initWebSocketFunc("action=createTournament");
 }
 
 export function joinTournament(tournamentId) {
-    document.cookie = "type=joinTournament;max-age=3";
-    document.cookie = `tournamentId=${tournamentId};max-age=3`;
-    initWebSocketFunc();
-}
-
-export function rejoinTournament(tournamentId) {
-    document.cookie = "type=joinTournament;max-age=3";
-    document.cookie = `tournamentId=${tournamentId};max-age=3`;
-    document.cookie = `reconnection=true;max-age=3`
-    initWebSocketFunc();
+    initWebSocketFunc(`action=joinTournament&tournamentId=${tournamentId}`);
 }
 
 function startTournament() {
     sendMessageToTournamentServer("launchTournament", {});
 }
 
-function initWebSocketFunc() {
-    tournamentWebSocket = new WebSocket(`wss://${getHostNameFromURL()}/ws/tournament`);
+function initWebSocketFunc(queryString) {
+    tournamentWebSocket = new WebSocket(`wss://${getHostNameFromURL()}/ws/tournament?${queryString}`);
     tournamentWebSocket.onopen = function () {
         navigateTo('/tournament-lobby', true);
     }
+
     tournamentWebSocket.onmessage = function (event) {
         const data = JSON.parse(event.data);
         if (data.type === "refreshLobby")
@@ -87,6 +75,8 @@ function initWebSocketFunc() {
             tournamentWebSocket.close()
             navigateTo('/tournament', true);
             window.alert("You win the tournament ^^");
+        } else if (data.type === "info") {
+            sendGameMessage(data.values["message"]);
         }
     }
 }
@@ -136,10 +126,6 @@ export function refreshTournamentLobby(playersList) {
         newDivButton.addEventListener("click", event => {
             startTournament();
         })
-        //todo the value is 4 but for testing I set 2. (same in back)
-        if (playersList.length < 2)
-            newDivButton.disabled = true
-
         const startDivButton = document.getElementById("startTournament");
         if (startDivButton)
             startDivButton.replaceWith(newDivButton);

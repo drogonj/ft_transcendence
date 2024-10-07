@@ -89,9 +89,8 @@ class TournamentWebSocket(WebSocketHandler):
         self.user_id = int(request_data["id"])
         player = Player(self, self.user_id, request_data["username"])
 
-        try:
-            action_type = cookies.get("type").value
-        except AttributeError:
+        action_type = self.get_argument("action", None)
+        if not action_type:
             print(f"No action type found.")
             self.close()
             return
@@ -104,9 +103,9 @@ class TournamentWebSocket(WebSocketHandler):
             tournaments.append(self.tournament)
             tournaments_id += 1
         elif action_type == "joinTournament":
-            self.tournament = get_tournament_with_id(cookies.get("tournamentId").value)
+            self.tournament = get_tournament_with_id(self.get_argument("tournamentId", None))
             if not self.tournament:
-                print(f'The user {self.user_id} try to join the tournament {cookies.get("tournamentId").value} but he is no longer available')
+                print(f'The user {self.user_id} try to join the tournament {self.get_argument("tournamentId", None)} but he is no longer available')
                 self.write_message({"type": "error", "values": {"message": "This tournament is no longer available."}})
                 return
 
@@ -114,7 +113,7 @@ class TournamentWebSocket(WebSocketHandler):
 
             if self.tournament.is_tournament_full():
                 print(f'The user ({self.user_id}) {request_data["username"]} try to join the tournament {self.tournament.get_id()} but he is full')
-                self.write_message({"type": "error", "values": {"message": "This tournament is full."}})
+                self.write_message({"type": "error", "values": {"message": "The target tournament is full."}})
                 return
 
             if self.tournament.is_running:
@@ -128,6 +127,10 @@ class TournamentWebSocket(WebSocketHandler):
         if socket['type'] == 'launchTournament':
             if self.tournament.is_running:
                 print(f"The tournament {self.tournament.get_id()}, is already running.")
+                return
+            if not self.tournament.have_min_players():
+                print(f"The tournament {self.tournament.get_id()}, don't have the minimum required players number.")
+                await self.write_message({"type": "info", "values": {"message": "The tournament must have 4 players at least."}})
                 return
             await self.tournament.launch_tournament()
         elif socket['type'] == 'endGame':
