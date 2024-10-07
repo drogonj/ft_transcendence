@@ -424,15 +424,6 @@ async function parseMessage(message) {
 			const cmd = parts[0].slice(1);
 			const username = parts[1];
 
-			if (cmd === 'game'){
-				chatSocket.send(JSON.stringify({
-					'type': 'game_message',
-					'content': convertURL(parts.slice(1).join(' ')),
-				}));
-
-				return ;
-			}
-
 			try {
 				const response = await fetch('/api/user/get_users/');
 				const usersData = await response.json();
