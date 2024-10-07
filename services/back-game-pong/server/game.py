@@ -206,7 +206,7 @@ class Game:
 		return False
 
 	def get_winner(self):
-		return self.__players[0] if self.__players[0].statistics.score > self.__players[1].statistics.score else self.__players[1]
+		return self.__players[0] if self.__players[0].statistics.score > self.__players[1].statistics.score else self.__players[0]
 
 	def get_looser(self):
 		return self.__players[0] if self.__players[0].statistics.score < self.__players[1].statistics.score else self.__players[1]
