@@ -24,17 +24,11 @@ class Tournament:
     async def launch_stage(self):
         players = self.players.copy()
         random.shuffle(players)
-        removed_player = None
+        removed_players = []
         if len(players) % 2:
-            removed_player = players.pop()
-        await self.launch_tournament_warmup(players)
+            removed_players.append(players.pop())
+        await self.launch_tournament_warmup(players, removed_players)
         for i in range(0, len(players), 2):
-            if players[i].get_socket() is None or players[i+1].get_socket() is None:
-                print(f"For the stage of tournament {self.get_id()} a player left on warmup.")
-                players.remove(i)
-                players.remove(i+1)
-                continue
-
             await get_game_server().send("createGame", {"userId1": players[i].get_player_id(),
                                                         "userId2": players[i+1].get_player_id(),
                                                         "tournamentId": self.get_id()})
@@ -42,31 +36,32 @@ class Tournament:
         for player in players:
             player.send_message_to_player("connectTo", {"server": "gameServer"})
             player.set_statement(1)
-        if removed_player:
+        for removed_player in removed_players:
             removed_player.send_message_to_player("refreshLobby", self.dump_players_in_tournament())
 
-    async def launch_tournament_warmup(self, players):
-        # print(f"New warmup start for the tournement {self.get_id()}")
-        # for i in range(0, len(players), 2):
-        #     players[i].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
-        #     players[i+1].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
-        # for i in range(0, len(players), 2):
-        #     for j in range(4, 0, -1):
-        #         message = str(j)
-        #         await asyncio.sleep(1)
-        #         players[i].send_message_to_player("info", {"message": message})
-        #         players[i+1].send_message_to_player("info", {"message": message})
+    async def launch_tournament_warmup(self, players, removed_players):
         print(f"New warmup start for the tournament {self.get_id()}")
-        # Inform all players at once about the game start
         for player in players:
             player.send_message_to_player("info", {"message": "The game will start in 5 seconds"})
-        # Countdown from 4 to 1, sending the message to all players simultaneously
         for j in range(4, 0, -1):
-            await asyncio.sleep(1)  # Wait 1 second between countdown numbers
+            await asyncio.sleep(1)
             message = str(j)
-        # Send the countdown message to all players at the same time
             for player in players:
                 player.send_message_to_player("info", {"message": message})
+        await asyncio.sleep(1)
+
+        players_without_leaver = []
+        for i in range(0, len(players), 2):
+            if players[i].get_socket() is None or players[i+1].get_socket() is None:
+                remind_player = players[i] if players[i].get_socket() is not None else players[i+1]
+                remind_player.send_message_to_player("info", {"message": "Your opponent has left the tournament. Please wait for the next stage."})
+                removed_players.append(remind_player)
+                print(f"For the stage of tournament {self.get_id()} a player left on warmup.")
+                continue
+
+            players_without_leaver.append(players[i])
+            players_without_leaver.append(players[i+1])
+        players[:] = players_without_leaver
 
     def add_player(self, player):
         self.players.append(player)

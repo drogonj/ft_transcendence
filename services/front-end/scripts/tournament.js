@@ -43,32 +43,23 @@ export function refreshTournamentList() {
 }
 
 export function createTournament() {
-    document.cookie = "type=createTournament;max-age=3";
-    initWebSocketFunc();
+    initWebSocketFunc("action=createTournament");
 }
 
 export function joinTournament(tournamentId) {
-    document.cookie = "type=joinTournament;max-age=3";
-    document.cookie = `tournamentId=${tournamentId};max-age=3`;
-    initWebSocketFunc();
-}
-
-export function rejoinTournament(tournamentId) {
-    document.cookie = "type=joinTournament;max-age=3";
-    document.cookie = `tournamentId=${tournamentId};max-age=3`;
-    document.cookie = `reconnection=true;max-age=3`
-    initWebSocketFunc();
+    initWebSocketFunc(`action=joinTournament&tournamentId=${tournamentId}`);
 }
 
 function startTournament() {
     sendMessageToTournamentServer("launchTournament", {});
 }
 
-function initWebSocketFunc() {
-    tournamentWebSocket = new WebSocket(`wss://${getHostNameFromURL()}/ws/tournament`);
+function initWebSocketFunc(queryString) {
+    tournamentWebSocket = new WebSocket(`wss://${getHostNameFromURL()}/ws/tournament?${queryString}`);
     tournamentWebSocket.onopen = function () {
         navigateTo('/tournament-lobby', true);
     }
+
     tournamentWebSocket.onmessage = function (event) {
         const data = JSON.parse(event.data);
         if (data.type === "refreshLobby")
