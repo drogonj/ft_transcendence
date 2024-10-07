@@ -79,19 +79,16 @@ async def notify_chat_user_new_status(channel_layer, user):
 		}
 	)
 
-#Try to implement super() in the future
-
 class FriendRequestConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		self.user = self.scope['user']
-		self.local_game = False
 
 		if self.user.is_authenticated:
 			await self.channel_layer.group_add(
 				f'user_{self.user.id}',
 				self.channel_name
 			)
-			await self.accept()
+			await super().connect()
 			await self.set_active_connection(1)
 			await self.send(text_data=json.dumps({
 				'message': f'Websocket connected as {self.user.username}, your id is {self.user.id}'
@@ -106,6 +103,7 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 				self.channel_name
 			)
 			await self.set_active_connection(-1)
+		await super().disconnect(close_code)
 
 	async def set_active_connection(self, value):
 		async with user_lock:

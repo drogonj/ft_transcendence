@@ -8,7 +8,7 @@ django.setup()
 from friends.models import Friendship
 User = get_user_model()
 
-for u in range(9):
+for u in range(20):
     email = f'test{u}@mail.com'
     username = f'test{u}'
     password = 'test'

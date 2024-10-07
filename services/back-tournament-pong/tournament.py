@@ -25,6 +25,22 @@ async def send_player_status(id, state):
             return
         await asyncio.sleep(0.1)
 
+async def send_player_win_tournament(id):
+    url = 'http://user-management:8000/backend/add_won_tournament/'
+    data = {"user_id": id}
+    async with lock:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=data) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        response.raise_for_status()
+        except Exception as e:
+            print(f"Failed to send player win tournament: {e}")
+            return
+        await asyncio.sleep(0.1)
+
 class Tournament:
     def __init__(self, host_player, tournament_id):
         self.id = tournament_id
@@ -116,11 +132,10 @@ class Tournament:
         for player in self.players:
             if player.get_socket() is None:
                 return
-        if len(self.players) == 1:
+        if len(self.players) == 1 and self.players[0].get_statement() == 0:
             self.is_running = False
             self.send_message_to_tournament("endTournament", {})
-            #todo tell to profile to increase the tournament win number by the player.
-            #get the winner id with self.players[0].get_player_id() (last remind player)
+            asyncio.create_task(send_player_win_tournament(self.players[0].get_player_id()))
             return
         await self.launch_stage()
 

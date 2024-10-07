@@ -124,6 +124,8 @@ class HandleGameEventsView(View):
             player.defeats += 1
             if player.trophies - 10 >= 0:
                 player.trophies -= 10
+        else:
+            player.victories += 1
         total_matches = player.victories + player.defeats
         if total_matches > 0:
             player.winrate = round((player.victories / total_matches) * 100, 2)

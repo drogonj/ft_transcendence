@@ -78,6 +78,7 @@ services:
       - "8000"
     volumes:
       - django:/singlepageapp
+      - avatars:/user-management/media
       - vault-token:/vault/token:ro
       - vault-ssl:/vault/ssl:ro
     networks:
@@ -213,6 +214,7 @@ volumes:
   vault-token:
   vault-ssl:
   redis:
+  avatars:
   pg_0_data:
     driver: local
   pg_1_data:

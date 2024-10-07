@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.db import models
 from io import BytesIO
 import requests, uuid, os
+from django.contrib.auth.password_validation import validate_password
 
 class MyAccountManager(BaseUserManager):
     def create_user(self, intra_id, email, username, password, **extra_fields):
@@ -76,6 +77,14 @@ class Account(AbstractBaseUser):
 
     def __str__(self):
         return self.username
+
+    def set_password(self, raw_password):
+        try:
+            validate_password(raw_password, self)
+        except ValidationError as e:
+            raise e
+        super().set_password(raw_password)
+
 
     def generate_tmp_token(self):
         self.tmp_token = uuid.uuid4().hex
