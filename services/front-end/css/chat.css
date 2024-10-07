@@ -138,7 +138,7 @@
     border-radius: 5px;
     background-color: #ffffff99;
     word-wrap: break-word;
-	font-size: clamp(1rem, 2vw, 1.5rem);
+	font-size: inherit;
 	color: red;
 }
 
@@ -190,16 +190,55 @@
 }
 
 .accept-button {
-	font-size: clamp(1rem, 2vw, 1.5rem);
+	background-color: white;
+	border-radius: 15px;
+	border: 1px solid #18ab29;
+	display: inline-block;
+	cursor: pointer;
+	color: #44c767;
+	font-family:Arial;
+	font-size: inherit;
+	padding: 5px;
+	text-decoration: none;
+}
+
+.accept-button:hover {
+	background-color:#44c767;
 	color: green;
 }
 
 .decline-button {
-	font-size: clamp(1rem, 2vw, 1.5rem);
-	color: red;
+	background-color: white;
+	border-radius: 15px;
+	border: 1px solid #820707;
+	display: inline-block;
+	cursor: pointer;
+	color: #820707;
+	font-family:Arial;
+	font-size: inherit;
+	padding: 5px;
+	text-decoration: none;
+}
+
+.decline-button:hover {
+	background-color:red;
+	color: #820707
 }
 
 .cancel-button {
-	font-size: clamp(1rem, 2vw, 1.5rem);
-	color: red;
+	background-color: white;
+	border-radius: 15px;
+	border: 1px solid black;
+	display: inline-block;
+	cursor: pointer;
+	color: black;
+	font-family:Arial;
+	font-size: inherit;
+	padding: 5px;
+	text-decoration: none;
+}
+
+.cancel-button:hover {
+	background-color: grey;
+	color: black;
 }

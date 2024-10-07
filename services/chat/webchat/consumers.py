@@ -99,7 +99,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			content = data.get('content')
 			await self.send(text_data=json.dumps({
 				'type': 'game_message',
-				'content': f'{content}.',
+				'content': f'{content}',
 			}))
 
 		if data['type'] == 'user_status_update':
