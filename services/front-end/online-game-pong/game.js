@@ -6,7 +6,7 @@ import {createPlayers, getPlayerWithSide, stopPlayerLoop} from "./player.js";
 import {closeWebSocket} from "./websocket.js";
 import {navigateTo} from "../scripts/contentLoader.js";
 import {displayStatistics} from "./statistics.js";
-import {rejoinTournament} from "../scripts/tournament.js";
+import {joinTournament} from "../scripts/tournament.js";
 
 let globalGameLoop;
 
@@ -75,7 +75,7 @@ export function endGame(socketValues) {
 	clearGame();
 	closeWebSocket();
 	if (socketValues["tournamentId"]) {
-		rejoinTournament(socketValues["tournamentId"]);
+		joinTournament(socketValues["tournamentId"]);
 		return;
 	}
 
