@@ -40,11 +40,15 @@ class Tournament:
             removed_player.send_message_to_player("refreshLobby", self.dump_players_in_tournament())
 
     async def launch_tournament_warmup(self, players, removed_players):
-        print(f"New warmup start for the tournement {self.get_id()}")
-        for i in range(0, len(players), 2):
-            players[i].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
-            players[i+1].send_message_to_player("info", {"message": "The game will start in 5 seconds"})
-        await asyncio.sleep(5)
+        print(f"New warmup start for the tournament {self.get_id()}")
+        for player in players:
+            player.send_message_to_player("info", {"message": "The game will start in 5 seconds"})
+        for j in range(4, 0, -1):
+            await asyncio.sleep(1)
+            message = str(j)
+            for player in players:
+                player.send_message_to_player("info", {"message": message})
+        await asyncio.sleep(1)
 
         players_without_leaver = []
         for i in range(0, len(players), 2):
