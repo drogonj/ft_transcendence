@@ -30,7 +30,7 @@ SECRET_KEY = db_secrets.get('CHAT_KEY')
 WEBSITE_URL = db_secrets.get('WEBSITE_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 

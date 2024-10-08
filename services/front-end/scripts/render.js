@@ -437,6 +437,8 @@ export async function renderUserProfile(userId) {
 }
 
 export async function renderSelfProfile() {
+    await getCurrentUserInfo();
+
     try {
         app.innerHTML = `
             <div class="profile-section-container">
