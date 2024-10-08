@@ -27,6 +27,7 @@ body {
     width: 100%;
     text-align: center;
     color: whitesmoke;
+    z-index: -1;
 }
 
 @media (max-aspect-ratio: 1/1) {
