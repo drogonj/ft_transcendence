@@ -35,7 +35,7 @@ def get_profil_image_filepath(self, filename):
     return f'profil_images/{self.pk}/{uuid.uuid4().hex}{extension}'
 
 def get_default_profile_image():
-    return "avatars/default.png"
+    return "avatars/default.gif"
 
 class Account(AbstractBaseUser):
 
@@ -127,7 +127,7 @@ class Account(AbstractBaseUser):
             except Exception as e:
                 raise Exception('Corrupted file')
 
-            if self.profil_image.path != "/user-management/media/avatars/default.png":
+            if self.profil_image.path != "/user-management/media/avatars/default.gif":
                 if os.path.isfile(self.profil_image.path):
                     os.remove(self.profil_image.path)
 
