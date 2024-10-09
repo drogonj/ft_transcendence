@@ -20,16 +20,32 @@ body {
     overflow: hidden;
 }
 
+.cc {
+    position: fixed;
+    font-size: max(0.5vh, 0.5vw);
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    color: whitesmoke;
+    z-index: -1;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .cc {
+        display: none;
+    }
+}
+
 a {
     text-decoration: none;
     color: rgba(255, 255, 255, 0.82);
 }
 
 #avatar-container {
-    width: 100%; /* ou une autre taille fixe ou relative */
-    height: 100%; /* assure que le conteneur est carrÃƒÂ© */
-    border-radius: 50%; /* rend le conteneur circulaire */
-    overflow: hidden; /* cache les parties dÃƒÂ©bordantes de l'image */
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;

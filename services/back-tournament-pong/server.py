@@ -11,10 +11,11 @@ from tornado.web import FallbackHandler, Application
 from tornado.wsgi import WSGIContainer
 from tornado.websocket import WebSocketHandler
 from player import Player
-from tournament import Tournament
+from tournament import Tournament, send_player_status
 from websocket import WebSocketClient
 import requests
 from websocket import check_game_server_health
+import asyncio
 
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backtournamentpong.settings')
@@ -58,7 +59,6 @@ def get_tournament_with_user_id(user_id):
         if tournament.is_user_in_tournament(user_id):
             return tournament
 
-
 class TournamentWebSocket(WebSocketHandler):
     def __init__(self, *args, **kwargs):
         # General class initialization, no connection-specific data here
@@ -94,6 +94,8 @@ class TournamentWebSocket(WebSocketHandler):
             print(f"No action type found.")
             self.close()
             return
+
+        asyncio.create_task(send_player_status(self.user_id, 'tournament_started'))
 
         if action_type == "createTournament":
             global tournaments_id

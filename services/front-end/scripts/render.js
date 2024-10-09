@@ -253,6 +253,9 @@ export async function renderHome() {
                         <span class="close-btn" id="closePopup">×</span>
                     </div>
 					<div class="chat-menu-container"></div>
+					<div class="cc">
+                        <p>©️ ngalzand - jmathieu - ayagmur - chabrune</p>
+                    </div>
                 `;
 
     await addFriendshipMenu();
@@ -437,6 +440,8 @@ export async function renderUserProfile(userId) {
 }
 
 export async function renderSelfProfile() {
+    await getCurrentUserInfo();
+
     try {
         app.innerHTML = `
             <div class="profile-section-container">

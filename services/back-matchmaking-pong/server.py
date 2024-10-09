@@ -3,6 +3,9 @@ import os
 
 import django
 import requests
+import asyncio
+import aiohttp
+
 from django.core.wsgi import get_wsgi_application
 from tornado import gen
 from tornado.httpserver import HTTPServer
@@ -26,6 +29,24 @@ django.setup()
 
 users_in_queue = []
 
+lock = asyncio.Lock()
+
+async def send_player_status(id, state):
+    url = 'http://user-management:8000/backend/user_statement/'
+    data = {"user_id": id, "state": state}
+
+    async with lock:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=data) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        response.raise_for_status()
+        except Exception as e:
+            print(f"Failed to send player status: {e}")
+            return
+        await asyncio.sleep(0.1)
 
 async def ping_users():
     for user in users_in_queue:
@@ -107,7 +128,7 @@ class MatchMakingWebSocket(WebSocketHandler):
         user = User(self)
         users_in_queue.append(user)
 
-        response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": self.user_id, "state": "matchmaking_started"})
+        asyncio.create_task(send_player_status(self.user_id, 'matchmaking_started'))
 
         print(f'[+] The user ({user.get_user_id()}) {request_data["username"]} is connected to the matchmaking server.')
 
@@ -115,7 +136,7 @@ class MatchMakingWebSocket(WebSocketHandler):
         print(f"[-] A user leave the matchmaking server.")
         user = self.get_user_from_socket()
         if user:
-            response = requests.post('http://user-management:8000/backend/user_statement/', json={"user_id": user.get_user_id(), "state": "matchmaking_ended"})
+            asyncio.create_task(send_player_status(user.get_user_id(), 'matchmaking_ended'))
             users_in_queue.remove(user)
 
     def get_user_from_socket(self):

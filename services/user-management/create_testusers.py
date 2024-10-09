@@ -8,10 +8,10 @@ django.setup()
 from friends.models import Friendship
 User = get_user_model()
 
-for u in range(9):
+for u in range(20):
     email = f'test{u}@mail.com'
     username = f'test{u}'
-    password = 'test'
+    password = 'JESUISUNSUPERMUTANT123'
 
     if not User.objects.filter(username=username).exists():
         User.objects.create_user(intra_id=0, email=email, username=username, password=password)

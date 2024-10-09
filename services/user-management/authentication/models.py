@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.db import models
 from io import BytesIO
 import requests, uuid, os
+from django.contrib.auth.password_validation import validate_password
 
 class MyAccountManager(BaseUserManager):
     def create_user(self, intra_id, email, username, password, **extra_fields):
@@ -34,7 +35,7 @@ def get_profil_image_filepath(self, filename):
     return f'profil_images/{self.pk}/{uuid.uuid4().hex}{extension}'
 
 def get_default_profile_image():
-    return "avatars/default.png"
+    return "avatars/default.gif"
 
 class Account(AbstractBaseUser):
 
@@ -77,6 +78,14 @@ class Account(AbstractBaseUser):
     def __str__(self):
         return self.username
 
+    def set_password(self, raw_password):
+        try:
+            validate_password(raw_password, self)
+        except ValidationError as e:
+            raise e
+        super().set_password(raw_password)
+
+
     def generate_tmp_token(self):
         self.tmp_token = uuid.uuid4().hex
         self.token_creation_date = timezone.now()
@@ -118,7 +127,7 @@ class Account(AbstractBaseUser):
             except Exception as e:
                 raise Exception('Corrupted file')
 
-            if self.profil_image.path != "/user-management/media/avatars/default.png":
+            if self.profil_image.path != "/user-management/media/avatars/default.gif":
                 if os.path.isfile(self.profil_image.path):
                     os.remove(self.profil_image.path)
 

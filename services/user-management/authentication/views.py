@@ -1,7 +1,7 @@
 from django.views.generic import FormView
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, HttpResponseServerError
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponseForbidden
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
@@ -14,6 +14,8 @@ from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from django.contrib.sessions.models import Session
 from authentication.vault_client import get_vault_client
+from django.conf import settings
+from django.views.static import serve as static_serve
 
 
 vault_client = get_vault_client()
@@ -220,7 +222,7 @@ def oauth_confirm_registration(request):
 
     intra_pic = data.get('take_intra_pic')
     if not intra_pic:
-        user.profil_image = "avatars/default.png"
+        user.profil_image = "avatars/default.gif"
     user.username = username
     user.password = make_password(password)
     user.register_complete = True
@@ -360,4 +362,17 @@ class GetSessionUser(View):
             return JsonResponse({'success': False, 'message': 'No user found for this session'})
         except Exception as e:
             logger.info(f'GetSessionUser Error: {e}')
+            return HttpResponseServerError(f"An error occurred: {e}")
+
+@method_decorator(login_required, name='dispatch')
+class MediaView(View):
+    def get(self, request, path):
+        try:
+            if not path.startswith('avatars/') and not path.startswith('profil_images/'):
+                return HttpResponseForbidden()
+            if path.find('..') != -1:
+                return HttpResponseForbidden()
+
+            return static_serve(request, path, document_root=settings.MEDIA_ROOT)
+        except Exception as e:
             return HttpResponseServerError(f"An error occurred: {e}")

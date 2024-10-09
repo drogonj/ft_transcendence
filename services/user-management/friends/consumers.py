@@ -25,7 +25,8 @@ connected_users = set()
 user_lock = asyncio.Lock()
 
 async def change_and_notify_user_status(channel_layer, user, status):
-	connected_friends = await sync_to_async(Friendship.objects.get_connected_friends)(user)
+	if user.status == status:
+		return
 
 	if status == 'online':
 		user.status = 'online'
@@ -51,8 +52,10 @@ async def change_and_notify_user_status(channel_layer, user, status):
 		logger.error(f'Friends Notification Bad Type: {status}')
 		return
 
-	await sync_to_async(user.save)()
+	await sync_to_async(user.save)(update_fields=['status', 'is_connected'])
 	await notify_chat_user_new_status(channel_layer, user)
+
+	connected_friends = await sync_to_async(Friendship.objects.get_connected_friends)(user)
 
 	for friend in connected_friends:
 		group_name = f'user_{friend.id}'
@@ -79,14 +82,13 @@ async def notify_chat_user_new_status(channel_layer, user):
 class FriendRequestConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		self.user = self.scope['user']
-		self.local_game = False
 
 		if self.user.is_authenticated:
 			await self.channel_layer.group_add(
 				f'user_{self.user.id}',
 				self.channel_name
 			)
-			await self.accept()
+			await super().connect()
 			await self.set_active_connection(1)
 			await self.send(text_data=json.dumps({
 				'message': f'Websocket connected as {self.user.username}, your id is {self.user.id}'
@@ -101,18 +103,20 @@ class FriendRequestConsumer(AsyncWebsocketConsumer):
 				self.channel_name
 			)
 			await self.set_active_connection(-1)
+		await super().disconnect(close_code)
 
 	async def set_active_connection(self, value):
 		async with user_lock:
 			await sync_to_async(self.user.refresh_from_db)()
 			self.user.active_connections += value
+			await sync_to_async(self.user.save)(update_fields=['active_connections'])
 			if self.user.active_connections > 0 and not self.user.is_connected:
 				connected_users.add(self.user.id)
 				await change_and_notify_user_status(self.channel_layer, self.user, 'online')
 			elif self.user.active_connections <= 0:
 				connected_users.discard(self.user.id)
 				await change_and_notify_user_status(self.channel_layer, self.user, 'offline')
-			await sync_to_async(self.user.save)()
+			# await sync_to_async(self.user.save)(update_fields=['active_connections'])
 			await sync_to_async(self.user.refresh_from_db)()
 
 	async def close_websocket(self, event):
