@@ -26,6 +26,8 @@ async def send_player_status(id, state):
         await asyncio.sleep(0.1)
 
 async def send_player_win_tournament(id):
+    if id is None:
+        return
     url = 'http://user-management:8000/backend/add_won_tournament/'
     data = {"user_id": id}
     async with lock:
