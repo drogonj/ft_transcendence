@@ -30,8 +30,6 @@ export async function connectChatWebsocket(roomName) {
 				if (data.timestamp)
 					data.timestamp = formatTime(data.timestamp);
 
-				console.log(data);
-
 				if (data.type === 'user_status_update')
 					updateUserStatus(data.user_id, data.status, data.content);
 
@@ -430,7 +428,6 @@ async function parseMessage(message) {
 
 				for (const user of usersData.users) {
 					if (user.username === username) {
-						console.log(`User: ${user.username}`)
 						if (user.username === currentUser.username) {
 							let troll = getTrollMessage();
 							chatSocket.send(JSON.stringify({

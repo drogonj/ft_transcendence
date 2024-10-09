@@ -82,13 +82,11 @@ class GetMuteListView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class MuteToggleView(View):
 	def post(self, request, user_id):
-		logging.info(f'Id: {user_id}, {type(user_id)}')
 		try:
 			mute_list = MuteList.objects.get_mute_list(user_id=user_id)
 			
 			data = json.loads(request.body)
 			target_id = data.get('target_id')
-			logging.info(f'Id: {target_id}, {type(target_id)}')
 
 			if not target_id:
 				return JsonResponse({'error': 'Target user ID is required'}, status=400)

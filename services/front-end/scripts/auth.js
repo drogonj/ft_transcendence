@@ -118,7 +118,7 @@ export async function handleUserUpdate(event) {
     const data = await response.json();
 
     if (data.success) {
-        // TODO
+
     } else {
         alert('Failed to update user information: ' + data.message);
     }

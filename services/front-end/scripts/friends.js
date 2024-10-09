@@ -20,7 +20,6 @@ export async function connectFriendsWebsocket() {
     friendSocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         const type = data.type
-        console.log(data)
 
         const user_id = data.id;
         const from_user = data.username;
@@ -167,7 +166,6 @@ export async function acceptFriendshipRequest(event) {
         const divId = "friendship-request-" + friendId
         const element = document.getElementById(divId);
         element.remove();
-        console.log(responseData)
         await addFriendToMenu(friendId, responseData.username, friendAvatar, responseData.status)
     }
 }

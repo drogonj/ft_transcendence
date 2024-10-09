@@ -32,6 +32,9 @@ async function addUserToMenu(user_id, username, avatar, status, muteList) {
 	const usersContainer = document.getElementById('users-content');
 	let is_muted = false;
 
+	if (document.getElementById(`user-${user_id}`))
+		return
+
 	const newUser = document.createElement('li');
 	newUser.id = `user-${user_id}`;
 
