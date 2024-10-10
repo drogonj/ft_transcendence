@@ -5,11 +5,11 @@ import loadMap from "./controller/map.js";
 import {loadHeader} from "./controller/header.js";
 import loadSettings from "./controller/settings.js";
 import loadSpell from "./controller/spell.js";
-import {launchGame} from "./controller/game.js";
+import {launchGame, startGame} from "./controller/game.js";
 import {navigateTo} from "../../scripts/contentLoader.js";
 import {getCsrfToken, csrfToken} from "../../scripts/auth.js";
 
-export default function launchLocalGame() {
+export default function setupLocalGame() {
 	loadSettings(document.getElementsByTagName("input"));
 	navigateTo("/game-local", true);
 	loadSpell();
@@ -20,6 +20,10 @@ export default function launchLocalGame() {
 	loadHeader();
 	launchGame();
 	setIngame();
+}
+
+export function startlocalGame() {
+	startGame();
 }
 
 async function setIngame() {

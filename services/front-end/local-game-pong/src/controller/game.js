@@ -15,6 +15,7 @@ import launchAi, {stopAiLoops} from "./ai.js";
 import {aiActive} from "./settings.js";
 import {friendSocket} from "../../../scripts/friends.js";
 import {unsetIngame} from "../main.js";
+import {buildWarmupLocal} from "../view/header_view.js";
 
 let globalLoop;
 
@@ -23,6 +24,11 @@ export function launchGame() {
 	stopPlayerLoop();
 	stopAiLoops();
 	clearTimeout(globalLoop);
+	buildWarmupLocal(document.getElementById("infoLeft") , getLeftPaddle());
+	buildWarmupLocal(document.getElementById("infoRight"), getRightPaddle());
+}
+
+export function startGame() {
 	startBallLoop();
 	startPlayersLoop();
 	startGlobalGameLoop();

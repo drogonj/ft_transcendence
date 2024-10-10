@@ -4,7 +4,7 @@ import {setCssProperty} from "../../view/style_view.js";
 import {newImage} from "../utils/utils.js";
 
 export default function PaddleStun() {
-	Spell.call(this, 15, "Paddle Stun", "all", "DESCRIPTION", newImage("../../assets/images/paddle_stun.png"));
+	Spell.call(this, 15, "Paddle Stun", "all", "Your opponent's paddle will be stun for 2 seconds.", newImage("../../assets/images/paddle_stun.png"));
 }
 
 PaddleStun.prototype = Object.create(Spell.prototype);

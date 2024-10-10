@@ -5,7 +5,7 @@ import {newImage} from "../utils/utils.js";
 
 
 export default function BallInvisible() {
-	Spell.call(this, 5, "Ball Freeze", "left", "DESCRIPTION", newImage("../../assets/images/ball_invisible.png"));
+	Spell.call(this, 5, "Ball Freeze", "left", "All the ball going to your opponent will be invisible until the next hit.", newImage("../../assets/images/ball_invisible.png"));
 }
 
 BallInvisible.prototype = Object.create(Spell.prototype);

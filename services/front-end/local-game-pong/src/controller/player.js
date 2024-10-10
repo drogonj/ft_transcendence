@@ -28,6 +28,7 @@ function Player(paddleHtml, paddleDirection, paddleHeader) {
 	this.moveStep = 1;
 	this.paddleDirection = paddleDirection;
 	this.playerTopPosition = getRandomNumber(3, 70);
+	this.keys = definePlayerKeys(this);
 	if (spellsActive) {
 		this.playerSpells = getSpells(paddleDirection);
 		this.playerSpells.push(new PaddleStun());
@@ -73,10 +74,10 @@ export function startPlayersLoop() {
 }
 
 function leftPlayerTriggerKeys(leftPaddle) {
-	if (keyDown.has('KeyW')) {
+	if (keyDown.has(leftPaddle.keys[0])) {
 		if (leftPaddle.paddleCanMoveUp())
 			movePlayerPaddleUp(leftPaddle)
-	} else if (keyDown.has('KeyS')) {
+	} else if (keyDown.has(leftPaddle.keys[1])) {
 		if (leftPaddle.paddleCanMoveDown())
 			movePlayerPaddleDown(leftPaddle);
 	}
@@ -84,22 +85,22 @@ function leftPlayerTriggerKeys(leftPaddle) {
 	if (!spellsActive)
 		return;
 
-	if (keyDown.has('Digit1')) {
+	if (keyDown.has(leftPaddle.keys[2])) {
 		leftPaddle.playerSpells[0].executor(leftPaddle);
-	} else if (keyDown.has('Digit2')) {
+	} else if (keyDown.has(leftPaddle.keys[3])) {
 		leftPaddle.playerSpells[1].executor(leftPaddle);
-	} else if (keyDown.has('Digit3')) {
+	} else if (keyDown.has(leftPaddle.keys[4])) {
 		leftPaddle.playerSpells[2].executor(leftPaddle);
-	} else if (keyDown.has('Digit4')) {
+	} else if (keyDown.has(leftPaddle.keys[5])) {
 		leftPaddle.playerSpells[3].executor(leftPaddle);
 	}
 }
 
 function rightPlayerTriggerKeys(rightPaddle) {
-	if (keyDown.has('ArrowUp')) {
+	if (keyDown.has(rightPaddle.keys[0])) {
 		if (rightPaddle.paddleCanMoveUp())
 			movePlayerPaddleUp(rightPaddle)
-	} else if (keyDown.has('ArrowDown')) {
+	} else if (keyDown.has(rightPaddle.keys[1])) {
 		if (rightPaddle.paddleCanMoveDown())
 			movePlayerPaddleDown(rightPaddle);
 	}
@@ -107,13 +108,13 @@ function rightPlayerTriggerKeys(rightPaddle) {
 	if (!spellsActive)
 		return;
 
-	if (keyDown.has('Numpad1')) {
+	if (keyDown.has(rightPaddle.keys[2])) {
 		rightPaddle.playerSpells[0].executor(rightPaddle);
-	} else if (keyDown.has('Numpad2')) {
+	} else if (keyDown.has(rightPaddle.keys[3])) {
 		rightPaddle.playerSpells[1].executor(rightPaddle);
-	} else if (keyDown.has('Numpad3')) {
+	} else if (keyDown.has(rightPaddle.keys[4])) {
 		rightPaddle.playerSpells[2].executor(rightPaddle);
-	} else if (keyDown.has('Numpad4')) {
+	} else if (keyDown.has(rightPaddle.keys[5])) {
 		rightPaddle.playerSpells[3].executor(rightPaddle);
 	}
 }
@@ -143,4 +144,14 @@ export function havePlayersMaxScore() {
 
 export function stopPlayerLoop() {
 	clearTimeout(playerLoop);
+}
+
+function definePlayerKeys(player) {
+	if (aiActive)
+		return ["ArrowUp", "ArrowDown", "Digit1", "Digit2", "Digit3", "Digit4"];
+
+	if (player.paddleDirection === 1)
+		return ["ArrowUp", "ArrowDown", "Numpad1", "Numpad2", "Numpad3", "Numpad4"];
+	else
+		return ["KeyW", "KeyS", "Digit1", "Digit2", "Digit3", "Digit4"];
 }

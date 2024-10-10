@@ -6,7 +6,7 @@ import {newImage} from "../utils/utils.js";
 
 
 export default function BallClone() {
-	Spell.call(this, 5, "Ball Slayer", "right", "DESCRIPTION", newImage("../../assets/images/ball_clone.png"));
+	Spell.call(this, 5, "Ball Slayer", "right", "The next balls you hit will 'split,' and a new ball will appear.", newImage("../../assets/images/ball_clone.png"));
 }
 
 BallClone.prototype = Object.create(Spell.prototype);

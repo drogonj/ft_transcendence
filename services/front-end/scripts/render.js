@@ -30,7 +30,7 @@ import {
 
 import { addChatMenu, disconnectChatWebsocket } from './chat.js';
 import {closeWebSocket, isWebSocketBind, launchClientMatchMaking} from "../online-game-pong/websocket.js";
-import launchLocalGame from "../local-game-pong/src/main.js";
+import setupLocalGame, {startlocalGame} from "../local-game-pong/src/main.js";
 import { unsetIngame } from "../local-game-pong/src/main.js";
 import {
     closeTournamentWebSocket,
@@ -747,7 +747,7 @@ export async function renderGameSettings() {
     `;
     document.getElementById('buttonPlay').addEventListener('click', (event) => {
         event.preventDefault();
-        launchLocalGame();
+        setupLocalGame();
     });
 }
 
@@ -788,10 +788,39 @@ export async function renderGameLocal() {
                 </div>
             </div>
         </div>
+        
+        <div id="announcement">
+            <div id="players">
+                <div id="infoLeft" class="playerInfos">
+                    <div class="playerData">
+                        <img class="warmupImage" src="../../assets/images/iconleft.jpg">
+                        <div class="infoUserName">PlayerLeft</div>
+                    </div>
+                    <div class="spells">
+                    </div>
+                </div>
+                 <div id="infoRight" class="playerInfos">
+                     <div class="playerData">
+                        <img class="warmupImage" src="../../assets/images/righticon.jpg">
+                        <div class="infoUserName">PlayerRight</div>
+                    </div>
+                    <div class="spells">
+                    </div>
+                </div>
+            </div>
+            <button id="buttonPlayWarmup" class="friend-menu-button">Launch the game</button>
+        </div>  
+        
     `;
     window.addEventListener('popstate', async function(event) {
         await unsetIngame();
     }, { once: true });
+
+    document.getElementById('buttonPlayWarmup').addEventListener('click', () => {
+        document.getElementById('announcement').remove();
+        startlocalGame();
+    }, { once: true })
+
 }
 
 export async function renderGameOnline() {

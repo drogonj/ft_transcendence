@@ -5,7 +5,7 @@ import {newImage} from "../utils/utils.js";
 
 
 export default function BallFreeze() {
-	Spell.call(this, 5, "Ball Freeze", "right", "DESCRIPTION", newImage("../../assets/images/ball_freeze.png"));
+	Spell.call(this, 5, "Ball Freeze", "right", "All the incoming balls will be slowed by 50%.", newImage("../../assets/images/ball_freeze.png"));
 }
 
 BallFreeze.prototype = Object.create(Spell.prototype);
