@@ -7,6 +7,12 @@
 
 <p align="center">warning, this is not the LTS</p>
 
+<h3 align="left">Installation:</h3>
+<pre>git clone https://github.com/drogonj/ft_transcendence && cd ft_transcendence</pre>
+<pre>vim .env-template</pre> then fill it with your own parameters and API key
+<pre>cp .env-template ./services/vault-init/.env</pre>
+<pre>docker-compose up --build</pre>
+
 <h3 align="left">Features:</h3>
   • Django Framework as backend<br>
   • Native JS Frontend<br>
@@ -23,3 +29,8 @@
   • User and Game Stats Dashboards<br>
   • WAF/ModSecurity with Hardened Configuration and HashiCorp Vault for Secrets Management<br>
   • Microservices backend design<br>
+<br><br>
+<img src="https://i.goopics.net/mpqy63.png" alt="">
+<img src="https://i.goopics.net/bd7q2v.png" alt="">
+<img src="https://i.goopics.net/nhxy94.png" alt="">
+<img src="https://i.goopics.net/9q5qgc.png" alt="">
