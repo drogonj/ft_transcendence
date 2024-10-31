@@ -12,6 +12,7 @@
 <pre>vim .env-template</pre> then fill it with your own parameters and API key
 <pre>cp .env-template ./services/vault-init/.env</pre>
 <pre>docker-compose up --build</pre>
+then you can connect via: <a href="localhost:8080">localhost:8080</a>
 
 <h3 align="left">Features:</h3>
   • Django Framework as backend<br>
